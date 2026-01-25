@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - Discrete Math Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="error-page">
+        <h1>404</h1>
+        <h2>Page Not Found</h2>
+        <p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-home"></i> Return to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.error-page {
+    text-align: center;
+    padding: var(--space-12) 0;
+}
+
+.error-page h1 {
+    font-size: 6rem;
+    color: var(--primary);
+    margin: 0;
+    line-height: 1;
+}
+
+.error-page h2 {
+    font-size: 2rem;
+    color: var(--gray-500);
+    margin: var(--space-4) 0;
+}
+
+.error-page p {
+    color: var(--gray-500);
+    margin-bottom: var(--space-6);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 768px) {
+    .error-page h1 {
+        font-size: 4rem;
+    }
+    
+    .error-page h2 {
+        font-size: 1.5rem;
+    }
+}
+
+.theme-toggle {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-full);
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-fast);
+    z-index: 1000;
+}
+
+.theme-toggle:focus {
+    outline: 2px solid var(--primary-dark);
+}
+
+.theme-toggle[aria-label] {
+    outline: none;
+}
+
+.error-page[role="region"] {
+    /* Add any necessary styles for the error-page role */
+}
+</style>
+{% endblock %}

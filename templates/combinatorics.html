@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Combinatorics | Discrete Math Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-title">
+        <h2>Combinatorics Calculator</h2>
+        <p class="subtitle">Calculate permutations, combinations, and solve counting problems</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-calculator"></i> Basic Counting</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>Combinatorics studies ways to count finite discrete structures, providing formulas for permutations, combinations, and other counting problems.</p>
+            </div>
+            <form id="combinatoricsForm" class="form-container" aria-label="Combinatorics Basic Counting Form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="operation">
+                            <i class="fas fa-cog"></i> Operation
+                        </label>
+                        <select id="operation" name="operation">
+                            <option value="factorial">Factorial (n!)</option>
+                            <option value="permutation">Permutation (nPr)</option>
+                            <option value="combination">Combination (nCr)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="n">
+                            <i class="fas fa-hashtag"></i> n value
+                        </label>
+                        <input type="number" id="n" name="n" min="0" max="170" value="5" required>
+                        <div class="form-hint">Total number of elements (0-170)</div>
+                    </div>
+                    <div class="form-group" id="rGroup">
+                        <label for="r">
+                            <i class="fas fa-hashtag"></i> r value
+                        </label>
+                        <input type="number" id="r" name="r" min="0" max="170" value="2" required>
+                        <div class="form-hint">Number of elements to select (0-n)</div>
+                    </div>
+                </div>
+                <button type="button" id="calculateBtn" class="btn btn-primary" aria-label="Calculate Basic Counting">
+                    <i class="fas fa-calculator"></i> Calculate
+                </button>
+            </form>
+            <div id="result" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Result</h3>
+                <div id="resultValue" class="math-display"></div>
+                <div class="explanation-box">
+                    <h4>Explanation</h4>
+                    <div id="explanation"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-sitemap"></i> Advanced Counting</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>Advanced counting techniques help solve more complex counting problems.</p>
+            </div>
+            <form id="advancedForm" class="form-container" aria-label="Combinatorics Advanced Counting Form">
+                <div class="form-group">
+                    <label for="advancedOperation">
+                        <i class="fas fa-cog"></i> Operation
+                    </label>
+                    <select id="advancedOperation" name="advancedOperation">
+                        <option value="pigeonhole">Pigeonhole Principle</option>
+                        <option value="catalan">Catalan Number</option>
+                        <option value="stirling">Stirling Number (2nd kind)</option>
+                        <option value="binomial">Binomial Coefficient</option>
+                    </select>
+                </div>
+                <div id="pigeonholeInputs" class="dynamic-inputs">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pigeons">Number of pigeons</label>
+                            <input type="number" id="pigeons" name="pigeons" min="1" value="10" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="holes">Number of holes</label>
+                            <input type="number" id="holes" name="holes" min="1" value="9" required>
+                        </div>
+                    </div>
+                </div>
+                <div id="catalanInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-group">
+                        <label for="catalanN">n value</label>
+                        <input type="number" id="catalanN" name="catalanN" min="0" max="20" value="4" required>
+                    </div>
+                </div>
+                <div id="stirlingInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="stirlingN">n value</label>
+                            <input type="number" id="stirlingN" name="stirlingN" min="0" max="50" value="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stirlingK">k value</label>
+                            <input type="number" id="stirlingK" name="stirlingK" min="0" max="50" value="3" required>
+                        </div>
+                    </div>
+                </div>
+                <div id="binomialInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="binomialN">n value</label>
+                            <input type="number" id="binomialN" name="binomialN" min="0" max="170" value="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="binomialK">k value</label>
+                            <input type="number" id="binomialK" name="binomialK" min="0" max="170" value="2" required>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="calculateAdvancedBtn" class="btn btn-primary" aria-label="Calculate Advanced Counting">
+                    <i class="fas fa-calculator"></i> Calculate
+                </button>
+            </form>
+            <div id="advancedResult" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Result</h3>
+                <div id="advancedResultValue" class="math-display"></div>
+                <div class="explanation-box">
+                    <h4>Explanation</h4>
+                    <div id="advancedExplanation"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-book"></i> Formulas Reference</h3>
+        </div>
+        <div class="card-body">
+            <div class="formulas-grid">
+                <div class="formula-card">
+                    <h4>Factorial</h4>
+                    <div class="formula">n! = n × (n-1) × (n-2) × ... × 2 × 1</div>
+                    <p>The number of ways to arrange n distinct objects in a row.</p>
+                </div>
+                <div class="formula-card">
+                    <h4>Permutation</h4>
+                    <div class="formula">P(n,r) = n! / (n-r)!</div>
+                    <p>The number of ways to arrange r objects from a set of n distinct objects, where order matters.</p>
+                </div>
+                <div class="formula-card">
+                    <h4>Combination</h4>
+                    <div class="formula">C(n,r) = n! / (r! × (n-r)!)</div>
+                    <p>The number of ways to select r objects from a set of n distinct objects, where order doesn't matter.</p>
+                </div>
+                <div class="formula-card">
+                    <h4>Catalan Number</h4>
+                    <div class="formula">C<sub>n</sub> = (1/(n+1)) × C(2n,n)</div>
+                    <p>Appears in many counting problems like the number of valid parentheses expressions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.formulas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+.formula-card {
+    background-color: var(--surface-100);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    border-left: 4px solid var(--primary);
+}
+
+.formula-card h4 {
+    margin-top: 0;
+    color: var(--primary-dark);
+    margin-bottom: var(--space-2);
+}
+
+.formula {
+    font-family: 'Roboto Mono', monospace;
+    background-color: var(--surface-0);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-2);
+    text-align: center;
+    font-weight: 500;
+}
+
+.dynamic-inputs {
+    margin-bottom: var(--space-4);
+}
+
+.explanation-box {
+    background-color: var(--surface-100);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+.explanation-box h4 {
+    color: var(--primary-dark);
+    margin-top: 0;
+    margin-bottom: var(--space-2);
+}
+
+.theme-toggle {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-full);
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-fast);
+    z-index: 1000;
+}
+
+.theme-toggle:focus {
+    outline: 2px solid var(--primary-dark);
+}
+
+.theme-toggle[aria-label] {
+    outline: none;
+}
+
+.explanation-box[role="region"] {}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/combinatorics.js') }}"></script>
+{% endblock %}

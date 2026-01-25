@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discrete Math Calculator (Offline)</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div id="offlineAlert" style="text-align: center; padding: 12px; background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; margin-bottom: 20px;">
+        <i class="fas fa-laptop"></i> Running in fully offline mode. All calculations are performed in your browser.
+    </div>
+    
+    <header>
+        <div class="container">
+            <h1>Discrete Math Calculator</h1>
+            <nav id="mainNav">
+                <ul>
+                    <li><a href="#" data-page="index">Home</a></li>
+                    <li><a href="#" data-page="combinatorics">Combinatorics</a></li>
+                    <li><a href="#" data-page="probability">Probability</a></li>
+                    <li><a href="#" data-page="automata">Automata</a></li>
+                </ul>
+            </nav>
+            <button id="menuToggle" class="menu-toggle"><i class="fas fa-bars"></i></button>
+        </div>
+    </header>
+
+    <main id="mainContent">
+        <div class="page-title">
+            <h2>Welcome to the Discrete Math Calculator</h2>
+            <p class="subtitle">A browser-based calculator for discrete mathematics</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>Getting Started</h3>
+            </div>
+            <p>Click on any module above to begin.</p>
+            <p>This version runs completely in your browser with no server needed.</p>
+        </div>
+    </main>
+    
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <script src="static/js/main.js"></script>
+    <script src="static/js/helper.js"></script>
+    <script>
+
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                loadPage(page);
+            });
+        });
+        
+        function loadPage(page) {
+            const mainContent = document.getElementById('mainContent');
+            
+            if (page === 'combinatorics') {
+                loadScript('static/js/combinatorics.js');
+                mainContent.innerHTML = `<!-- Combinatorics content here -->`;
+            } 
+            else if (page === 'probability') {
+                loadScript('static/js/probability.js');
+                mainContent.innerHTML = `<!-- Probability content here -->`;
+            }
+            else if (page === 'automata') {
+                loadScript('static/js/automata.js');
+                mainContent.innerHTML = `<!-- Automata content here -->`;
+            }
+            else {
+                mainContent.innerHTML = `
+                    <div class="page-title">
+                        <h2>Welcome to the Discrete Math Calculator</h2>
+                        <p class="subtitle">A browser-based calculator for discrete mathematics</p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Getting Started</h3>
+                        </div>
+                        <p>Click on any module above to begin.</p>
+                        <p>This version runs completely in your browser with no server needed.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function loadScript(src) {
+            const script = document.createElement('script');
+            script.src = src;
+            document.body.appendChild(script);
+        }
+    </script>
+</body>
+</html>
+</body>
+</html>

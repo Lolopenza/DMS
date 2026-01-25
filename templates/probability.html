@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Probability | Discrete Math Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-title">
+        <h2>Probability Calculator</h2>
+        <p class="subtitle">Calculate, visualize, and simulate discrete probability problems</p>
+    </div>
+
+    <!-- Basic Probability -->
+    <div class="card mb-4">
+        <div class="card-header"><h3><i class="fas fa-dice"></i> Basic Probability</h3></div>
+        <div class="card-body">
+            <form id="basicProbForm" class="form-container">
+                <div class="form-group">
+                    <label for="calculation">Calculation Type</label>
+                    <select id="calculation" name="calculation">
+                        <option value="simple">Simple Probability (A)</option>
+                        <option value="conditional">Conditional Probability (A|B)</option>
+                        <option value="bayes">Bayes' Theorem</option>
+                        <option value="joint">Joint Probability (independent)</option>
+                    </select>
+                </div>
+                <div id="simpleInputs" class="dynamic-inputs">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="favorable">Favorable Outcomes</label>
+                            <input type="number" id="favorable" name="favorable" min="0" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="total">Total Outcomes</label>
+                            <input type="number" id="total" name="total" min="1" value="6" required>
+                        </div>
+                    </div>
+                </div>
+                <div id="conditionalInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="jointProb">P(A and B)</label>
+                            <input type="number" id="jointProb" name="jointProb" min="0" max="1" step="0.01" value="0.3" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="conditionProb">P(B)</label>
+                            <input type="number" id="conditionProb" name="conditionProb" min="0.01" max="1" step="0.01" value="0.5" required>
+                        </div>
+                    </div>
+                </div>
+                <div id="bayesInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-group">
+                        <label for="priorProb">P(A) - Prior</label>
+                        <input type="number" id="priorProb" name="priorProb" min="0" max="1" step="0.01" value="0.01" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="truePositiveProb">P(B|A) - Sensitivity</label>
+                            <input type="number" id="truePositiveProb" name="truePositiveProb" min="0" max="1" step="0.01" value="0.95" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="falsePositiveProb">P(B|¬A) - False positive</label>
+                            <input type="number" id="falsePositiveProb" name="falsePositiveProb" min="0" max="1" step="0.01" value="0.05" required>
+                        </div>
+                    </div>
+                </div>
+                <div id="jointInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-group">
+                        <label for="jointProbs">Probabilities (comma-separated, e.g. 0.5,0.3,0.2)</label>
+                        <input type="text" id="jointProbs" name="jointProbs" placeholder="0.5,0.3,0.2">
+                    </div>
+                </div>
+                <button type="button" id="calculateBtn" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate</button>
+            </form>
+            <div id="result" class="result-container" style="display: none;">
+                <h3><i class="fas fa-check-circle"></i> Result</h3>
+                <div id="resultValue" class="math-display"></div>
+                <div id="stepByStep" class="collapse mt-2"></div>
+                <div id="probabilityVisualization" class="visualization-container" style="display: none;"></div>
+            </div>
+            <div id="probabilityError" class="alert alert-danger mt-2" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Discrete Distributions -->
+    <div class="card mb-4">
+        <div class="card-header"><h3><i class="fas fa-chart-bar"></i> Discrete Distributions</h3></div>
+        <div class="card-body">
+            <form id="distributionForm" class="form-container">
+                <div class="form-group">
+                    <label for="distributionType">Distribution</label>
+                    <select id="distributionType" name="distributionType">
+                        <option value="binomial">Binomial</option>
+                        <option value="poisson">Poisson</option>
+                        <option value="geometric">Geometric</option>
+                        <option value="hypergeometric">Hypergeometric</option>
+                        <option value="negative_binomial">Negative Binomial</option>
+                        <option value="custom">Custom (user-defined PMF)</option>
+                    </select>
+                </div>
+                <div id="binomialInputs" class="dynamic-inputs">
+                    <div class="form-row">
+                        <div class="form-group"><label>n (trials)</label><input type="number" id="binomialN" min="1" value="10"></div>
+                        <div class="form-group"><label>p (success)</label><input type="number" id="binomialP" min="0" max="1" step="0.01" value="0.3"></div>
+                        <div class="form-group"><label>k (successes)</label><input type="number" id="binomialK" min="0" value="3"></div>
+                    </div>
+                </div>
+                <div id="poissonInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group"><label>λ (rate)</label><input type="number" id="poissonLambda" min="0.01" step="0.01" value="2"></div>
+                        <div class="form-group"><label>k (events)</label><input type="number" id="poissonK" min="0" value="1"></div>
+                    </div>
+                </div>
+                <div id="geometricInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group"><label>p (success)</label><input type="number" id="geometricP" min="0.01" max="1" step="0.01" value="0.3"></div>
+                        <div class="form-group"><label>k (trials)</label><input type="number" id="geometricK" min="1" value="1"></div>
+                    </div>
+                </div>
+                <div id="hypergeometricInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group"><label>M (population)</label><input type="number" id="hyperM" min="1" value="50"></div>
+                        <div class="form-group"><label>n (successes in pop)</label><input type="number" id="hyperN" min="0" value="10"></div>
+                        <div class="form-group"><label>N (draws)</label><input type="number" id="hyperDraws" min="1" value="5"></div>
+                        <div class="form-group"><label>k (successes in draws)</label><input type="number" id="hyperK" min="0" value="2"></div>
+                    </div>
+                </div>
+                <div id="negativeBinomialInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group"><label>n (successes)</label><input type="number" id="negBinomN" min="1" value="5"></div>
+                        <div class="form-group"><label>p (success)</label><input type="number" id="negBinomP" min="0.01" max="1" step="0.01" value="0.3"></div>
+                        <div class="form-group"><label>k (trials)</label><input type="number" id="negBinomK" min="0" value="10"></div>
+                    </div>
+                </div>
+                <div id="customInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-group"><label>Values (comma-separated)</label><input type="text" id="customValues" placeholder="1,2,3,4"></div>
+                    <div class="form-group"><label>Probabilities (comma-separated)</label><input type="text" id="customProbs" placeholder="0.1,0.2,0.3,0.4"></div>
+                </div>
+                <div class="form-group mt-2">
+                    <label>Operation</label>
+                    <select id="distributionOperation">
+                        <option value="pmf">PMF (P(X=k))</option>
+                        <option value="cdf">CDF (P(X≤k))</option>
+                        <option value="simulate">Simulation</option>
+                    </select>
+                </div>
+                <div id="simulationInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-group"><label>Trials</label><input type="number" id="simTrials" min="100" max="100000" value="1000"></div>
+                </div>
+                <button type="button" id="calculateDistBtn" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate</button>
+            </form>
+            <div id="distributionResult" class="result-container mt-3" style="display: none;"></div>
+            <div id="distributionProperties" class="result-container mt-3" style="display: none;"></div>
+            <div id="distributionChart" class="visualization-container mt-3" style="display: none;"></div>
+            <div id="distributionError" class="alert alert-danger mt-2" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Set Algebra & Venn Diagram -->
+    <div class="card mb-4">
+        <div class="card-header"><h3><i class="fas fa-object-group"></i> Set Algebra & Venn Diagram</h3></div>
+        <div class="card-body">
+            <form id="vennForm" class="form-container">
+                <div class="form-group"><label>Set A (comma-separated)</label><input type="text" id="setA" placeholder="1,2,3,4"></div>
+                <div class="form-group"><label>Set B (comma-separated)</label><input type="text" id="setB" placeholder="3,4,5,6"></div>
+                <div class="form-group"><label>Set C (optional, comma-separated)</label><input type="text" id="setC" placeholder=""></div>
+                <button type="button" id="drawVennBtn" class="btn btn-info"><i class="fas fa-project-diagram"></i> Draw Venn Diagram</button>
+            </form>
+            <div id="vennDiagram" class="visualization-container mt-3" style="display:none;"></div>
+            <div id="vennError" class="alert alert-danger mt-2" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Probability Formulas -->
+    <div class="card mb-4">
+        <div class="card-header"><h3><i class="fas fa-book"></i> Probability Formulas</h3></div>
+        <div class="card-body">
+            <div class="formulas-grid">
+                <div class="formula-card"><h4>Simple Probability</h4><div class="formula">P(A) = |A| / |S|</div></div>
+                <div class="formula-card"><h4>Conditional Probability</h4><div class="formula">P(A|B) = P(A ∩ B) / P(B)</div></div>
+                <div class="formula-card"><h4>Bayes' Theorem</h4><div class="formula">P(A|B) = [P(B|A)P(A)] / P(B)</div></div>
+                <div class="formula-card"><h4>Joint Probability</h4><div class="formula">P(A ∩ B) = P(A)P(B) (if independent)</div></div>
+                <div class="formula-card"><h4>Union</h4><div class="formula">P(A ∪ B) = P(A) + P(B) - P(A ∩ B)</div></div>
+                <div class="formula-card"><h4>Complement</h4><div class="formula">P(¬A) = 1 - P(A)</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.formulas-grid {display: grid;grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));gap: var(--space-6);margin-top: var(--space-6);}.formula-card {background-color: var(--surface-100);border-radius: var(--radius-lg);padding: var(--space-6);border-left: 4px solid var(--primary);}.formula-card h4 {margin-top: 0;color: var(--primary-dark);margin-bottom: var(--space-2);}.formula {font-family: 'Roboto Mono', monospace;background-color: var(--surface-0);padding: var(--space-4);border-radius: var(--radius-md);margin-bottom: var(--space-2);text-align: center;font-weight: 500;}.theme-toggle {position: fixed;bottom: var(--space-6);right: var(--space-6);background: var(--primary);color: var(--white);border: none;border-radius: var(--radius-full);width: 3rem;height: 3rem;font-size: 1.25rem;cursor: pointer;box-shadow: var(--shadow-lg);transition: var(--transition-fast);z-index: 1000;}.theme-toggle:focus {outline: 2px solid var(--primary-dark);}.theme-toggle[aria-label] {outline: none;}.formulas-grid[role="list"], .formula-card[role="listitem"] {}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/probability.js') }}"></script>
+{% endblock %}
+

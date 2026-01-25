@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Discrete Math Calculator - Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero">
+        <h1>Discrete Math Calculator</h1>
+        <p class="subtitle">A comprehensive tool for solving discrete mathematics problems</p>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="icon">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <div class="content">
+                <h3>Graph Theory</h3>
+                <p>Visualize and analyze graphs, run algorithms, and explore graph properties.</p>
+                <a href="{{ url_for('graph_theory') }}" class="feature-btn">Explore Graph Theory</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">
+                <i class="fas fa-sitemap"></i>
+            </div>
+            <div class="content">
+                <h3>Combinatorics</h3>
+                <p>Calculate permutations, combinations, and solve counting problems.</p>
+                <a href="{{ url_for('combinatorics') }}" class="feature-btn">Explore Combinatorics</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">
+                <i class="fas fa-dice"></i>
+            </div>
+            <div class="content">
+                <h3>Probability</h3>
+                <p>Calculate probabilities, expected values, and analyze distributions.</p>
+                <a href="{{ url_for('probability') }}" class="feature-btn">Explore Probability</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="content">
+                <h3>Automata</h3>
+                <p>Design and simulate finite automata, pushdown automata, and Turing machines.</p>
+                <a href="{{ url_for('automata') }}" class="feature-btn">Explore Automata</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">
+                <i class="fas fa-object-group"></i>
+            </div>
+            <div class="content">
+                <h3>Set Theory</h3>
+                <p>Perform set operations, calculate cardinality, and explore set relationships.</p>
+                <a href="{{ url_for('set_theory') }}" class="feature-btn">Explore Set Theory</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">
+                <i class="fas fa-hashtag"></i>
+            </div>
+            <div class="content">
+                <h3>Number Theory</h3>
+                <p>Solve problems in modular arithmetic, prime numbers, and number sequences.</p>
+                <a href="{{ url_for('number_theory') }}" class="feature-btn">Explore Number Theory</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div class="content">
+                <h3>Logic</h3>
+                <p>Work with propositional logic, truth tables, and logical equivalences.</p>
+                <a href="{{ url_for('logic') }}" class="feature-btn">Explore Logic</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="icon">
+                <i class="fas fa-th"></i>
+            </div>
+            <div class="content">
+                <h3>Adjacency Matrix</h3>
+                <p>Spreadsheet-style matrix editor, live graph visualization, matrix powers, and more.</p>
+                <a href="{{ url_for('adjacency_matrix') }}" class="feature-btn">Adjacency Matrix Tool</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero {
+    text-align: center;
+    padding: var(--space-12) 0;
+    margin-bottom: var(--space-12);
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: var(--space-6);
+}
+
+.hero .subtitle {
+    font-size: 1.2rem;
+    color: var(--gray-500);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-12);
+}
+
+.feature-card {
+    background-color: var(--surface-0);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-normal);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-card .icon {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    color: var(--white);
+    font-size: 3rem;
+}
+
+.feature-card .content {
+    padding: var(--space-6);
+}
+
+.feature-card h3 {
+    margin: 0 0 var(--space-2) 0;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.feature-card p {
+    color: var(--gray-500);
+    margin-bottom: var(--space-4);
+}
+
+.feature-btn {
+    display: inline-block;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition-normal);
+}
+
+.feature-btn:hover {
+    color: var(--primary-dark);
+}
+
+.theme-toggle {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-full);
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-fast);
+    z-index: 1000;
+}
+
+.theme-toggle:focus {
+    outline: 2px solid var(--primary-dark);
+}
+
+.theme-toggle[aria-label] {
+    outline: none;
+}
+
+.feature-btn[aria-label], .theme-toggle[aria-label] {
+    outline: none;
+}
+
+.features-grid[role="list"], .feature-card[role="listitem"] {
+}
+
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .hero .subtitle {
+        font-size: 1rem;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,49 @@
+{
+  "service": "Discrete Math MCP Server",
+  "version": "1.0",
+  "protocol": "MCP-1.0",
+  "endpoints": {
+    "/": {
+      "method": "GET",
+      "description": "Service info and available endpoints"
+    },
+    "/status": {
+      "method": "GET",
+      "description": "Server status"
+    },
+    "/api/health": {
+      "method": "GET",
+      "description": "Health check"
+    },
+    "/api/calculate": {
+      "method": "POST",
+      "description": "General math operations",
+      "operations": ["factorial", "gcd"]
+    },
+    "/api/graph": {
+      "method": "POST",
+      "description": "Graph operations",
+      "actions": ["info"]
+    },
+    "/api/adjacency_matrix": {
+      "method": "POST",
+      "description": "Adjacency matrix operations",
+      "actions": ["power"]
+    }
+  },
+  "examples": {
+    "calculate": {
+      "operation": "factorial",
+      "args": {"n": 5}
+    },
+    "graph": {
+      "action": "info",
+      "graph": {"nodes": [1,2,3], "edges": [[1,2],[2,3]]}
+    },
+    "adjacency_matrix": {
+      "action": "power",
+      "matrix": [[0,1],[1,0]],
+      "power": 2
+    }
+  }
+}

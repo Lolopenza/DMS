@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Logic | Discrete Math Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-title">
+        <h2>Logic Calculator</h2>
+        <p class="subtitle">Generate truth tables and evaluate logical expressions</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-table"></i> Truth Table Generator</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>A truth table shows all possible combinations of input values and the resulting output for a logical expression.</p>
+            </div>
+            <form id="truthTableForm" class="form-container" aria-label="Truth Table Generator Form">
+                <div class="form-group">
+                    <label for="variables">
+                        <i class="fas fa-font"></i>
+                        Variables
+                    </label>
+                    <input type="text" id="variables" name="variables" placeholder="P,Q" value="P,Q" required>
+                    <div class="form-hint">Enter variable names separated by commas</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="expressionType">
+                        <i class="fas fa-code"></i>
+                        Logical Operation
+                    </label>
+                    <select id="expressionType" name="expressionType">
+                        <option value="and">Conjunction (AND)</option>
+                        <option value="or">Disjunction (OR)</option>
+                        <option value="implies">Implication (→)</option>
+                        <option value="iff">Biconditional (↔)</option>
+                        <option value="xor">Exclusive OR (⊕)</option>
+                        <option value="nand">NAND</option>
+                        <option value="nor">NOR</option>
+                        <option value="custom">Custom Expression</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="customExpressionGroup" style="display: none;">
+                    <label for="customExpression">
+                        <i class="fas fa-edit"></i>
+                        Custom Expression
+                    </label>
+                    <input type="text" id="customExpression" name="customExpression" placeholder="P ∧ (Q ∨ ¬P)" required>
+                    <div class="form-hint">Use symbols: ∧ (AND), ∨ (OR), ¬ (NOT), → (IMPLIES), ↔ (IFF)</div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="generateBtn" class="btn btn-primary" aria-label="Generate Truth Table">
+                        <i class="fas fa-table"></i> Generate Truth Table
+                    </button>
+                    <button type="button" id="toggleCustomBtn" class="btn btn-outline" aria-label="Toggle Custom Expression">
+                        <i class="fas fa-edit"></i> <span>Use Custom Expression</span>
+                    </button>
+                </div>
+            </form>
+            <div id="result" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Truth Table</h3>
+                <div id="tableResult"></div>
+                <div class="explanation-box">
+                    <h4>Expression Analysis</h4>
+                    <div id="expressionAnalysis"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-calculator"></i> Logical Equivalence Checker</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>Check if two logical expressions are equivalent by comparing their truth tables.</p>
+            </div>
+            <form id="equivalenceForm" class="form-container" aria-label="Logical Equivalence Checker Form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expression1">
+                            <i class="fas fa-edit"></i>
+                            Expression 1
+                        </label>
+                        <input type="text" id="expression1" name="expression1" placeholder="P → Q" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expression2">
+                            <i class="fas fa-edit"></i>
+                            Expression 2
+                        </label>
+                        <input type="text" id="expression2" name="expression2" placeholder="¬P ∨ Q" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="variablesEq">
+                        <i class="fas fa-font"></i>
+                        Variables
+                    </label>
+                    <input type="text" id="variablesEq" name="variablesEq" placeholder="P,Q" required>
+                    <div class="form-hint">Enter variables separated by commas</div>
+                </div>
+                
+                <button type="button" id="checkEquivalenceBtn" class="btn btn-primary" aria-label="Check Equivalence">
+                    <i class="fas fa-equals"></i> Check Equivalence
+                </button>
+            </form>
+            <div id="equivalenceResult" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Equivalence Result</h3>
+                <div id="eqResultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-calculator"></i> Predicate Logic</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>Work with predicates, quantifiers, and evaluate statements over domains.</p>
+            </div>
+            <form id="predicateForm" class="form-container" aria-label="Predicate Logic Form">
+                <div class="form-group">
+                    <label for="predicateName">
+                        <i class="fas fa-font"></i>
+                        Predicate Name
+                    </label>
+                    <input type="text" id="predicateName" name="predicateName" placeholder="P" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="predicateArity">
+                        <i class="fas fa-sort-numeric-up"></i>
+                        Arity
+                    </label>
+                    <input type="number" id="predicateArity" name="predicateArity" min="1" value="1" required>
+                    <div class="form-hint">Number of arguments the predicate takes</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="domain">
+                        <i class="fas fa-list"></i>
+                        Domain
+                    </label>
+                    <input type="text" id="domain" name="domain" placeholder="1,2,3,4,5" required>
+                    <div class="form-hint">Enter domain elements separated by commas</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quantifier">
+                        <i class="fas fa-calculator"></i>
+                        Quantifier
+                    </label>
+                    <select id="quantifier" name="quantifier">
+                        <option value="universal">Universal (∀)</option>
+                        <option value="existential">Existential (∃)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="predicateDefinition">
+                        <i class="fas fa-edit"></i>
+                        Predicate Definition
+                    </label>
+                    <textarea id="predicateDefinition" name="predicateDefinition" rows="4" placeholder="Enter the conditions for which the predicate is true" required></textarea>
+                </div>
+                
+                <button type="button" id="evaluatePredicateBtn" class="btn btn-primary" aria-label="Evaluate Predicate">
+                    <i class="fas fa-calculator"></i> Evaluate Predicate
+                </button>
+            </form>
+            <div id="predicateResult" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Predicate Evaluation</h3>
+                <div id="predicateResultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-book"></i> Proof Techniques</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>Structure and organize your mathematical proofs using various proof techniques.</p>
+            </div>
+            <form id="proofForm" class="form-container" aria-label="Proof Techniques Form">
+                <div class="form-group">
+                    <label for="proofType">
+                        <i class="fas fa-tools"></i>
+                        Proof Technique
+                    </label>
+                    <select id="proofType" name="proofType">
+                        <option value="direct">Direct Proof</option>
+                        <option value="contradiction">Proof by Contradiction</option>
+                        <option value="contraposition">Proof by Contraposition</option>
+                        <option value="induction">Mathematical Induction</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="theorem">
+                        <i class="fas fa-edit"></i>
+                        Theorem Statement
+                    </label>
+                    <textarea id="theorem" name="theorem" rows="2" 
+                        placeholder="Enter the theorem you want to prove"></textarea>
+                </div>
+                
+                <div id="proofSpecificFields">
+                </div>
+                
+                <div class="form-group">
+                    <label for="proofSteps">
+                        <i class="fas fa-list-ol"></i>
+                        Proof Steps
+                    </label>
+                    <textarea id="proofSteps" name="proofSteps" rows="6" 
+                        placeholder="Enter your proof steps (one per line)"></textarea>
+                </div>
+                
+                <button type="button" id="generateProofBtn" class="btn btn-primary" aria-label="Generate Proof">
+                    <i class="fas fa-file-alt"></i> Generate Proof
+                </button>
+            </form>
+            <div id="proofResult" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Structured Proof</h3>
+                <div id="proofResultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-book"></i> Logic Reference</h3>
+        </div>
+        <div class="card-body">
+            <div class="math-content">
+                <p>Here are the main logical operations and their truth tables:</p>
+                
+                <div class="reference-grid">
+                    <div class="reference-item">
+                        <h4>Negation (NOT)</h4>
+                        <table class="mini-table">
+                            <tr><th>P</th><th>¬P</th></tr>
+                            <tr><td>T</td><td>F</td></tr>
+                            <tr><td>F</td><td>T</td></tr>
+                        </table>
+                    </div>
+                    
+                    <div class="reference-item">
+                        <h4>Conjunction (AND)</h4>
+                        <table class="mini-table">
+                            <tr><th>P</th><th>Q</th><th>P ∧ Q</th></tr>
+                            <tr><td>T</td><td>T</td><td>T</td></tr>
+                            <tr><td>T</td><td>F</td><td>F</td></tr>
+                            <tr><td>F</td><td>T</td><td>F</td></tr>
+                            <tr><td>F</td><td>F</td><td>F</td></tr>
+                        </table>
+                    </div>
+                    
+                    <div class="reference-item">
+                        <h4>Disjunction (OR)</h4>
+                        <table class="mini-table">
+                            <tr><th>P</th><th>Q</th><th>P ∨ Q</th></tr>
+                            <tr><td>T</td><td>T</td><td>T</td></tr>
+                            <tr><td>T</td><td>F</td><td>T</td></tr>
+                            <tr><td>F</td><td>T</td><td>T</td></tr>
+                            <tr><td>F</td><td>F</td><td>F</td></tr>
+                        </table>
+                    </div>
+                    
+                    <div class="reference-item">
+                        <h4>Implication</h4>
+                        <table class="mini-table">
+                            <tr><th>P</th><th>Q</th><th>P → Q</th></tr>
+                            <tr><td>T</td><td>T</td><td>T</td></tr>
+                            <tr><td>T</td><td>F</td><td>F</td></tr>
+                            <tr><td>F</td><td>T</td><td>T</td></tr>
+                            <tr><td>F</td><td>F</td><td>T</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.reference-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+.reference-item {
+    background-color: var(--surface-100);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    text-align: center;
+}
+
+.reference-item h4 {
+    margin-top: 0;
+    margin-bottom: var(--space-2);
+    color: var(--primary-dark);
+}
+
+.mini-table {
+    width: auto;
+    margin: 0 auto;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.mini-table th, .mini-table td {
+    padding: 8px 15px;
+}
+
+.explanation-box {
+    margin-top: var(--space-4);
+    padding: var(--space-4);
+    background-color: var(--surface-100);
+    border-radius: var(--radius-lg);
+}
+
+.explanation-box h4 {
+    margin-top: 0;
+    color: var(--primary-dark);
+    margin-bottom: var(--space-2);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/logic.js') }}"></script>
+<script>
+    document.getElementById('expressionType').addEventListener('change', function() {
+        const customGroup = document.getElementById('customExpressionGroup');
+        customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+    document.getElementById('evaluatePredicateBtn').addEventListener('click', function() {});
+    document.getElementById('proofType').addEventListener('change', function() {
+        const specificFields = document.getElementById('proofSpecificFields');
+    });
+    document.getElementById('generateProofBtn').addEventListener('click', function() {});
+</script>
+{% endblock %}
+</script>
+{% endblock %}

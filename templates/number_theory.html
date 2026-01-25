@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}Number Theory | Discrete Math Calculator{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-title">
+        <h2>Number Theory Calculator</h2>
+        <p class="subtitle">Explore prime numbers, GCD, LCM, and modular arithmetic</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-superscript"></i> Divisibility Properties</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>Number theory studies the properties and relationships of integers, with divisibility being a fundamental concept.</p>
+            </div>
+            <form id="divisibilityForm" class="form-container" aria-label="Divisibility Properties Form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="operation">
+                            <i class="fas fa-cog"></i>
+                            Operation
+                        </label>
+                        <select id="operation" name="operation">
+                            <option value="gcd">Greatest Common Divisor (GCD)</option>
+                            <option value="lcm">Least Common Multiple (LCM)</option>
+                            <option value="divisors">Find All Divisors</option>
+                            <option value="factorize">Prime Factorization</option>
+                            <option value="totient">Euler's Totient Function</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row" id="twoNumberInputs">
+                    <div class="form-group">
+                        <label for="a">
+                            <i class="fas fa-calculator"></i>
+                            First Number
+                        </label>
+                        <input type="number" id="a" name="a" min="1" value="24" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="b">
+                            <i class="fas fa-calculator"></i>
+                            Second Number
+                        </label>
+                        <input type="number" id="b" name="b" min="1" value="36" required>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="singleNumberInput" style="display:none">
+                    <label for="n">
+                        <i class="fas fa-calculator"></i>
+                        Number
+                    </label>
+                    <input type="number" id="n" name="n" min="1" value="36" required>
+                </div>
+                
+                <button type="button" id="calculateBtn" class="btn btn-primary" aria-label="Calculate Divisibility">
+                    <i class="fas fa-calculator"></i> Calculate
+                </button>
+            </form>
+            <div id="result" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Result</h3>
+                <div id="resultValue" class="math-display"></div>
+                <div class="explanation-box">
+                    <h4>Step-by-Step Solution</h4>
+                    <div id="stepSolution"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-sync-alt"></i> Modular Arithmetic</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>Modular arithmetic deals with the remainder when dividing numbers, important in cryptography and many algorithms.</p>
+            </div>
+            <form id="modularForm" class="form-container" aria-label="Modular Arithmetic Form">
+                <div class="form-group">
+                    <label for="modOperation">
+                        <i class="fas fa-cog"></i>
+                        Operation
+                    </label>
+                    <select id="modOperation" name="modOperation">
+                        <option value="modExp">Modular Exponentiation (a^b mod m)</option>
+                        <option value="modInv">Modular Inverse (a^(-1) mod m)</option>
+                        <option value="modSolve">Solve Linear Congruence (ax ≡ b (mod m))</option>
+                        <option value="chineseRemainder">Chinese Remainder Theorem</option>
+                    </select>
+                </div>
+                
+                <div id="modExpInputs" class="dynamic-inputs">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="base">Base (a)</label>
+                            <input type="number" id="base" name="base" value="7" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="exponent">Exponent (b)</label>
+                            <input type="number" id="exponent" name="exponent" value="13" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="modulus">Modulus (m)</label>
+                            <input type="number" id="modulus" name="modulus" min="1" value="11" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="modInvInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="invNumber">Number (a)</label>
+                            <input type="number" id="invNumber" name="invNumber" value="3" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="invModulus">Modulus (m)</label>
+                            <input type="number" id="invModulus" name="invModulus" min="1" value="11" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="modSolveInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="congrA">Coefficient (a)</label>
+                            <input type="number" id="congrA" name="congrA" value="5" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="congrB">Right side (b)</label>
+                            <input type="number" id="congrB" name="congrB" value="3" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="congrM">Modulus (m)</label>
+                            <input type="number" id="congrM" name="congrM" min="1" value="11" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="chineseInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-group">
+                        <label for="crRemainders">Remainders (comma-separated)</label>
+                        <input type="text" id="crRemainders" name="crRemainders" placeholder="2,3,1" value="2,3,1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="crModuli">Moduli (comma-separated)</label>
+                        <input type="text" id="crModuli" name="crModuli" placeholder="3,5,7" value="3,5,7" required>
+                    </div>
+                </div>
+                
+                <button type="button" id="calculateModBtn" class="btn btn-primary" aria-label="Calculate Modular Arithmetic">
+                    <i class="fas fa-calculator"></i> Calculate
+                </button>
+            </form>
+            <div id="modResult" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Result</h3>
+                <div id="modResultValue" class="math-display"></div>
+                <div class="explanation-box">
+                    <h4>Explanation</h4>
+                    <div id="modExplanation"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-key"></i> Cryptography</h3>
+        </div>
+        <div class="card-body">
+            <div class="theory-intro">
+                <p>Number theory is the foundation of modern cryptography, including RSA encryption.</p>
+            </div>
+            <form id="cryptoForm" class="form-container" aria-label="Cryptography Form">
+                <div class="form-group">
+                    <label for="cryptoOperation">
+                        <i class="fas fa-cog"></i>
+                        Operation
+                    </label>
+                    <select id="cryptoOperation" name="cryptoOperation">
+                        <option value="rsaGenerate">Generate RSA Keys</option>
+                        <option value="rsaEncrypt">RSA Encryption</option>
+                        <option value="rsaDecrypt">RSA Decryption</option>
+                    </select>
+                </div>
+                
+                <div id="rsaGenInputs" class="dynamic-inputs">
+                    <div class="form-group">
+                        <label for="bitLength">Bit Length</label>
+                        <select id="bitLength" name="bitLength">
+                            <option value="8">8 bits (demo)</option>
+                            <option value="10">10 bits (demo)</option>
+                            <option value="12">12 bits (demo)</option>
+                        </select>
+                        <div class="form-hint">For educational purposes only - real RSA uses 2048+ bits</div>
+                    </div>
+                </div>
+                
+                <div id="rsaEncInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-group">
+                        <label for="encMessage">Message (number)</label>
+                        <input type="number" id="encMessage" name="encMessage" min="0" value="42">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="publicE">Public Key (e)</label>
+                            <input type="number" id="publicE" name="publicE" min="0" value="65537">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="publicN">Public Key (n)</label>
+                            <input type="number" id="publicN" name="publicN" min="0" value="3233">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="rsaDecInputs" class="dynamic-inputs" style="display:none">
+                    <div class="form-group">
+                        <label for="encryptedMessage">Encrypted Message</label>
+                        <input type="number" id="encryptedMessage" name="encryptedMessage" min="0" value="2557">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="privateD">Private Key (d)</label>
+                            <input type="number" id="privateD" name="privateD" min="0" value="2753">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="privateN">Private Key (n)</label>
+                            <input type="number" id="privateN" name="privateN" min="0" value="3233">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" id="calculateCryptoBtn" class="btn btn-primary" aria-label="Execute Cryptography">
+                    <i class="fas fa-key"></i> Execute
+                </button>
+            </form>
+            <div id="cryptoResult" class="result-container" style="display: none;" tabindex="0" aria-live="polite">
+                <h3><i class="fas fa-check-circle"></i> Result</h3>
+                <div id="cryptoResultValue"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.dynamic-inputs {
+    margin-bottom: var(--space-4);
+}
+
+.explanation-box {
+    background-color: var(--surface-100);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+.explanation-box h4 {
+    color: var(--primary-dark);
+    margin-top: 0;
+    margin-bottom: var(--space-2);
+}
+
+.number-card {
+    display: flex;
+    align-items: center;
+    background-color: var(--surface-0);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-4);
+    box-shadow: var(--shadow-md);
+}
+
+.number-card .label {
+    font-weight: 500;
+    width: 120px;
+}
+
+.number-card .value {
+    font-family: 'Roboto Mono', monospace;
+    flex-grow: 1;
+    word-break: break-all;
+}
+
+.step {
+    margin-bottom: var(--space-2);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px dashed var(--gray-200);
+}
+
+.step:last-child {
+    border-bottom: none;
+}
+
+.theme-toggle {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-full);
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-fast);
+    z-index: 1000;
+}
+
+.theme-toggle:focus {
+    outline: 2px solid var(--primary-dark);
+}
+
+.theme-toggle[aria-label] {
+    outline: none;
+}
+
+.number-card[role="listitem"] {
+    /* Add any necessary styles for the list item */
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/number_theory.js') }}"></script>
+{% endblock %}

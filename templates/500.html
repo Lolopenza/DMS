@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Server Error | Discrete Math Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: 50px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .error-code {
+            font-size: 120px;
+            font-weight: 700;
+            color: var(--danger);
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            font-size: 24px;
+            color: var(--dark);
+            margin-bottom: 30px;
+        }
+        
+        .error-icon {
+            font-size: 80px;
+            color: var(--danger);
+            margin-bottom: 20px;
+        }
+        
+        .home-btn {
+            display: inline-block;
+            padding: 10px 25px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .home-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .error-page {text-align: center;padding: var(--space-12) 0;}.error-page h1 {font-size: 6rem;color: var(--primary);margin: 0;line-height: 1;}.error-page h2 {font-size: 2rem;color: var(--gray-500);margin: var(--space-4) 0;}.error-page p {color: var(--gray-500);margin-bottom: var(--space-6);max-width: 500px;margin-left: auto;margin-right: auto;}.theme-toggle {position: fixed;bottom: var(--space-6);right: var(--space-6);background: var(--primary);color: var(--white);border: none;border-radius: var(--radius-full);width: 3rem;height: 3rem;font-size: 1.25rem;cursor: pointer;box-shadow: var(--shadow-lg);transition: var(--transition-fast);z-index: 1000;}.theme-toggle:focus {outline: 2px solid var(--primary-dark);}.theme-toggle[aria-label] {outline: none;}
+    </style>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block title %}Server Error | Discrete Math Calculator{% endblock %}
+
+    {% block content %}
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="error-code">500</div>
+        <div class="error-message">Server Error</div>
+        <p>Sorry, something went wrong on our end. Our team has been notified.</p>
+        <a href="{{ url_for('index') }}" class="home-btn">
+            <i class="fas fa-home"></i> Go to Homepage
+        </a>
+    </div>
+    {% endblock %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

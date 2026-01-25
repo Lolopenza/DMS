@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Automata | Discrete Math Calculator{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="sticky-top shadow-sm bg-white rounded-3 px-3 py-2 mb-3" style="z-index:10;">
+        <div class="d-flex flex-wrap align-items-center gap-2 justify-content-between">
+            <div class="btn-group" role="group" aria-label="Automata Mode Selection">
+                <input type="radio" class="btn-check" name="automata-mode" id="dfa-mode" value="dfa" checked aria-label="DFA Mode">
+                <label class="btn btn-outline-primary" for="dfa-mode" title="Deterministic Finite Automaton">DFA</label>
+                <input type="radio" class="btn-check" name="automata-mode" id="nfa-mode" value="nfa" aria-label="NFA Mode">
+                <label class="btn btn-outline-primary" for="nfa-mode" title="Non-deterministic Finite Automaton">NFA</label>
+                <input type="radio" class="btn-check" name="automata-mode" id="enfa-mode" value="enfa" aria-label="ε-NFA Mode">
+                <label class="btn btn-outline-primary" for="enfa-mode" title="Epsilon-NFA">ε-NFA</label>
+                <input type="radio" class="btn-check" name="automata-mode" id="pda-mode" value="pda" aria-label="PDA Mode">
+                <label class="btn btn-outline-primary" for="pda-mode" title="Pushdown Automaton">PDA</label>
+                <input type="radio" class="btn-check" name="automata-mode" id="tm-mode" value="tm" aria-label="TM Mode">
+                <label class="btn btn-outline-primary" for="tm-mode" title="Turing Machine">TM</label>
+                <input type="radio" class="btn-check" name="automata-mode" id="regex-mode" value="regex" aria-label="Regex Mode">
+                <label class="btn btn-outline-primary" for="regex-mode" title="Regular Expression">Regex</label>
+            </div>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+                <button class="btn btn-outline-secondary btn-sm" id="importAutomatonBtn" title="Import automaton from file" aria-label="Import"><i class="fas fa-file-import"></i></button>
+                <button class="btn btn-outline-secondary btn-sm" id="exportAutomatonBtn" title="Export automaton to file" aria-label="Export"><i class="fas fa-file-export"></i></button>
+                <button class="btn btn-outline-info btn-sm" id="minimizeDfaBtn" title="Minimize DFA" aria-label="Minimize DFA"><i class="fas fa-compress"></i></button>
+                <button class="btn btn-outline-info btn-sm" id="equivalenceBtn" title="Check DFA equivalence" aria-label="Equivalence"><i class="fas fa-balance-scale"></i></button>
+                <button class="btn btn-outline-info btn-sm" id="operationsBtn" title="Automata operations" aria-label="Operations"><i class="fas fa-cogs"></i></button>
+                <button class="btn btn-outline-success btn-sm" id="graphicalEditorBtn" title="Open graphical editor" aria-label="Graphical Editor"><i class="fas fa-project-diagram"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 flex-lg-row flex-column-reverse">
+        <div class="col-lg-7">
+            <div id="automata-editor-section" class="mb-3" aria-label="Automata Editor"></div>
+            <div class="d-flex gap-2 flex-wrap mb-3">
+                <button class="btn btn-outline-primary btn-sm" id="runBatchTestBtn" title="Run batch test" aria-label="Batch Test"><i class="fas fa-list-ol"></i> Batch Test</button>
+                <button class="btn btn-outline-info btn-sm" id="regexToNfaBtn" title="Convert regex to NFA" aria-label="Regex to NFA"><i class="fas fa-random"></i> Regex to NFA</button>
+                <button class="btn btn-outline-info btn-sm" id="regexToDfaBtn" title="Convert regex to DFA" aria-label="Regex to DFA"><i class="fas fa-random"></i> Regex to DFA</button>
+            </div>
+            <div class="mb-3" id="automata-operations-panel" style="display:none;"></div>
+            <div class="mb-3" id="automata-import-export-panel" style="display:none;"></div>
+            <div class="mb-3" id="automata-graphical-editor-panel" style="display:none;"></div>
+            <div class="mb-3 visually-hidden" id="automata-batch-test-result" aria-live="polite"></div>
+            <div class="mb-3 visually-hidden" id="automata-error-panel" aria-live="assertive"></div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card mb-3 shadow-sm" id="automata-sidebar" aria-label="Automaton Sidebar" tabindex="0">
+                <div class="card-body">
+                    <button class="btn btn-link p-0 float-end" id="toggleSidebarBtn" title="Collapse sidebar" aria-label="Collapse sidebar"><i class="fas fa-angle-double-left"></i></button>
+                    <h2 class="h6 mb-3">Automaton Summary</h2>
+                    <div id="automaton-summary" aria-live="polite"></div>
+                    <hr>
+                    <h2 class="h6 mb-3">Step-by-Step Simulation</h2>
+                    <div class="btn-group mb-3" role="group" aria-label="Step Controls">
+                        <button type="button" class="btn btn-secondary" id="step-reset-button" aria-label="Reset Simulation" title="Reset"><i class="fas fa-undo"></i></button>
+                        <button type="button" class="btn btn-secondary" id="step-back-button" aria-label="Step Back" title="Step Back"><i class="fas fa-arrow-left"></i></button>
+                        <button type="button" class="btn btn-secondary" id="step-forward-button" aria-label="Step Forward" title="Step Forward"><i class="fas fa-arrow-right"></i></button>
+                    </div>
+                    <div id="step-status" class="mb-3" tabindex="0" aria-live="polite"></div>
+                </div>
+            </div>
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h6">Results & Visualization</h2>
+                    <div id="automata-output" tabindex="0" aria-live="polite"></div>
+                    <div id="automata-visualization" class="mt-3"></div>
+                    <div class="card mt-3" style="max-width: 350px;">
+                        <div class="card-body p-2 d-flex flex-wrap align-items-center gap-2">
+                            <span class="badge bg-primary">●</span> <span class="me-2">Start State</span>
+                            <span class="badge bg-success">●</span> <span class="me-2">Accept State</span>
+                            <span class="badge bg-info text-dark">●</span> <span class="me-2">Current State</span>
+                            <span class="badge bg-warning text-dark">ε</span> <span>Epsilon Transition</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-primary rounded-circle shadow-lg position-fixed" id="fabAutomata" style="display:none;bottom:2rem;right:2rem;width:3.5rem;height:3.5rem;z-index:1000;" title="Quick Actions" aria-label="Quick Actions" tabindex="0" role="button"><i class="fas fa-bolt"></i></button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+<script src="{{ url_for('static', filename='js/automata.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    const fab=document.getElementById('fabAutomata');
+    if(fab){
+        fab.onclick=function(){
+            const ed=document.getElementById('automata-graphical-editor-panel');
+            if(ed){ed.style.display='block';ed.scrollIntoView({behavior:'smooth'});}
+        };
+        fab.oncontextmenu=function(e){e.preventDefault();const bt=document.getElementById('runBatchTestBtn');if(bt)bt.click();};
+    }
+    const sidebar=document.getElementById('automata-sidebar');
+    const toggleBtn=document.getElementById('toggleSidebarBtn');
+    if(sidebar&&toggleBtn){
+        toggleBtn.onclick=function(){sidebar.classList.toggle('collapsed');if(sidebar.classList.contains('collapsed')){sidebar.style.maxWidth='60px';sidebar.querySelectorAll('h2,.btn-group,#step-status,#automaton-summary').forEach(e=>e.style.display='none');toggleBtn.innerHTML='<i class="fas fa-angle-double-right"></i>';}else{sidebar.style.maxWidth='';sidebar.querySelectorAll('h2,.btn-group,#step-status,#automaton-summary').forEach(e=>e.style.display='');toggleBtn.innerHTML='<i class="fas fa-angle-double-left"></i>';}};
+    }
+});
+</script>
+{% endblock %}
