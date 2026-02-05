@@ -18,44 +18,55 @@ if project_root_dir not in sys.path:
 from flask import Flask, render_template, request, jsonify, send_from_directory, send_file, session
 import os
 import sys
-from automata.dfa import DFA
-from automata.nfa import NFA
-from automata.regex import RegexToNFA
-from automata.simulation import AutomatonSimulator
-from automata.validation import validate_input
+# Core imports - математическая логика
+from core.automata.dfa import DFA
+from core.automata.nfa import NFA
+from core.automata.regex import RegexToNFA
+from core.automata.simulation import AutomatonSimulator
+from core.automata.validation import validate_input
+from core.automata.pda import PDA
+from core.automata.tm import TuringMachine
+from core.set_theory.set_operations import get_power_set, set_complement, cartesian_product, set_union, set_intersection, set_difference, set_symmetric_difference, is_subset, is_proper_subset
+from core.combinatorics.basic import factorial, permutations, combinations
+from core.combinatorics.advanced import pigeonhole_principle, catalan_number, stirling_numbers_second_kind
+from core.discrete_probability.basic_probability import probability, conditional_probability, bayes_theorem
+from core.discrete_probability.random_variables import pmf_binomial, pmf_poisson, pmf_geometric
+from core.logic.propositional import generate_truth_table_from_string, check_logical_equivalence_from_strings
+from core.number_theory.divisibility import gcd, lcm, divisors, prime_factorization, euler_totient, chinese_remainder_theorem
+from core.number_theory.cryptography import modular_exponentiation, modular_inverse, rsa_encrypt, rsa_decrypt, generate_rsa_keys
+from core.graph_theory.basics import Graph
+from core.graph_theory.algorithms import depth_first_search, breadth_first_search, find_connected_components, has_cycle, has_cycle_undirected, kruskal_mst, dijkstra
+
+# AI imports
+from ai.chatbot import get_chatbot_service
+
+# Utils
 import jsonschema
 from flask_cors import CORS
-from set_theory.set_operations import get_power_set, set_complement, cartesian_product, set_union, set_intersection, set_difference, set_symmetric_difference, is_subset, is_proper_subset
-import logging
-from openai import OpenAI
-from combinatorics.basic import factorial, permutations, combinations
-from combinatorics.advanced import pigeonhole_principle, catalan_number, stirling_numbers_second_kind
-from discrete_probability.basic_probability import probability, conditional_probability, bayes_theorem
-from discrete_probability.random_variables import pmf_binomial, pmf_poisson, pmf_geometric
-from logic.propositional import generate_truth_table_from_string, check_logical_equivalence_from_strings
-from number_theory.divisibility import gcd, lcm, divisors, prime_factorization, euler_totient, chinese_remainder_theorem
-from number_theory.cryptography import modular_exponentiation, modular_inverse, rsa_encrypt, rsa_decrypt, generate_rsa_keys
-from graph_theory.basics import Graph
-from graph_theory.algorithms import depth_first_search, breadth_first_search, find_connected_components, has_cycle, has_cycle_undirected, kruskal_mst, dijkstra
 from marshmallow import Schema, fields, ValidationError
 from dotenv import load_dotenv
+load_dotenv()  # Load .env file immediately
 import io
 from PIL import Image
 import easyocr
 from utils import mcp_client
 from utils.config import MCP_ENABLED, MCP_SERVER_URL
 import base64
-## matplotlib using onyl AGG
+import logging
+from functools import wraps
+
+# Matplotlib
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.stats import binom, poisson, geom, hypergeom, nbinom
 import sympy as sp
-from automata.pda import PDA
-from automata.tm import TuringMachine
-from functools import wraps
 
-app = Flask(__name__, static_url_path='/static', static_folder='static')
+# Flask app with new paths
+app = Flask(__name__, 
+            static_url_path='/static', 
+            static_folder='web/static',
+            template_folder='web/templates')
 app.secret_key = os.environ.get('FLASK_SECRET_KEY') or os.urandom(32)
 CORS(app)
 
@@ -106,11 +117,11 @@ def logic():
 
 @app.route('/static/<path:path>')
 def send_static(path):
-    return send_from_directory('static', path)
+    return send_from_directory('web/static', path)
 
 @app.route('/js/<path:filename>')
 def serve_js(filename):
-    return send_from_directory('static/js', filename)
+    return send_from_directory('web/static/js', filename)
 
 @app.route('/api/status')
 def api_status():
@@ -536,59 +547,73 @@ def api_set_theory():
         universe = parse_set_with_steps(data.get('universe', []), named_sets, named_universes)
         steps = []
         result = None
+        
+        # Helper function to convert Counter to set if needed
+        def to_set(s):
+            if hasattr(s, 'keys'):  # Counter or dict
+                return set(s.keys())
+            elif isinstance(s, set):
+                return s
+            elif isinstance(s, (list, tuple)):
+                return set(s)
+            return set()
+        
+        a_set = to_set(setA['set'])
+        b_set = to_set(setB['set'])
+        u_set = to_set(universe['set'])
+        
         if op == 'union':
-            result = list(setA['set'] | setB['set'])
+            result = list(a_set | b_set)
             steps.extend(setA['steps'] + setB['steps'] + [f"Union: {result}"])
         elif op == 'intersection':
-            result = list(setA['set'] & setB['set'])
+            result = list(a_set & b_set)
             steps.extend(setA['steps'] + setB['steps'] + [f"Intersection: {result}"])
         elif op == 'difference':
-            result = list(setA['set'] - setB['set'])
+            result = list(a_set - b_set)
             steps.extend(setA['steps'] + setB['steps'] + [f"Difference: {result}"])
         elif op in ('symmetric', 'symmetric_difference'):
-            result = list(setA['set'] ^ setB['set'])
+            result = list(a_set ^ b_set)
             steps.extend(setA['steps'] + setB['steps'] + [f"Symmetric difference: {result}"])
         elif op == 'complement':
-            if not universe['set']:
+            if not u_set:
                 return jsonify({'error': 'Universe must be provided for complement operation'}), 400
-            result = list(universe['set'] - setA['set'])
+            result = list(u_set - a_set)
             steps.extend(universe['steps'] + setA['steps'] + [f"Complement: {result}"])
         elif op == 'subset':
-            result = setA['set'].issubset(setB['set'])
+            result = a_set.issubset(b_set)
             steps.extend(setA['steps'] + setB['steps'] + [f"Subset: {result}"])
         elif op == 'superset':
-            result = setB['set'].issubset(setA['set'])
+            result = b_set.issubset(a_set)
             steps.extend(setA['steps'] + setB['steps'] + [f"Superset: {result}"])
         elif op == 'disjoint':
-            result = setA['set'].isdisjoint(setB['set'])
+            result = a_set.isdisjoint(b_set)
             steps.extend(setA['steps'] + setB['steps'] + [f"Disjoint: {result}"])
         elif op == 'equal':
-            result = setA['set'] == setB['set']
+            result = a_set == b_set
             steps.extend(setA['steps'] + setB['steps'] + [f"Equal: {result}"])
         elif op == 'proper_subset':
-            result = setA['set'] < setB['set']
+            result = a_set < b_set
             steps.extend(setA['steps'] + setB['steps'] + [f"Proper subset: {result}"])
         elif op in ('power', 'power_set'):
-            from set_theory.set_operations import get_power_set
-            result = [list(s) for s in get_power_set(setA['set'])]
+            from core.set_theory.set_operations import get_power_set
+            result = [list(s) for s in get_power_set(a_set)]
             steps.extend(setA['steps'] + [f"Power set: {result}"])
         elif op in ('cartesian', 'cartesian_product'):
-            from set_theory.set_operations import cartesian_product
-            result = [list(pair) for pair in cartesian_product(setA['set'], setB['set'])]
+            from core.set_theory.set_operations import cartesian_product
+            result = [list(pair) for pair in cartesian_product(a_set, b_set)]
             steps.extend(setA['steps'] + setB['steps'] + [f"Cartesian product: {result}"])
         elif op in ('empty', 'finite', 'infinite', 'cardinality'):
-            s = setA['set']
             if op == 'empty':
-                result = len(s) == 0
+                result = len(a_set) == 0
                 steps.extend(setA['steps'] + [f"Empty: {result}"])
             elif op == 'finite':
-                result = '...' not in s
+                result = '...' not in a_set
                 steps.extend(setA['steps'] + [f"Finite: {result}"])
             elif op == 'infinite':
-                result = '...' in s
+                result = '...' in a_set
                 steps.extend(setA['steps'] + [f"Infinite: {result}"])
             elif op == 'cardinality':
-                result = '∞' if '...' in s else len(s)
+                result = '∞' if '...' in a_set else len(a_set)
                 steps.extend(setA['steps'] + [f"Cardinality: {result}"])
         elif op in ('relation_reflexive','relation_symmetric','relation_antisymmetric','relation_transitive','relation_inverse','relation_composition','relation_reflexive_closure','relation_symmetric_closure','relation_transitive_closure'):
             rel = set(tuple(pair) for pair in data.get('relation', []))
@@ -1037,6 +1062,64 @@ def api_probability():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+@app.route('/api/combinatorics', methods=['POST'])
+def api_combinatorics():
+    try:
+        data = CombinatoricsSchema().load(request.get_json())
+        operation = data.get('operation')
+        result = None
+        
+        if operation == 'factorial':
+            n = data.get('n')
+            if n is None:
+                return jsonify({'error': 'n is required for factorial operation'}), 400
+            result = factorial(n)
+        elif operation == 'permutation':
+            n = data.get('n')
+            r = data.get('r')
+            if n is None or r is None:
+                return jsonify({'error': 'n and r are required for permutation operation'}), 400
+            result = permutations(n, r)
+        elif operation == 'combination':
+            n = data.get('n')
+            r = data.get('r')
+            if n is None or r is None:
+                return jsonify({'error': 'n and r are required for combination operation'}), 400
+            result = combinations(n, r)
+        elif operation == 'pigeonhole':
+            pigeons = data.get('pigeons')
+            holes = data.get('holes')
+            if pigeons is None or holes is None:
+                return jsonify({'error': 'pigeons and holes are required for pigeonhole operation'}), 400
+            result = pigeonhole_principle(pigeons, holes)
+        elif operation == 'catalan':
+            n = data.get('n')
+            if n is None:
+                return jsonify({'error': 'n is required for catalan operation'}), 400
+            result = catalan_number(n)
+        elif operation == 'stirling':
+            n = data.get('n')
+            k = data.get('k')
+            if n is None or k is None:
+                return jsonify({'error': 'n and k are required for stirling operation'}), 400
+            result = stirling_numbers_second_kind(n, k)
+        elif operation == 'binomial':
+            n = data.get('n')
+            k = data.get('k')
+            if n is None or k is None:
+                return jsonify({'error': 'n and k are required for binomial operation'}), 400
+            result = combinations(n, k)
+        else:
+            return jsonify({'error': f'Unknown operation: {operation}'}), 400
+        
+        return jsonify({'result': result})
+    except ValidationError as ve:
+        return jsonify({'error': 'Invalid input: ' + str(ve.messages)}), 400
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
+
 @app.route('/api/probability/hypergeometric', methods=['POST'])
 def api_probability_hypergeometric():
     try:
@@ -1124,13 +1207,85 @@ def api_probability_venn():
         if not (isinstance(sets, dict) and len(sets) in (2,3)):
             return jsonify({'error': 'Provide 2 or 3 sets'}), 400
         from matplotlib_venn import venn2, venn3
-        fig, ax = plt.subplots()
+        
+        # Convert to sets for operations
+        set_objects = {k: set(sets[k]) for k in sets}
+        set_keys = list(sets.keys())
+        
+        fig, ax = plt.subplots(figsize=(10, 8))
+        
         if len(sets) == 2:
-            venn2([set(sets[k]) for k in sets], set_labels=list(sets.keys()), ax=ax)
+            # Create Venn diagram
+            v = venn2([set_objects[set_keys[0]], set_objects[set_keys[1]]], 
+                      set_labels=(set_keys[0], set_keys[1]), ax=ax)
+            
+            # Calculate which elements are in each region
+            A_only = set_objects[set_keys[0]] - set_objects[set_keys[1]]
+            B_only = set_objects[set_keys[1]] - set_objects[set_keys[0]]
+            intersection = set_objects[set_keys[0]] & set_objects[set_keys[1]]
+            
+            # Format elements as strings (limit length for display)
+            def format_set_elements(elements, max_display=10):
+                elem_list = sorted([str(e) for e in elements])
+                if len(elem_list) > max_display:
+                    return ', '.join(elem_list[:max_display]) + f'\n... (+{len(elem_list) - max_display} more)'
+                return ', '.join(elem_list)
+            
+            # Update labels to show actual elements
+            if v.get_label_by_id('10'):
+                v.get_label_by_id('10').set_text(format_set_elements(A_only))
+            if v.get_label_by_id('01'):
+                v.get_label_by_id('01').set_text(format_set_elements(B_only))
+            if v.get_label_by_id('11'):
+                v.get_label_by_id('11').set_text(format_set_elements(intersection))
         else:
-            venn3([set(sets[k]) for k in sets], set_labels=list(sets.keys()), ax=ax)
+            # Create Venn diagram for 3 sets
+            v = venn3([set_objects[set_keys[0]], set_objects[set_keys[1]], set_objects[set_keys[2]]], 
+                     set_labels=(set_keys[0], set_keys[1], set_keys[2]), ax=ax)
+            
+            # Calculate which elements are in each region
+            A = set_objects[set_keys[0]]
+            B = set_objects[set_keys[1]]
+            C = set_objects[set_keys[2]]
+            
+            A_only = A - B - C
+            B_only = B - A - C
+            C_only = C - A - B
+            AB_only = (A & B) - C
+            AC_only = (A & C) - B
+            BC_only = (B & C) - A
+            ABC_all = A & B & C
+            
+            # Format elements as strings
+            def format_set_elements(elements, max_display=8):
+                elem_list = sorted([str(e) for e in elements])
+                if len(elem_list) > max_display:
+                    return ', '.join(elem_list[:max_display]) + f'\n... (+{len(elem_list) - max_display})'
+                return ', '.join(elem_list)
+            
+            # Update labels to show actual elements
+            # Region IDs: '100'=A only, '010'=B only, '001'=C only, 
+            # '110'=AB only, '101'=AC only, '011'=BC only, '111'=ABC all
+            if v.get_label_by_id('100'):
+                v.get_label_by_id('100').set_text(format_set_elements(A_only))
+            if v.get_label_by_id('010'):
+                v.get_label_by_id('010').set_text(format_set_elements(B_only))
+            if v.get_label_by_id('001'):
+                v.get_label_by_id('001').set_text(format_set_elements(C_only))
+            if v.get_label_by_id('110'):
+                v.get_label_by_id('110').set_text(format_set_elements(AB_only))
+            if v.get_label_by_id('101'):
+                v.get_label_by_id('101').set_text(format_set_elements(AC_only))
+            if v.get_label_by_id('011'):
+                v.get_label_by_id('011').set_text(format_set_elements(BC_only))
+            if v.get_label_by_id('111'):
+                v.get_label_by_id('111').set_text(format_set_elements(ABC_all))
+        
+        ax.set_title('Venn Diagram', fontsize=14, fontweight='bold')
+        plt.tight_layout()
+        
         buf = io.BytesIO()
-        plt.savefig(buf, format='png')
+        plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
         plt.close(fig)
         buf.seek(0)
         img_b64 = base64.b64encode(buf.read()).decode('utf-8')
@@ -1282,40 +1437,36 @@ def api_automata_import_export():
 
 @app.route('/api/chatbot', methods=['POST'])
 def api_chatbot():
+    """Chatbot API endpoint - uses AI service"""
     try:
         data = request.get_json()
         messages = data.get('messages')
         if not messages or not isinstance(messages, list):
             return jsonify({'error': 'Missing or invalid messages'}), 400
-        from openai import OpenAI
-        api_key = os.environ.get("OPENROUTER_API_KEY", "")
-        client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=api_key,
-        )
-        completion = client.chat.completions.create(
-            extra_headers={
-                "HTTP-Referer": "http://localhost:5000",
-                "X-Title": "Discrete Math Calculator",
-            },
-
-            ## Замена модели
-            extra_body={},
-            model="openai/gpt-3.5-turbo",
-            messages=messages
-        )
-        reply = completion.choices[0].message.content.strip()
-        return jsonify({'reply': reply})
+        
+        chatbot_service = get_chatbot_service()
+        result = chatbot_service.chat(messages)
+        
+        if 'error' in result:
+            status_code = 500
+            if '401' in result['error']:
+                status_code = 401
+            elif '402' in result['error']:
+                status_code = 402
+            return jsonify(result), status_code
+        
+        return jsonify(result)
+        
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Server Error: {str(e)}'}), 500
 
 @app.route('/api/number_theory', methods=['POST'])
 def api_number_theory():
     try:
         data = request.get_json()
         op = data.get('operation')
-        from number_theory.divisibility import gcd, lcm, divisors, prime_factorization, euler_totient
-        from number_theory.cryptography import modular_exponentiation, modular_inverse, generate_rsa_keys, rsa_encrypt, rsa_decrypt
+        from core.number_theory.divisibility import gcd, lcm, divisors, prime_factorization, euler_totient
+        from core.number_theory.cryptography import modular_exponentiation, modular_inverse, generate_rsa_keys, rsa_encrypt, rsa_decrypt
         if op == 'gcd':
             a = int(data.get('a'))
             b = int(data.get('b'))

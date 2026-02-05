@@ -1,53 +1,85 @@
-# Discrete Math Calculator
+# Discrete Math Calculator (DMC)
 
-A comprehensive calculator for discrete mathematics that works both online and offline.
+Comprehensive web application for solving discrete mathematics problems.
 
-## How to Run
+## 🚀 Quick Start
 
-### Option 1: With Flask Server (Recommended)
+```bash
+# 1. Activate virtual environment
+source venv/bin/activate
 
-1. Run the PowerShell script:
-   ```
-   .\run.ps1
-   ```
-   This launches the app in client-side mode (calculations in browser)
+# 2. Install dependencies
+pip install -r requirements.txt
 
-2. For server-side calculation mode:
-   ```
-   .\run.ps1 -ServerMode
-   ```
+# 3. Set up environment variables
+# Edit .env file with your OPENROUTER_API_KEY
 
-3. Visit http://127.0.0.1:5000 in your browser
+# 4. Run the application
+python web_app.py
+```
 
-### Option 2: Completely Offline (No Server)
+Open http://127.0.0.1:5000/ in your browser.
 
-1. Open `fallback.html` directly in your browser
-2. All functionality will work in your browser with no server needed
+## 📁 Project Structure
 
-## Features
+```
+dmc/
+├── core/          # Mathematical logic (combinatorics, automata, graph theory, etc.)
+├── api/           # REST API endpoints
+├── web/           # Frontend (templates + static files)
+├── ai/            # AI integration (chatbot)
+├── db/            # Database models (ready for future use)
+├── utils/         # Utility functions
+├── scripts/       # Helper scripts
+└── docs/          # Documentation
+```
 
-- Combinatorics (combinations, permutations, factorial)
-- Probability calculations
-- Automata simulation
-- Number Theory
-- Set Theory operations
+## 📚 Documentation
 
-## Technical Details
+- **[Quick Start Guide](docs/QUICKSTART.md)** - How to set up and run
+- **[Architecture](docs/ARCHITECTURE.md)** - Project architecture overview
+- **[Refactoring Summary](docs/REFACTORING_SUMMARY.md)** - Recent refactoring changes
 
-- Built with Flask, HTML, CSS, and JavaScript
-- Performs calculations either client-side or server-side
-- Can run completely offline in standalone mode
+## 🛠️ Development
 
-## MCP Server
+### Scripts
 
-A minimal MCP (Math Control Protocol) server is provided in `mcp_server/server.py`.
+- `scripts/check_api_key.py` - Test OpenRouter API key
+- `scripts/migrate_core.py` - Migration helper (already done)
+- `scripts/update_imports.py` - Update imports helper (already done)
 
-- **Run the server:**
-  ```bash
-  python -m mcp_server.server
-  ```
-- **Default endpoint:**
-  - `GET /status` returns a JSON status message.
-- The server listens on port 5050 by default.
+### Adding New Features
 
-Ready for further MCP protocol and API expansion.
+**New mathematical module:**
+```
+core/new_module/
+  ├── __init__.py
+  └── calculations.py
+```
+
+**New API endpoint:**
+```
+api/routes/my_feature.py
+```
+
+**New AI function:**
+```
+ai/my_service.py
+```
+
+## 📝 Requirements
+
+See `requirements.txt` for all dependencies.
+
+## 🔑 Environment Variables
+
+Create `.env` file:
+```
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+OPENROUTER_MODEL=google/gemma-3-12b-it:free
+FLASK_SECRET_KEY=your-secret-key-here
+```
+
+## 📄 License
+
+[Your License Here]
