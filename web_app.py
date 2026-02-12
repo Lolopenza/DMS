@@ -45,7 +45,8 @@ import jsonschema
 from flask_cors import CORS
 from marshmallow import Schema, fields, ValidationError
 from dotenv import load_dotenv
-load_dotenv()  # Load .env file immediately
+_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+load_dotenv(_env_path)  # Load .env from same folder as web_app.py
 import io
 from PIL import Image
 import easyocr
@@ -85,33 +86,45 @@ else:
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('hub.html')
 
-@app.route('/graph-theory')
+@app.route('/roadmap')
+def roadmap():
+    return render_template('roadmap.html')
+
+@app.route('/roadmap/details')
+def roadmap_details():
+    return render_template('roadmap_details.html')
+
+@app.route('/calculator')
+def calculator_index():
+    return render_template('calculator_index.html')
+
+@app.route('/calculator/graph-theory')
 def graph_theory():
     return render_template('graph_theory.html')
 
-@app.route('/combinatorics')
+@app.route('/calculator/combinatorics')
 def combinatorics():
     return render_template('combinatorics.html')
 
-@app.route('/probability')
+@app.route('/calculator/probability')
 def probability():
     return render_template('probability.html')
 
-@app.route('/automata')
+@app.route('/calculator/automata')
 def automata():
     return render_template('automata.html')
 
-@app.route('/set-theory')
+@app.route('/calculator/set-theory')
 def set_theory():
     return render_template('set_theory.html')
 
-@app.route('/number-theory')
+@app.route('/calculator/number-theory')
 def number_theory():
     return render_template('number_theory.html')
 
-@app.route('/logic')
+@app.route('/calculator/logic')
 def logic():
     return render_template('logic.html')
 
@@ -824,7 +837,7 @@ def safe_string(val):
         return json.dumps(val, indent=2, ensure_ascii=False)
     return str(val)
 
-@app.route('/adjacency_matrix')
+@app.route('/calculator/adjacency_matrix')
 def adjacency_matrix():
     return render_template('adjacency_matrix.html')
 

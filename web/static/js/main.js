@@ -872,8 +872,10 @@ const themeToggle = document.querySelector('.theme-toggle');
 const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
 function setTheme(theme) {
+    const html = document.documentElement;
     if (theme === 'dark') {
         document.body.classList.add('dark-theme');
+        if (html) html.classList.add('dark-theme');
         localStorage.setItem('theme', 'dark');
         if (themeToggle) {
             themeToggle.querySelector('.fa-moon').style.display = 'none';
@@ -881,6 +883,7 @@ function setTheme(theme) {
         }
     } else {
         document.body.classList.remove('dark-theme');
+        if (html) html.classList.remove('dark-theme');
         localStorage.setItem('theme', 'light');
         if (themeToggle) {
             themeToggle.querySelector('.fa-moon').style.display = 'block';
@@ -1138,28 +1141,6 @@ style.textContent = `
         }
     }
     
-    /* Enhanced Theme Toggle */
-    .theme-toggle {
-        position: fixed;
-        bottom: var(--space-6);
-        right: var(--space-6);
-        background: var(--primary);
-        color: var(--white);
-        border: none;
-        border-radius: 50%;
-        width: 3rem;
-        height: 3rem;
-        font-size: 1.25rem;
-        cursor: pointer;
-        box-shadow: var(--shadow-lg);
-        transition: var(--transition-fast);
-        z-index: 1000;
-    }
-    
-    .theme-toggle:hover {
-        transform: translateY(-2px) scale(1.1);
-    }
-    
     /* Enhanced Messages */
     .success-message,
     .error-message {
@@ -1231,10 +1212,6 @@ style.textContent = `
             animation: slideIn 0.3s ease-out forwards;
         }
         
-        .theme-toggle {
-            bottom: var(--space-4);
-            right: var(--space-4);
-        }
     }
     
     /* Animation Keyframes */

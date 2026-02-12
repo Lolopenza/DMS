@@ -7,7 +7,8 @@ from openai import OpenAI
 from typing import List, Dict, Optional
 from dotenv import load_dotenv
 
-load_dotenv()
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(_project_root, '.env'))
 
 
 class ChatbotService:

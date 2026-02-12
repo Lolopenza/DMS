@@ -36,10 +36,10 @@
     </div>
     
     <!-- Navigation -->
-    <nav class="top-nav sticky-top shadow-sm" aria-label="Main Navigation">
-        <a href="{{ url_for('index') }}" class="nav-brand" tabindex="0" aria-label="Discrete Math Calculator Home" style="text-decoration:none;">
+    <nav class="top-nav" aria-label="Main Navigation">
+        <a href="{{ url_for('index') }}" class="nav-brand" tabindex="0" aria-label="Discrete Lab home">
             <i class="fas fa-calculator"></i>
-            <span>DMC</span>
+            <span>Discrete Lab</span>
         </a>
         <button class="mobile-menu-toggle d-md-none" aria-label="Open navigation menu" tabindex="0">
             <span></span><span></span><span></span>
@@ -53,6 +53,7 @@
             <a href="{{ url_for('set_theory') }}" class="nav-item" title="Set Theory" aria-label="Set Theory"><i class="fas fa-object-group"></i></a>
             <a href="{{ url_for('number_theory') }}" class="nav-item" title="Number Theory" aria-label="Number Theory"><i class="fas fa-hashtag"></i></a>
             <a href="{{ url_for('logic') }}" class="nav-item" title="Logic" aria-label="Logic"><i class="fas fa-brain"></i></a>
+            <a href="{{ url_for('calculator_index') }}" class="nav-item nav-item-sections" title="All sections" aria-label="All calculator sections"><i class="fas fa-th-large"></i></a>
         </div>
     </nav>
 

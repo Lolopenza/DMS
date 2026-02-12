@@ -1,85 +1,47 @@
 # Discrete Math Calculator (DMC)
 
-Comprehensive web application for solving discrete mathematics problems.
+Веб-приложение для дискретной математики: комбинаторика, автоматы, графы, теория множеств, логика, теория чисел, вероятность, AI-чатбот.
 
-## 🚀 Quick Start
+## Запуск
 
 ```bash
-# 1. Activate virtual environment
-source venv/bin/activate
+# Виртуальное окружение (один раз)
+python3 -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
 
-# 2. Install dependencies
+# Зависимости
 pip install -r requirements.txt
 
-# 3. Set up environment variables
-# Edit .env file with your OPENROUTER_API_KEY
+# Переменные окружения: создайте .env в корне проекта
+# OPENROUTER_API_KEY=sk-or-v1-...   — для чатбота (бесплатные модели: google/gemma-3-12b-it:free)
+# FLASK_SECRET_KEY=любая-строка     — для session (опционально)
 
-# 4. Run the application
+# Запуск
 python web_app.py
 ```
 
-Open http://127.0.0.1:5000/ in your browser.
+Откройте http://127.0.0.1:5000/
 
-## 📁 Project Structure
+## Структура проекта
 
-```
-dmc/
-├── core/          # Mathematical logic (combinatorics, automata, graph theory, etc.)
-├── api/           # REST API endpoints
-├── web/           # Frontend (templates + static files)
-├── ai/            # AI integration (chatbot)
-├── db/            # Database models (ready for future use)
-├── utils/         # Utility functions
-├── scripts/       # Helper scripts
-└── docs/          # Documentation
-```
+| Папка | Назначение |
+|-------|------------|
+| **core/** | Математика: combinatorics, automata, graph_theory, set_theory, logic, number_theory, discrete_probability, algebraic_structures, functions_relations, visualization |
+| **web/** | Фронт: `templates/` (HTML), `static/` (CSS, JS) |
+| **ai/** | Чатбот (OpenRouter) |
+| **api/** | Заготовка под отдельные API-роуты (сейчас всё в web_app) |
+| **utils/** | Общие утилиты |
+| **mcp_server/** | Отдельный MCP-сервис |
+| **scripts/** | Проверка API-ключа, зависимостей; скрипты запуска под Windows |
 
-## 📚 Documentation
+Точка входа — **web_app.py**: раздаёт страницы, статику и обрабатывает все `POST /api/...` (расчёты и чатбот). Состояние только в Flask session (именованные множества в Set Theory).
 
-- **[Quick Start Guide](docs/QUICKSTART.md)** - How to set up and run
-- **[Architecture](docs/ARCHITECTURE.md)** - Project architecture overview
-- **[Refactoring Summary](docs/REFACTORING_SUMMARY.md)** - Recent refactoring changes
+## Скрипты (по желанию)
 
-## 🛠️ Development
+- `python scripts/check_api_key.py` — проверить OpenRouter API key
+- `python scripts/check_dependencies.py` — проверить установленные пакеты
+- `scripts/run_app.ps1`, `scripts/run.ps1` — запуск под Windows
 
-### Scripts
+## Требования
 
-- `scripts/check_api_key.py` - Test OpenRouter API key
-- `scripts/migrate_core.py` - Migration helper (already done)
-- `scripts/update_imports.py` - Update imports helper (already done)
-
-### Adding New Features
-
-**New mathematical module:**
-```
-core/new_module/
-  ├── __init__.py
-  └── calculations.py
-```
-
-**New API endpoint:**
-```
-api/routes/my_feature.py
-```
-
-**New AI function:**
-```
-ai/my_service.py
-```
-
-## 📝 Requirements
-
-See `requirements.txt` for all dependencies.
-
-## 🔑 Environment Variables
-
-Create `.env` file:
-```
-OPENROUTER_API_KEY=sk-or-v1-your-key-here
-OPENROUTER_MODEL=google/gemma-3-12b-it:free
-FLASK_SECRET_KEY=your-secret-key-here
-```
-
-## 📄 License
-
-[Your License Here]
+См. `requirements.txt`. Основное: Flask, SymPy, NumPy, Matplotlib, NetworkX, python-dotenv, marshmallow, easyocr, openai (для OpenRouter).
