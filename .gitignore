@@ -1,4 +1,4 @@
-# Python
+# ─── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -10,7 +10,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -25,40 +24,66 @@ venv/
 env/
 ENV/
 .venv
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Environment
-.env
-.env.local
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Flask
-instance/
-.webassets-cache
+math-engine/venv/
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
+math-engine/.coverage
+math-engine/htmlcov/
 
-# Temporary files
+# ─── Java / Gradle ────────────────────────────────────────────────────────────
+backend/.gradle/
+backend/build/
+backend/out/
+!backend/gradle/wrapper/gradle-wrapper.jar
+*.class
+*.jar
+*.war
+*.ear
+
+# ─── IDE ──────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.iml
+
+# ─── Environment & Secrets ────────────────────────────────────────────────────
+.env
+.env.local
+.env.production
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Database ─────────────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── Docker volumes (локальные маунты) ───────────────────────────────────────
+postgres_data/
+redis_data/
+rabbitmq_data/
+
+# ─── AI Model веса (тяжёлые файлы) ───────────────────────────────────────────
+math-engine/ai/model/*.bin
+math-engine/ai/model/*.gguf
+math-engine/ai/model/*.safetensors
+
+# ─── Flask ────────────────────────────────────────────────────────────────────
+instance/
+.webassets-cache
+
+# ─── Временные файлы ─────────────────────────────────────────────────────────
 *.tmp
 *.bak
 *.cache

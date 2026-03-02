@@ -1,0 +1,22 @@
+# Dev overrides: hot reload, volume mounts, relaxed settings
+# Этот файл подхватывается автоматически при `docker-compose up`
+
+version: "3.9"
+
+services:
+
+  math-engine:
+    volumes:
+      - ./math-engine:/app   # hot reload через Flask debug mode
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: "1"
+
+  backend:
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+
+  nginx:
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
