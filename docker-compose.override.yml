@@ -1,8 +1,6 @@
 # Dev overrides: hot reload, volume mounts, relaxed settings
 # Этот файл подхватывается автоматически при `docker-compose up`
 
-version: "3.9"
-
 services:
 
   math-engine:
