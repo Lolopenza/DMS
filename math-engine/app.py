@@ -9,7 +9,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+_app_dir = os.path.dirname(__file__)
+_repo_root = os.path.dirname(_app_dir)
+load_dotenv(os.path.join(_repo_root, '.env'))
+load_dotenv(os.path.join(_app_dir, '.env'), override=True)
 
 from api.v1 import combinatorics, logic, set_theory, automata, graph_theory, adjacency_matrix, probability, number_theory, chat, ocr
 

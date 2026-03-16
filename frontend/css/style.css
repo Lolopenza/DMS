@@ -2595,6 +2595,28 @@ button:hover {
     font-size: 0.98em;
 }
 
+  .chatbot-msg-assistant .chatbot-bubble-inner {
+    background: #eef2ff !important;
+    color: #0f172a !important;
+  }
+
+  .chatbot-msg-assistant .chatbot-bubble-inner * {
+    color: inherit !important;
+  }
+
+  .chatbot-msg-user .chatbot-bubble-inner {
+    color: #ffffff !important;
+  }
+
+  .chatbot-msg-user .chatbot-bubble-inner * {
+    color: inherit !important;
+  }
+
+  .dark-theme .chatbot-msg-assistant .chatbot-bubble-inner {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+  }
+
 /* OCR Modal Styles */
 #imageToTextModal .modal-bg {background:rgba(0,0,0,0.3);z-index:2000;display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100vw;height:100vh;}
 #imageToTextModal .modal-content {background:#fff;padding:2rem;border-radius:12px;max-width:400px;width:100%;position:relative;box-shadow:0 8px 32px rgba(0,0,0,0.18);}

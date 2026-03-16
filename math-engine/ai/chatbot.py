@@ -7,8 +7,11 @@ from openai import OpenAI
 from typing import List, Dict, Optional
 from dotenv import load_dotenv
 
-_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-load_dotenv(os.path.join(_project_root, '.env'))
+_ai_dir = os.path.dirname(os.path.abspath(__file__))
+_math_engine_root = os.path.dirname(_ai_dir)
+_repo_root = os.path.dirname(_math_engine_root)
+load_dotenv(os.path.join(_repo_root, '.env'))
+load_dotenv(os.path.join(_math_engine_root, '.env'), override=True)
 
 
 class ChatbotService:
@@ -74,12 +77,21 @@ class ChatbotService:
                 model=self.model,
                 messages=formatted_messages
             )
-            
-            reply = completion.choices[0].message.content.strip()
+
+            reply_raw = completion.choices[0].message.content if completion.choices else None
+            reply = (reply_raw or '').strip()
+            if not reply:
+                return {
+                    'error': 'Empty response from AI provider. Please try again in a few seconds.'
+                }
             return {'reply': reply}
             
         except Exception as e:
             error_msg = str(e)
+            if '429' in error_msg or 'rate limit' in error_msg.lower() or 'too many requests' in error_msg.lower():
+                return {
+                    'error': 'Rate limit exceeded (429). Please wait 10-30 seconds and try again.'
+                }
             # Check for authentication errors
             if '401' in error_msg or 'User not found' in error_msg:
                 return {

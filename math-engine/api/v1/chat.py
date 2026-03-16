@@ -10,6 +10,7 @@ class ChatRequest(BaseModel):
     messages: List[Dict[str, Any]]
 
 
+@router.post('')
 @router.post('/')
 def chatbot(req: ChatRequest):
     if not req.messages:
@@ -20,6 +21,8 @@ def chatbot(req: ChatRequest):
 
     if 'error' in result:
         err = result['error']
+        if '429' in err or 'rate limit' in err.lower() or 'too many requests' in err.lower():
+            raise HTTPException(429, err)
         if '401' in err:
             raise HTTPException(401, err)
         if '402' in err:
