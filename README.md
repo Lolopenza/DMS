@@ -1,47 +1,95 @@
 # Discrete Math Calculator (DMC)
 
-Веб-приложение для дискретной математики: комбинаторика, автоматы, графы, теория множеств, логика, теория чисел, вероятность, AI-чатбот.
+Монорепозиторий с фронтендом на React/Vite и вычислительным сервисом на FastAPI.
 
-## Запуск
+## Что запускаем
+
+- `math-engine` (FastAPI): API дискретной математики, порт `8081`
+- `frontend` (Vite): интерфейс, порт `3000`
+
+Во время локальной разработки фронтенд проксирует:
+
+- `/api/v1/*` -> `http://localhost:8081`
+- `/api/*` -> `http://localhost:8080` (Java backend, если нужен)
+
+## Быстрый локальный запуск (math-engine + frontend)
+
+### 1. Запуск math-engine
 
 ```bash
-# Виртуальное окружение (один раз)
-python3 -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+cd math-engine
 
-# Зависимости
+# Python 3.11+ рекомендуется
+python3 -m venv .venv
+source .venv/bin/activate
+
 pip install -r requirements.txt
 
-# Переменные окружения: создайте .env в корне проекта
-# OPENROUTER_API_KEY=sk-or-v1-...   — для чатбота (бесплатные модели: google/gemma-3-12b-it:free)
-# FLASK_SECRET_KEY=любая-строка     — для session (опционально)
+# Создайте файл math-engine/.env (для чат-бота)
+# OPENROUTER_API_KEY=ваш_ключ
+# OPENROUTER_MODEL=google/gemma-3-12b-it:free
 
-# Запуск
-python web_app.py
+python app.py
 ```
 
-Откройте http://127.0.0.1:5000/
+Проверка статуса:
 
-## Структура проекта
+```bash
+curl http://localhost:8081/api/v1/status
+```
 
-| Папка | Назначение |
-|-------|------------|
-| **core/** | Математика: combinatorics, automata, graph_theory, set_theory, logic, number_theory, discrete_probability, algebraic_structures, functions_relations, visualization |
-| **web/** | Фронт: `templates/` (HTML), `static/` (CSS, JS) |
-| **ai/** | Чатбот (OpenRouter) |
-| **api/** | Заготовка под отдельные API-роуты (сейчас всё в web_app) |
-| **utils/** | Общие утилиты |
-| **mcp_server/** | Отдельный MCP-сервис |
-| **scripts/** | Проверка API-ключа, зависимостей; скрипты запуска под Windows |
+Swagger UI:
 
-Точка входа — **web_app.py**: раздаёт страницы, статику и обрабатывает все `POST /api/...` (расчёты и чатбот). Состояние только в Flask session (именованные множества в Set Theory).
+- `http://localhost:8081/docs`
 
-## Скрипты (по желанию)
+### 2. Запуск frontend
 
-- `python scripts/check_api_key.py` — проверить OpenRouter API key
-- `python scripts/check_dependencies.py` — проверить установленные пакеты
-- `scripts/run_app.ps1`, `scripts/run.ps1` — запуск под Windows
+В новом терминале:
 
-## Требования
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-См. `requirements.txt`. Основное: Flask, SymPy, NumPy, Matplotlib, NetworkX, python-dotenv, marshmallow, easyocr, openai (для OpenRouter).
+Открыть:
+
+- `http://localhost:3000`
+
+## Запуск через Docker Compose
+
+Запуск всех сервисов (включая `nginx`, `backend`, `math-engine`, `postgres`, `redis`, `rabbitmq`):
+
+```bash
+docker-compose up -d
+```
+
+Открыть приложение:
+
+- `http://localhost`
+
+Полезные команды:
+
+```bash
+docker-compose ps
+docker-compose logs -f math-engine
+docker-compose logs -f nginx
+docker-compose down
+```
+
+## Переменные окружения
+
+Для Docker используется корневой файл `.env`.
+
+Минимум для `math-engine`:
+
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_MODEL`
+
+Для локального запуска `math-engine` переменные нужно положить в `math-engine/.env` (именно этот путь читает `app.py`).
+
+## Типичные проблемы
+
+- `python web_app.py` не работает: в текущей версии нет Flask-приложения `web_app.py`, используйте `python app.py` в папке `math-engine`.
+- Ошибки CORS/404 с фронта: убедитесь, что `math-engine` запущен на `8081`, а фронт на `3000`.
+- Не работает чат: проверьте `OPENROUTER_API_KEY`.
