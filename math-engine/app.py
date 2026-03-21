@@ -1,13 +1,17 @@
 import os
 import logging
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
 import matplotlib
 matplotlib.use('Agg')
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 _app_dir = os.path.dirname(__file__)
 _repo_root = os.path.dirname(_app_dir)
@@ -18,6 +22,26 @@ from api.v1 import combinatorics, logic, set_theory, automata, graph_theory, adj
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s: %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def _error_envelope(request: Request, status_code: int, code: str, message: str, details=None):
+    safe_details = jsonable_encoder(
+        details,
+        custom_encoder={
+            Exception: lambda e: str(e),
+            ValueError: lambda e: str(e),
+        },
+    )
+    return {
+        'error': {
+            'code': code,
+            'message': message,
+            'status': status_code,
+            'path': request.url.path,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'details': safe_details,
+        }
+    }
 
 
 @asynccontextmanager
@@ -45,6 +69,39 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
+
+@app.middleware('http')
+async def add_api_version_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers['X-API-Version'] = 'v1'
+    return response
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    message = exc.detail if isinstance(exc.detail, str) else 'Request failed'
+    payload = _error_envelope(request, exc.status_code, 'HTTP_ERROR', message, details=exc.detail)
+    return JSONResponse(status_code=exc.status_code, content=payload)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    payload = _error_envelope(
+        request,
+        422,
+        'VALIDATION_ERROR',
+        'Validation failed',
+        details=exc.errors(),
+    )
+    return JSONResponse(status_code=422, content=payload)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception('Unhandled exception on %s: %s', request.url.path, exc)
+    payload = _error_envelope(request, 500, 'INTERNAL_ERROR', 'Internal server error')
+    return JSONResponse(status_code=500, content=payload)
 
 app.include_router(combinatorics.router)
 app.include_router(logic.router)

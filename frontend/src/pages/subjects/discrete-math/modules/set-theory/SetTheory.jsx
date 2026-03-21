@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { calcSetTheory } from '../api.js';
-import { useToast } from '../components/Toast.jsx';
+import { calcSetTheory } from '../../api/set-theory.js';
+import { useToast } from '../../../../../components/Toast.jsx';
+import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
 
 const SET_OPS = [
   { op: 'union', label: 'A ∪ B' },
@@ -221,16 +222,14 @@ export default function SetTheory() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: '1.5rem', paddingBottom: '2rem' }}>
-      <div className="text-center" style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Set Theory Calculator</h1>
-        <p style={{ opacity: 0.7 }}>Perform advanced set operations, properties, relations, and visualizations</p>
-      </div>
+    <ModulePage
+      title="Set Theory Calculator"
+      subtitle="Perform advanced set operations, properties, relations, and visualizations"
+    >
 
       {/* Set Operations */}
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div className="card-header"><h3>Set Operations</h3></div>
-        <div className="card-body">
+      <div style={{ marginBottom: '1.5rem' }}>
+        <ModuleCard title="Set Operations">
           {/* Inputs row */}
           <div className="form-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem' }}>
             <div className="form-group">
@@ -295,13 +294,12 @@ export default function SetTheory() {
 
           {/* Result below diagram */}
           <ResultBox result={opsResult} />
-        </div>
+        </ModuleCard>
       </div>
 
       {/* Set Properties */}
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div className="card-header"><h3>Set Properties</h3></div>
-        <div className="card-body">
+      <div style={{ marginBottom: '1.5rem' }}>
+        <ModuleCard title="Set Properties">
           <div className="form-group">
             <label htmlFor="setC">Set</label>
             <input type="text" id="setC" className="form-control" value={setC} onChange={e => setSetC(e.target.value)} placeholder="e.g. 1,2,3" />
@@ -318,13 +316,11 @@ export default function SetTheory() {
             <button type="button" className="btn btn-outline" onClick={() => { setPropsResult(null); setSetC('1,2,3'); }}>Reset</button>
           </div>
           <ResultBox result={propsResult} />
-        </div>
+        </ModuleCard>
       </div>
 
       {/* Set Relations */}
-      <div className="card">
-        <div className="card-header"><h3>Relations</h3></div>
-        <div className="card-body">
+      <ModuleCard title="Relations">
           <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label htmlFor="relation">Relation (list of pairs)</label>
@@ -347,8 +343,7 @@ export default function SetTheory() {
             <button type="button" className="btn btn-outline" onClick={() => { setRelResult(null); setRelation('(1,2),(2,3)'); setRelUniverse('1,2,3'); }}>Reset</button>
           </div>
           <ResultBox result={relResult} />
-        </div>
-      </div>
-    </div>
+      </ModuleCard>
+    </ModulePage>
   );
 }

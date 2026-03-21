@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { calcGraphTheory } from '../api.js';
-import { useToast } from '../components/Toast.jsx';
+import { calcGraphTheory } from '../../api/graph-theory.js';
+import { useToast } from '../../../../../components/Toast.jsx';
+import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
 
 function GraphResult({ result, algorithm }) {
   if (!result) return null;
@@ -209,17 +210,12 @@ export default function GraphTheory() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h2>Graph Theory Calculator</h2>
-        <p className="subtitle">Visualize graphs and run algorithms</p>
-      </div>
+    <ModulePage
+      title="Graph Theory Calculator"
+      subtitle="Visualize graphs and run algorithms"
+    >
 
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-project-diagram"></i> Graph Visualization</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Graph Visualization" icon="fa-project-diagram">
           {/* Controls */}
           <div className="visualization-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
             <button className="btn btn-primary" onClick={addNode}><i className="fas fa-plus-circle"></i> Add Node</button>
@@ -293,8 +289,7 @@ export default function GraphTheory() {
               <GraphResult result={result.result ?? result} algorithm={algorithm} />
             </div>
           )}
-        </div>
-      </div>
-    </div>
+      </ModuleCard>
+    </ModulePage>
   );
 }

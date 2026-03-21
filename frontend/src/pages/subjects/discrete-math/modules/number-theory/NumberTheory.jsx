@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { calcNumberTheory } from '../api.js';
-import { useToast } from '../components/Toast.jsx';
+import { calcNumberTheory } from '../../api/number-theory.js';
+import { useToast } from '../../../../../components/Toast.jsx';
+import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
+import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
 
 const TWO_NUM_OPS = ['gcd', 'lcm'];
 const SINGLE_NUM_OPS = ['divisors', 'factorize', 'totient', 'is_prime', 'prime_sieve'];
@@ -70,18 +72,13 @@ export default function NumberTheory() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h2>Number Theory Calculator</h2>
-        <p className="subtitle">Explore prime numbers, GCD, LCM, and modular arithmetic</p>
-      </div>
+    <ModulePage
+      title="Number Theory Calculator"
+      subtitle="Explore prime numbers, GCD, LCM, and modular arithmetic"
+    >
 
       {/* Divisibility */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-superscript"></i> Divisibility Properties</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Divisibility Properties" icon="fa-superscript">
           <div className="theory-intro">
             <p>Number theory studies the properties and relationships of integers, with divisibility being a fundamental concept.</p>
           </div>
@@ -119,28 +116,16 @@ export default function NumberTheory() {
             </button>
           </div>
           {result && (
-            <div className="result-container" tabIndex={0} aria-live="polite">
-              <h3><i className="fas fa-check-circle"></i> Result</h3>
-              <div className="math-display">
-                {typeof result.result !== 'undefined' ? String(result.result) : JSON.stringify(result)}
-              </div>
-              {result.explanation && (
-                <div className="explanation-box">
-                  <h4>Explanation</h4>
-                  <div>{result.explanation}</div>
-                </div>
-              )}
-            </div>
+            <ResultPanel
+              value={result.result}
+              fallbackData={result}
+              explanation={result.explanation}
+            />
           )}
-        </div>
-      </div>
+      </ModuleCard>
 
       {/* Modular Arithmetic */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-redo"></i> Modular Arithmetic</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Modular Arithmetic" icon="fa-redo">
           <div className="theory-intro">
             <p>Modular arithmetic (clock arithmetic) deals with integer operations where numbers wrap around after reaching a modulus.</p>
           </div>
@@ -176,15 +161,12 @@ export default function NumberTheory() {
             </button>
           </div>
           {modResult && (
-            <div className="result-container" tabIndex={0} aria-live="polite">
-              <h3><i className="fas fa-check-circle"></i> Result</h3>
-              <div className="math-display">
-                {typeof modResult.result !== 'undefined' ? String(modResult.result) : JSON.stringify(modResult)}
-              </div>
-            </div>
+            <ResultPanel
+              value={modResult.result}
+              fallbackData={modResult}
+            />
           )}
-        </div>
-      </div>
-    </div>
+      </ModuleCard>
+    </ModulePage>
   );
 }

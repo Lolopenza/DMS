@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { calcCombinatorics } from '../api.js';
-import { useToast } from '../components/Toast.jsx';
+import { calcCombinatorics } from '../../api/combinatorics.js';
+import { useToast } from '../../../../../components/Toast.jsx';
+import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
+import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
 
 const ADVANCED_OPS = ['pigeonhole', 'catalan', 'stirling', 'binomial'];
 
@@ -62,18 +64,13 @@ export default function Combinatorics() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h2>Combinatorics Calculator</h2>
-        <p className="subtitle">Calculate permutations, combinations, and solve counting problems</p>
-      </div>
+    <ModulePage
+      title="Combinatorics Calculator"
+      subtitle="Calculate permutations, combinations, and solve counting problems"
+    >
 
       {/* Basic Counting */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-calculator"></i> Basic Counting</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Basic Counting" icon="fa-calculator">
           <div className="theory-intro">
             <p>Combinatorics studies ways to count finite discrete structures, providing formulas for permutations, combinations, and other counting problems.</p>
           </div>
@@ -105,22 +102,19 @@ export default function Combinatorics() {
             </button>
           </div>
           {basicResult && (
-            <div className="result-container" tabIndex={0} aria-live="polite">
-              <h3><i className="fas fa-check-circle"></i> Result</h3>
-              <div className="math-display">
-                <strong>{basicResult.formula}</strong>{basicResult.value}
-              </div>
-            </div>
+            <ResultPanel
+              value={basicResult}
+              valueRenderer={(val) => (
+                <>
+                  <strong>{val.formula}</strong>{val.value}
+                </>
+              )}
+            />
           )}
-        </div>
-      </div>
+      </ModuleCard>
 
       {/* Advanced Counting */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-sitemap"></i> Advanced Counting</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Advanced Counting" icon="fa-sitemap">
           <div className="theory-intro">
             <p>Advanced counting techniques help solve more complex counting problems.</p>
           </div>
@@ -180,21 +174,11 @@ export default function Combinatorics() {
               <i className={`fas ${loadingAdv ? 'fa-spinner fa-spin' : 'fa-calculator'}`}></i> {loadingAdv ? 'Calculating…' : 'Calculate'}
             </button>
           </div>
-          {advResult !== null && (
-            <div className="result-container" tabIndex={0} aria-live="polite">
-              <h3><i className="fas fa-check-circle"></i> Result</h3>
-              <div className="math-display">{advResult}</div>
-            </div>
-          )}
-        </div>
-      </div>
+          {advResult !== null && <ResultPanel value={advResult} />}
+      </ModuleCard>
 
       {/* Formulas Reference */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-book"></i> Formulas Reference</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Formulas Reference" icon="fa-book">
           <div className="formulas-grid">
             <div className="formula-card">
               <h4>Factorial</h4>
@@ -217,8 +201,7 @@ export default function Combinatorics() {
               <p>Appears in many counting problems like the number of valid parentheses expressions.</p>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+      </ModuleCard>
+    </ModulePage>
   );
 }

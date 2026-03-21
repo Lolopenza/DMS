@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { calcAdjacencyMatrix } from '../api.js';
-import { useToast } from '../components/Toast.jsx';
+import { calcAdjacencyMatrix } from '../../api/adjacency-matrix.js';
+import { useToast } from '../../../../../components/Toast.jsx';
+import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
 
 const DEFAULT_SIZE = 4;
 
@@ -236,19 +237,14 @@ export default function AdjacencyMatrix() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: '1.5rem' }}>
-      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary,#6366f1)' }}>Adjacency Matrix Calculator</h1>
-        <p style={{ opacity: 0.7 }}>Edit, analyze, and visualize graphs using adjacency matrices</p>
-      </div>
+    <ModulePage
+      title="Adjacency Matrix Calculator"
+      subtitle="Edit, analyze, and visualize graphs using adjacency matrices"
+    >
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         {/* Matrix editor */}
-        <div className="card">
-          <div className="card-header">
-            <h3><i className="fas fa-th"></i> Matrix Editor</h3>
-          </div>
-          <div className="card-body">
+        <ModuleCard title="Matrix Editor" icon="fa-th">
             {/* Controls */}
             <div className="matrix-controls">
               <div className="form-group" style={{ margin: 0 }}>
@@ -334,26 +330,17 @@ export default function AdjacencyMatrix() {
                 </tbody>
               </table>
             </div>
-          </div>
-        </div>
+        </ModuleCard>
 
         {/* Graph visualization */}
-        <div className="card">
-          <div className="card-header">
-            <h3><i className="fas fa-project-diagram"></i> Graph</h3>
-          </div>
-          <div className="card-body">
+        <ModuleCard title="Graph" icon="fa-project-diagram">
             <div ref={cyRef} style={{ height: '320px', border: '1px solid #e0e7ef', borderRadius: '8px' }}></div>
-          </div>
-        </div>
+        </ModuleCard>
       </div>
 
       {/* Analysis */}
-      <div className="card" style={{ marginTop: '1.5rem' }}>
-        <div className="card-header">
-          <h3><i className="fas fa-chart-bar"></i> Analysis</h3>
-        </div>
-        <div className="card-body">
+      <div style={{ marginTop: '1.5rem' }}>
+        <ModuleCard title="Analysis" icon="fa-chart-bar">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
             {OPERATIONS.map(({ op, label }) => (
               <button key={op} className="btn btn-outline" disabled={loadingOp === op} onClick={() => handleAnalyze(op)}>
@@ -367,8 +354,8 @@ export default function AdjacencyMatrix() {
               <MatrixResult op={result.op} data={result.data} />
             </div>
           )}
-        </div>
+        </ModuleCard>
       </div>
-    </div>
+    </ModulePage>
   );
 }

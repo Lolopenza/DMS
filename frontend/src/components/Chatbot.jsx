@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { extractSubjectFromPath, extractModuleFromPath } from '../utils/routeHelpers.js';
 
 function renderMarkdown(text) {
   if (window.marked) {
@@ -59,6 +60,19 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
       }
     } catch {}
   }, []);
+
+  function getRouteScope() {
+    const pathname = window.location.pathname;
+    const subject = extractSubjectFromPath(pathname);
+    const module = extractModuleFromPath(pathname);
+
+    // Skip non-learning pages where module scoping is not meaningful.
+    if (module === 'calculator' || module === 'roadmap') {
+      return { subject, module: null };
+    }
+
+    return { subject, module };
+  }
 
   function saveState() {
     if (!widgetRef.current) return;
@@ -142,10 +156,11 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
     setTyping(true);
     try {
       const messages = updatedHistory.map(({ role, content }) => ({ role, content }));
+      const { subject, module } = getRouteScope();
       const res = await fetch('/api/v1/chat/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ messages, subject, module }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -283,7 +298,7 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.7em' }}>
               <span style={{ fontSize: '1.5em' }}><i className="fas fa-robot"></i></span>
-              <span>Discrete Math AI</span>
+              <span>Math Lab AI</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4em' }}>
               <button
@@ -375,7 +390,7 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
               ref={inputRef}
               id="chatbot-input"
               type="text"
-              placeholder="Ask a discrete math question..."
+              placeholder="Ask a math question..."
               maxLength={500}
               value={input}
               onChange={e => setInput(e.target.value)}

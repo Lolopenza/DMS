@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { calcAutomata } from '../api.js';
-import { useToast } from '../components/Toast.jsx';
+import { calcAutomata } from '../../api/automata.js';
+import { useToast } from '../../../../../components/Toast.jsx';
+import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
 
 // ── Transition table helpers ─────────────────────────────────────────────────
 
@@ -254,17 +255,12 @@ export default function Automata() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h2>Automata Calculator</h2>
-        <p className="subtitle">Simulate DFA and NFA — check string acceptance</p>
-      </div>
+    <ModulePage
+      title="Automata Calculator"
+      subtitle="Simulate DFA and NFA — check string acceptance"
+    >
 
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-cogs"></i> Automaton Simulator</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Automaton Simulator" icon="fa-cogs">
 
           {/* Type selector */}
           <div className="form-group" style={{ maxWidth: '360px', marginBottom: '1.25rem' }}>
@@ -402,29 +398,22 @@ export default function Automata() {
           </button>
 
           <AutomataResult result={result} inputString={inputString} />
-        </div>
-      </div>
+      </ModuleCard>
 
       {/* State Diagram */}
-      <div className="card" style={{ marginTop: '1.5rem' }}>
-        <div className="card-header">
-          <h3><i className="fas fa-project-diagram"></i> State Diagram</h3>
-        </div>
-        <div className="card-body">
+      <div style={{ marginTop: '1.5rem' }}>
+        <ModuleCard title="State Diagram" icon="fa-project-diagram">
           <div ref={cyRef} style={{ height: '320px', border: '1px solid #e0e7ef', borderRadius: '8px' }}></div>
           <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', opacity: 0.7, display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
             <span><span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: '50%', background: '#8b5cf6', marginRight: 5, verticalAlign: 'middle' }}></span>Start state</span>
             <span><span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: '50%', background: '#6366f1', border: '3px solid #22c55e', marginRight: 5, verticalAlign: 'middle' }}></span>Accept state</span>
           </div>
-        </div>
+        </ModuleCard>
       </div>
 
       {/* Legend */}
-      <div className="card" style={{ marginTop: '1.5rem' }}>
-        <div className="card-header">
-          <h3><i className="fas fa-book"></i> Notation Guide</h3>
-        </div>
-        <div className="card-body">
+      <div style={{ marginTop: '1.5rem' }}>
+        <ModuleCard title="Notation Guide" icon="fa-book">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.9rem' }}>
             <div>
               <span style={{ color: '#22c55e', fontWeight: 700, marginRight: '0.4rem' }}>→ q0</span>
@@ -445,8 +434,8 @@ export default function Automata() {
               </div>
             )}
           </div>
-        </div>
+        </ModuleCard>
       </div>
-    </div>
+    </ModulePage>
   );
 }

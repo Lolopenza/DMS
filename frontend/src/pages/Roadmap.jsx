@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../components/Toast.jsx';
+import { CALCULATOR_PATH } from '../routes.js';
 
 const steps = [
   {
@@ -132,7 +133,7 @@ export default function Roadmap() {
           <Link to="/" className="roadmap-btn roadmap-btn-back">
             <i className="fas fa-arrow-left"></i> Back to home
           </Link>
-          <Link to="/calculator" className="roadmap-btn roadmap-btn-ai">
+          <Link to={CALCULATOR_PATH} className="roadmap-btn roadmap-btn-ai">
             <i className="fas fa-calculator"></i> Open Calculator
           </Link>
           <button type="button" className="roadmap-btn roadmap-btn-share" onClick={share}>

@@ -15,11 +15,26 @@ async function request(url, options = {}) {
       ...(options.headers || {}),
     },
   });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.detail || data.error || `HTTP ${res.status}`);
+
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
   }
-  return data;
+
+  if (!res.ok) {
+    const apiMessage = data?.error?.message;
+    const legacyMessage = data?.detail || data?.error;
+    const fallback = `HTTP ${res.status}`;
+    const error = new Error(apiMessage || legacyMessage || fallback);
+    error.status = data?.error?.status || res.status;
+    error.code = data?.error?.code || null;
+    error.details = data?.error?.details || null;
+    throw error;
+  }
+
+  return data ?? {};
 }
 
 // ── Math Engine ──────────────────────────────────────────────────────────────

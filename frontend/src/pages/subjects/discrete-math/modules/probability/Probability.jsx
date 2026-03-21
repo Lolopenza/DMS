@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { calcProbability } from '../api.js';
-import { useToast } from '../components/Toast.jsx';
+import { calcProbability } from '../../api/probability.js';
+import { useToast } from '../../../../../components/Toast.jsx';
+import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
+import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
 
 export default function Probability() {
   const { showSuccess, showError } = useToast();
@@ -50,17 +52,12 @@ export default function Probability() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h2>Probability Calculator</h2>
-        <p className="subtitle">Calculate basic and conditional probabilities, distributions</p>
-      </div>
+    <ModulePage
+      title="Probability Calculator"
+      subtitle="Calculate basic and conditional probabilities, distributions"
+    >
 
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-dice"></i> Probability Calculator</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Probability Calculator" icon="fa-dice">
           <div className="form-container">
             <div className="form-group">
               <label htmlFor="probOp"><i className="fas fa-cog"></i> Type</label>
@@ -142,30 +139,17 @@ export default function Probability() {
           </div>
 
           {result && (
-            <div className="result-container" tabIndex={0} aria-live="polite">
-              <h3><i className="fas fa-check-circle"></i> Result</h3>
-              <div className="math-display">
-                {typeof result.result !== 'undefined'
-                  ? (typeof result.result === 'number' ? result.result.toFixed(6) : String(result.result))
-                  : JSON.stringify(result)}
-              </div>
-              {result.steps && (
-                <div className="explanation-box">
-                  <h4>Steps</h4>
-                  <div>{result.steps}</div>
-                </div>
-              )}
-            </div>
+            <ResultPanel
+              value={result.result}
+              fallbackData={result}
+              valueRenderer={(val) => (typeof val === 'number' ? val.toFixed(6) : String(val))}
+              steps={result.steps}
+            />
           )}
-        </div>
-      </div>
+      </ModuleCard>
 
       {/* Reference */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-book"></i> Probability Formulas</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Probability Formulas" icon="fa-book">
           <div className="formulas-grid">
             <div className="formula-card">
               <h4>Basic Probability</h4>
@@ -184,8 +168,7 @@ export default function Probability() {
               <div className="formula">P(A') = 1 - P(A)</div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+      </ModuleCard>
+    </ModulePage>
   );
 }

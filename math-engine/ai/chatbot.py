@@ -6,6 +6,7 @@ import os
 from openai import OpenAI
 from typing import List, Dict, Optional
 from dotenv import load_dotenv
+from ai.rag.pipeline import get_rag_pipeline
 
 _ai_dir = os.path.dirname(os.path.abspath(__file__))
 _math_engine_root = os.path.dirname(_ai_dir)
@@ -21,6 +22,7 @@ class ChatbotService:
         self.api_key = os.environ.get("OPENROUTER_API_KEY", "")
         self.model = os.environ.get("OPENROUTER_MODEL", "google/gemma-3-12b-it:free")
         self.client = None
+        self.rag_pipeline = get_rag_pipeline()
         
         if self.api_key:
             self.client = OpenAI(
@@ -48,13 +50,15 @@ class ChatbotService:
         
         return formatted_messages
     
-    def chat(self, messages: List[Dict]) -> Dict[str, str]:
+    def chat(self, messages: List[Dict], subject: Optional[str] = None, module: Optional[str] = None) -> Dict[str, str]:
         """
         Send messages to AI and get response
         
         Args:
             messages: List of message dicts with 'role' and 'content'
                     Can include 'image' field for vision support
+            subject: Optional subject scope for retrieval, e.g. 'discrete-math'
+            module: Optional module scope for retrieval, e.g. 'combinatorics'
         
         Returns:
             Dict with 'reply' or 'error'
@@ -66,7 +70,8 @@ class ChatbotService:
             return {'error': 'Missing or invalid messages'}
         
         try:
-            formatted_messages = self.format_messages(messages)
+            augmented_messages = self.rag_pipeline.augment_messages(messages, subject=subject, module=module)
+            formatted_messages = self.format_messages(augmented_messages)
             
             completion = self.client.chat.completions.create(
                 extra_headers={

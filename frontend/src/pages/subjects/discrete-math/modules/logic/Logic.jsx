@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { calcLogic } from '../api.js';
-import { useToast } from '../components/Toast.jsx';
+import { calcLogic } from '../../api/logic.js';
+import { useToast } from '../../../../../components/Toast.jsx';
+import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
 
 export default function Logic() {
   const { showSuccess, showError } = useToast();
@@ -105,18 +106,13 @@ export default function Logic() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h2>Logic Calculator</h2>
-        <p className="subtitle">Generate truth tables and evaluate logical expressions</p>
-      </div>
+    <ModulePage
+      title="Logic Calculator"
+      subtitle="Generate truth tables and evaluate logical expressions"
+    >
 
       {/* Truth Table */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-table"></i> Truth Table Generator</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Truth Table Generator" icon="fa-table">
           <div className="theory-intro">
             <p>A truth table shows all possible combinations of input values and the resulting output for a logical expression.</p>
           </div>
@@ -171,15 +167,10 @@ export default function Logic() {
               )}
             </div>
           )}
-        </div>
-      </div>
+      </ModuleCard>
 
       {/* Equivalence Checker */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-calculator"></i> Logical Equivalence Checker</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Logical Equivalence Checker" icon="fa-calculator">
           <div className="theory-intro">
             <p>Check if two logical expressions are equivalent by comparing their truth tables.</p>
           </div>
@@ -214,15 +205,10 @@ export default function Logic() {
               }</div>
             </div>
           )}
-        </div>
-      </div>
+      </ModuleCard>
 
       {/* Logic Reference */}
-      <div className="card">
-        <div className="card-header">
-          <h3><i className="fas fa-book"></i> Logic Reference</h3>
-        </div>
-        <div className="card-body">
+      <ModuleCard title="Logic Reference" icon="fa-book">
           <div className="reference-grid">
             <div className="reference-item">
               <h4>Negation (NOT)</h4>
@@ -271,8 +257,7 @@ export default function Logic() {
               </table>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+      </ModuleCard>
+    </ModulePage>
   );
 }
