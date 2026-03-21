@@ -36,12 +36,24 @@ math-engine/htmlcov/
 # ─── Java / Gradle ────────────────────────────────────────────────────────────
 backend/.gradle/
 backend/build/
+backend/target/
 backend/out/
 !backend/gradle/wrapper/gradle-wrapper.jar
 *.class
 *.jar
 *.war
 *.ear
+
+# ─── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/.vite/
+frontend/dist/
+frontend/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # ─── IDE ──────────────────────────────────────────────────────────────────────
 .vscode/
@@ -87,3 +99,12 @@ instance/
 *.tmp
 *.bak
 *.cache
+
+# ─── Local generated reports ─────────────────────────────────────────────────
+math-engine/reports/
+
+# ─── Docs (optional) ─────────────────────────────────────────────────────────
+# If docs are local drafts only, uncomment the next line.
+/docs/
+
+frontend/src/pages/subjects/linear-algebra/
