@@ -1,6 +1,6 @@
-# Discrete Math Calculator (DMC)
+# Math Lab Platform
 
-Монорепозиторий с фронтендом на React/Vite и вычислительным сервисом на FastAPI.
+Монорепозиторий образовательной math-платформы с фронтендом на React/Vite и вычислительным сервисом на FastAPI.
 
 ## Что запускаем
 
@@ -93,3 +93,29 @@ docker-compose down
 - `python web_app.py` не работает: в текущей версии нет Flask-приложения `web_app.py`, используйте `python app.py` в папке `math-engine`.
 - Ошибки CORS/404 с фронта: убедитесь, что `math-engine` запущен на `8081`, а фронт на `3000`.
 - Не работает чат: проверьте `OPENROUTER_API_KEY`.
+
+## Тестирование
+
+Быстрые команды из корня репозитория:
+
+```bash
+make test-python
+make rag-eval
+```
+
+Проверка frontend:
+
+```bash
+cd frontend
+npm run build
+```
+
+Подробные инструкции:
+
+- `docs/TESTING.md`
+
+## Дальнейшее развитие Frontend
+
+План масштабирования до полноценной платформы с большим числом секций:
+
+- `docs/FRONTEND-FULL-PLAN.md`
