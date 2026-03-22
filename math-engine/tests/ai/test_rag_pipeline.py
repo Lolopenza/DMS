@@ -1,4 +1,4 @@
-from ai.rag.pipeline import get_rag_pipeline
+from dmc_ai.rag.pipeline import get_rag_pipeline
 
 
 def test_rag_retrieve_returns_relevant_hits_for_matrix_query():

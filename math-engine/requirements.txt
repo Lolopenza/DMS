@@ -20,6 +20,7 @@ pandas
 matplotlib-venn
 
 # ─── AI & APIs ────────────────────────────────────────────────────────────────
+google-genai==1.68.0
 openai
 requests
 

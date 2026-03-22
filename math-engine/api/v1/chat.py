@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from ai.chatbot import get_chatbot_service
+from dmc_ai.chatbot import get_chatbot_service
 
 router = APIRouter(prefix='/api/v1/chat', tags=['AI Chat'])
 

@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
@@ -18,6 +19,9 @@ from fastapi.responses import JSONResponse
 
 _app_dir = os.path.dirname(__file__)
 _repo_root = os.path.dirname(_app_dir)
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+
 load_dotenv(os.path.join(_repo_root, '.env'))
 load_dotenv(os.path.join(_app_dir, '.env'), override=True)
 
@@ -49,11 +53,11 @@ def _error_envelope(request: Request, status_code: int, code: str, message: str,
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    api_key = os.environ.get('OPENROUTER_API_KEY', '')
+    api_key = os.environ.get('GOOGLE_AI_API_KEY', '')
     if api_key:
-        logger.info('OPENROUTER_API_KEY is set: %s...%s', api_key[:4], api_key[-4:])
+        logger.info('GOOGLE_AI_API_KEY is set: %s...%s', api_key[:4], api_key[-4:])
     else:
-        logger.warning('OPENROUTER_API_KEY is not set — chatbot will not work')
+        logger.warning('GOOGLE_AI_API_KEY is not set — chatbot will not work')
     yield
 
 

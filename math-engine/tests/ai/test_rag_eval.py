@@ -1,5 +1,5 @@
-from ai.rag.eval import check_precision_gate, evaluate_precision_at_k, load_eval_cases
-from ai.rag.pipeline import get_rag_pipeline
+from dmc_ai.rag.eval import check_precision_gate, evaluate_precision_at_k, load_eval_cases
+from dmc_ai.rag.pipeline import get_rag_pipeline
 
 
 def test_rag_eval_cases_file_is_loadable():
