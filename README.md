@@ -11,7 +11,7 @@
 | **backend** | 8080 | Spring Boot: orchestration (internal) |
 | **postgres** | 5432 | Database (internal only) |
 | **redis** | 6379 | Cache (internal only) |
-| **rabbitmq** | 5672, 15672 | Message broker (internal only) |
+| **rabbitmq** | 5673 -> 5672, 15673 -> 15672 | Message broker (internal only) |
 
 Во время локальной разработки фронтенд проксирует:
 
@@ -82,7 +82,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 - Frontend: `http://localhost:3000`
 - Math-engine: `http://localhost:8081`
 - Backend: `http://localhost:8080`
-- RabbitMQ UI: `http://localhost:15672`
+- RabbitMQ UI: http://localhost:15673
 
 **Production**: Доступен только через nginx:
 - `http://localhost` (или ваш domain)
