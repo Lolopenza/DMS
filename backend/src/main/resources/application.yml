@@ -9,6 +9,47 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+  jackson:
+    default-property-inclusion: non_null
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:false}
 
 server:
   port: 8080
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  security:
+    jwt:
+      issuer: dmc-backend
+      access-token-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:900}
+      refresh-token-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:604800}
+      key: ${JWT_SECRET:change-me-to-a-long-random-string-at-least-64-chars}
+      cookie-secure: ${JWT_COOKIE_SECURE:false}
+      cookie-domain: ${JWT_COOKIE_DOMAIN:}
+      cookie-same-site: ${JWT_COOKIE_SAME_SITE:Lax}
+    cors:
+      allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:3000,http://localhost:5173,https://localhost:3000,https://localhost:5173}
+      allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,PATCH,DELETE,OPTIONS}
+      allowed-headers: ${CORS_ALLOWED_HEADERS:*}
+      exposed-headers: ${CORS_EXPOSED_HEADERS:Set-Cookie}
+      allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+  auth:
+    lockout-threshold: ${AUTH_LOCKOUT_THRESHOLD:5}
+    lockout-minutes: ${AUTH_LOCKOUT_MINUTES:15}
+    password-reset-ttl-minutes: ${AUTH_PASSWORD_RESET_TTL_MINUTES:30}
