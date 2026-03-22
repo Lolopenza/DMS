@@ -21,7 +21,7 @@ function saveStoredSession(session) {
     }
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
   } catch {
-    // Ignore storage failures in UI-only auth mode.
+    // Ignore storage failures for local demo auth sessions.
   }
 }
 
@@ -29,12 +29,13 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(() => loadStoredSession());
 
   function login({ email, name }) {
+    const normalizedEmail = email?.trim() || 'demo-admin@mathlab.edu';
     const nextSession = {
-      id: 'mock-user-1',
-      email,
-      name: name || email?.split('@')[0] || 'Student',
-      role: 'student',
-      isMock: true,
+      id: 'demo-user-1',
+      email: normalizedEmail,
+      name: name || normalizedEmail.split('@')[0] || 'Demo User',
+      role: 'demo',
+      isDemoSession: true,
       signedAt: new Date().toISOString(),
     };
     setSession(nextSession);

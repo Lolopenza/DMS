@@ -1,74 +1,53 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { calcGraphTheory } from '../../api/graph-theory.js';
+import { Link } from 'react-router-dom';
 import { useToast } from '../../../../../components/Toast.jsx';
 import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
+import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
 
-function GraphResult({ result, algorithm }) {
+function GraphResult({ result }) {
   if (!result) return null;
 
-  // BFS / DFS / topological_sort → array of node IDs
-  if (Array.isArray(result)) {
+  if (result.matrix && result.labels) {
     return (
-      <div className="explanation-box">
-        <p style={{ margin: 0, fontFamily: 'var(--font-mono,monospace)', fontSize: '1rem' }}>
-          {result.join(' → ')}
-        </p>
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        <div>
+          <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Adjacency Matrix</h4>
+          <table className="truth-table" style={{ maxWidth: '560px' }}>
+            <thead>
+              <tr>
+                <th></th>
+                {result.labels.map(label => <th key={`h-${label}`}>{label}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {result.matrix.map((row, i) => (
+                <tr key={`r-${result.labels[i]}`}>
+                  <th>{result.labels[i]}</th>
+                  {row.map((cell, j) => <td key={`c-${i}-${j}`}>{cell}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Vertex Degrees</h4>
+          <table className="truth-table" style={{ maxWidth: '280px' }}>
+            <thead>
+              <tr><th>Vertex</th><th>Degree</th></tr>
+            </thead>
+            <tbody>
+              {result.degrees.map((item) => (
+                <tr key={`d-${item.node}`}>
+                  <td>{item.node}</td>
+                  <td>{item.degree}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
-  }
-
-  // Dijkstra → { distances: {A:0, B:3}, predecessors: {B:'A'} }
-  if (result.distances) {
-    return (
-      <table className="truth-table" style={{ maxWidth: '400px' }}>
-        <thead><tr><th>Node</th><th>Distance</th><th>Via</th></tr></thead>
-        <tbody>
-          {Object.entries(result.distances).map(([node, dist]) => (
-            <tr key={node}>
-              <td>{node}</td>
-              <td>{dist === Infinity || dist === null ? '∞' : dist}</td>
-              <td>{result.predecessors?.[node] ?? '—'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  }
-
-  // Kruskal MST → { edges: [[u,v,w], ...], total_weight }
-  if (result.edges && result.total_weight !== undefined) {
-    return (
-      <div>
-        <table className="truth-table" style={{ maxWidth: '360px', marginBottom: '0.75rem' }}>
-          <thead><tr><th>From</th><th>To</th><th>Weight</th></tr></thead>
-          <tbody>
-            {result.edges.map(([u, v, w], i) => (
-              <tr key={i}><td>{u}</td><td>{v}</td><td>{w}</td></tr>
-            ))}
-          </tbody>
-        </table>
-        <p style={{ margin: 0, fontWeight: 600 }}>Total weight: {result.total_weight}</p>
-      </div>
-    );
-  }
-
-  // Connected components → array of arrays
-  if (Array.isArray(result) && Array.isArray(result[0])) {
-    return (
-      <div>
-        {result.map((comp, i) => (
-          <div key={i} style={{ marginBottom: '0.4rem' }}>
-            <span style={{ color: 'var(--primary,#6366f1)', fontWeight: 600 }}>Component {i + 1}:</span>{' '}
-            {'{' + comp.join(', ') + '}'}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Boolean results (has_cycle, is_connected, etc.)
-  if (typeof result === 'boolean') {
-    return <p style={{ fontSize: '1.2rem', fontWeight: 600 }}>{result ? 'Yes ✓' : 'No ✗'}</p>;
   }
 
   // Fallback — pretty JSON
@@ -78,14 +57,6 @@ function GraphResult({ result, algorithm }) {
     </pre>
   );
 }
-
-const ALGORITHMS = [
-  { value: 'bfs', label: 'BFS (Breadth-First Search)' },
-  { value: 'dfs', label: 'DFS (Depth-First Search)' },
-  { value: 'dijkstra', label: "Dijkstra's Shortest Path" },
-  { value: 'mst_kruskal', label: "Kruskal's MST" },
-  { value: 'is_connected', label: 'Check Connectivity' },
-];
 
 const DEFAULT_ELEMENTS = [
   { data: { id: '1', label: '1' } },
@@ -103,11 +74,8 @@ export default function GraphTheory() {
   const cyRef = useRef(null);
   const cyInstance = useRef(null);
 
-  const [algorithm, setAlgorithm] = useState('bfs');
-  const [startNode, setStartNode] = useState('1');
   const [directed, setDirected] = useState(false);
   const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   // Edge input state for manual graph editing
   const [newEdgeSrc, setNewEdgeSrc] = useState('');
@@ -155,7 +123,7 @@ export default function GraphTheory() {
 
   function addEdge() {
     if (!cyInstance.current || !newEdgeSrc || !newEdgeTgt) return;
-    const id = `${newEdgeSrc}-${newEdgeTgt}`;
+    const id = `${newEdgeSrc}-${newEdgeTgt}-${Date.now()}`;
     if (cyInstance.current.getElementById(id).length) return;
     cyInstance.current.add({ data: { id, source: newEdgeSrc, target: newEdgeTgt, weight: Number(newEdgeWeight) } });
     setNewEdgeSrc(''); setNewEdgeTgt(''); setNewEdgeWeight(1);
@@ -173,47 +141,57 @@ export default function GraphTheory() {
     else showError(`Element "${deleteId}" not found`);
   }
 
-  const ALGO_OP_MAP = {
-    bfs: 'bfs',
-    dfs: 'dfs',
-    dijkstra: 'dijkstra',
-    mst_kruskal: 'kruskal',
-    is_connected: 'connected_components',
-  };
-
-  async function runAlgorithm() {
-    setLoading(true);
-    try {
-      const { vertices, edges } = getGraphData();
-      const operation = ALGO_OP_MAP[algorithm] ?? algorithm;
-      const payload = {
-        operation,
-        graph: { vertices, edges, directed, weighted: true },
-        start_node: startNode || (vertices[0] ?? '1'),
-      };
-      const data = await calcGraphTheory(payload);
-      setResult(data);
-      const resultData = data.result ?? data;
-      const path = resultData.path ?? (Array.isArray(resultData) ? resultData : null);
-      if (path && cyInstance.current) {
-        cyInstance.current.elements().removeClass('highlighted');
-        path.forEach(nodeId => {
-          cyInstance.current.getElementById(String(nodeId)).addClass('highlighted');
-        });
-      }
-      showSuccess(`${algorithm} completed`);
-    } catch (err) {
-      showError('Error: ' + err.message);
-    } finally {
-      setLoading(false);
+  function analyzeGraph() {
+    const { vertices, edges } = getGraphData();
+    if (!vertices.length) {
+      showError('Add at least one node to analyze the graph');
+      return;
     }
+
+    const indexMap = new Map(vertices.map((v, i) => [v, i]));
+    const matrix = Array.from({ length: vertices.length }, () =>
+      Array.from({ length: vertices.length }, () => 0)
+    );
+
+    edges.forEach((edge) => {
+      const i = indexMap.get(edge.u);
+      const j = indexMap.get(edge.v);
+      if (typeof i !== 'number' || typeof j !== 'number') return;
+      matrix[i][j] += 1;
+      if (!directed) {
+        matrix[j][i] += 1;
+      }
+    });
+
+    const degrees = vertices.map((node, idx) => {
+      if (directed) {
+        const outDegree = matrix[idx].reduce((sum, val) => sum + val, 0);
+        const inDegree = matrix.reduce((sum, row) => sum + row[idx], 0);
+        return { node, degree: `${inDegree} in / ${outDegree} out` };
+      }
+      const degree = matrix[idx].reduce((sum, val) => sum + val, 0);
+      return { node, degree };
+    });
+
+    setResult({ labels: vertices, matrix, degrees });
+    showSuccess('Adjacency matrix and degrees generated');
   }
 
   return (
     <ModulePage
-      title="Graph Theory Calculator"
-      subtitle="Visualize graphs and run algorithms"
+      title="Graph Theory (Intro)"
+      subtitle="Build graphs, inspect adjacency, and check basic properties"
     >
+
+      <ModuleCard title="Deep Dive Connection" icon="fa-route">
+          <p>
+            This module focuses on graph structure, visual properties, adjacency, and degrees.
+            To run search algorithms like DFS or BFS, please visit the Algorithms track.
+          </p>
+          <Link to="/algorithms/modules/graph-algorithms" className="btn btn-outline btn-deep-dive">
+            <i className="fas fa-arrow-right"></i> Looking for DFS/BFS? Go to Graph Algorithms.
+          </Link>
+      </ModuleCard>
 
       <ModuleCard title="Graph Visualization" icon="fa-project-diagram">
           {/* Controls */}
@@ -266,28 +244,19 @@ export default function GraphTheory() {
           {/* Cytoscape container — wrapped via useRef */}
           <div ref={cyRef} style={{ height: '400px', border: '1px solid #e0e7ef', borderRadius: '8px', marginBottom: '1rem' }}></div>
 
-          {/* Algorithm controls */}
+          {/* Intro analysis controls */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label htmlFor="algorithm">Algorithm</label>
-              <select id="algorithm" value={algorithm} onChange={e => setAlgorithm(e.target.value)}>
-                {ALGORITHMS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
-              </select>
-            </div>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label htmlFor="startNode">Start Node</label>
-              <input type="text" id="startNode" value={startNode} onChange={e => setStartNode(e.target.value)} style={{ width: '80px' }} />
-            </div>
-            <button className="btn btn-primary" onClick={runAlgorithm} disabled={loading}>
-              <i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-play'}`}></i> {loading ? 'Running…' : 'Run'}
+            <button className="btn btn-primary" onClick={analyzeGraph}>
+              <i className="fas fa-table"></i> Generate Adjacency + Degrees
             </button>
           </div>
 
           {result && (
-            <div className="result-container" tabIndex={0} aria-live="polite" style={{ marginTop: '1rem' }}>
-              <h3><i className="fas fa-check-circle"></i> Result</h3>
-              <GraphResult result={result.result ?? result} algorithm={algorithm} />
-            </div>
+            <ResultPanel
+              title="Result"
+              value={result}
+              valueRenderer={() => <GraphResult result={result} />}
+            />
           )}
       </ModuleCard>
     </ModulePage>

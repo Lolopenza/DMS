@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { calcSetTheory } from '../../api/set-theory.js';
 import { useToast } from '../../../../../components/Toast.jsx';
 import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
+import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
 
 const SET_OPS = [
   { op: 'union', label: 'A ∪ B' },
@@ -142,19 +143,11 @@ function ResultBox({ result }) {
     // Remove "operation_name: True/False/[...]" summary lines — already shown in result
     .filter(s => !/^[a-z_]+:\s*(True|False|\[)/i.test(s));
   return (
-    <div className="result-container" tabIndex={0} aria-live="polite">
-      <div className="math-display" style={{ fontSize: '1.15rem', letterSpacing: '0.01em' }}>
-        {display}
-      </div>
-      {steps.length > 0 && (
-        <div className="explanation-box" style={{ marginTop: '1rem' }}>
-          <h4>Steps</h4>
-          <ol style={{ margin: 0, paddingLeft: '1.2rem' }}>
-            {steps.map((s, i) => <li key={i} style={{ marginBottom: '0.25rem', fontSize: '0.9rem' }}>{s}</li>)}
-          </ol>
-        </div>
-      )}
-    </div>
+    <ResultPanel
+      title="Result"
+      value={display}
+      steps={steps}
+    />
   );
 }
 

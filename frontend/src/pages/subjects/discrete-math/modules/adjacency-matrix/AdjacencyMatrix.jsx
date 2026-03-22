@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { calcAdjacencyMatrix } from '../../api/adjacency-matrix.js';
 import { useToast } from '../../../../../components/Toast.jsx';
 import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
+import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
 
 const DEFAULT_SIZE = 4;
 
@@ -349,10 +350,11 @@ export default function AdjacencyMatrix() {
             ))}
           </div>
           {result && (
-            <div className="result-container" tabIndex={0} aria-live="polite">
-              <h3><i className="fas fa-check-circle"></i> {result.op}</h3>
-              <MatrixResult op={result.op} data={result.data} />
-            </div>
+            <ResultPanel
+              title={result.op}
+              value={result.data}
+              valueRenderer={() => <MatrixResult op={result.op} data={result.data} />}
+            />
           )}
         </ModuleCard>
       </div>

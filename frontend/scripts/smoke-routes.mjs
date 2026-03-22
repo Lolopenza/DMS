@@ -177,8 +177,8 @@ function runSmokeRoutes() {
 
   check(
     19,
-    'DEFAULT_SUBJECT ("discrete-math") has 8 sections',
-    SECTIONS.length === 8,
+    'DEFAULT_SUBJECT ("discrete-math") has 7 intro sections',
+    SECTIONS.length === 7,
   );
 
   // ============================================================================
@@ -208,10 +208,10 @@ function runSmokeRoutes() {
     Boolean(discreteMathModules) && typeof discreteMathModules === 'object',
   );
 
-  const expectedModules = ['combinatorics', 'logic', 'set-theory', 'graph-theory', 'automata', 'number-theory', 'probability', 'adjacency-matrix'];
+  const expectedModules = ['combinatorics', 'logic', 'set-theory', 'graph-theory', 'number-theory', 'probability', 'adjacency-matrix'];
   check(
     22,
-    `All 8 modules registered (${expectedModules.join(', ')})`,
+    `All 7 modules registered (${expectedModules.join(', ')})`,
     expectedModules.every((m) => Boolean(discreteMathModules[m])),
   );
 

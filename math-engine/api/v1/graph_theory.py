@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from schemas.graph_schemas import GraphTheoryRequest
-from core.graph_theory.basics import Graph
-from core.graph_theory.algorithms import (
+from schemas.discrete_math.graph import GraphTheoryRequest
+from core.discrete_math.graph_theory.basics import Graph
+from core.discrete_math.graph_theory.algorithms import (
     depth_first_search, breadth_first_search, find_connected_components,
     has_cycle, has_cycle_undirected, kruskal_mst, dijkstra,
 )

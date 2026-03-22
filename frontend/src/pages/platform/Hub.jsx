@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TRACKS_PATH } from '../../routes.js';
 import { getSubjectCatalog } from '../../routes.js';
@@ -25,15 +25,15 @@ const VALUE_PILLARS = [
 ];
 
 const TRUST_METRICS = [
-  { value: '8+', label: 'Discrete math modules available now' },
-  { value: '3', label: 'Core learning formats in rollout' },
+  { value: '7+', label: 'Discrete intro modules available now' },
+  { value: '5', label: 'Active learning tracks' },
   { value: '100+', label: 'Automated checks in math-engine baseline' },
 ];
 
 const FAQ_ITEMS = [
   {
     question: 'What is already available today?',
-    answer: 'Discrete Mathematics track is active with calculator sections, roadmap, and AI chat integration.',
+    answer: 'All five core tracks are active with subject-first routing and calculator workspaces.',
   },
   {
     question: 'Is account/auth fully backend-connected?',
@@ -48,6 +48,7 @@ const FAQ_ITEMS = [
 export default function Hub() {
   const tracks = getSubjectCatalog();
   const activeTrack = tracks.find((track) => track.status === 'active' && track.subjectPath);
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   useEffect(() => {
     document.body.classList.add('hub-page');
@@ -119,10 +120,20 @@ export default function Hub() {
       >
         <div className="platform-faq-stack">
           {FAQ_ITEMS.map((item, idx) => (
-            <article key={item.question} className="platform-faq-card">
+            <article key={item.question} className={`platform-faq-card ${openFaqIndex === idx ? 'is-open' : ''}`}>
               <div className="platform-faq-index">0{idx + 1}</div>
-              <h3>{item.question}</h3>
-              <p>{item.answer}</p>
+              <button
+                type="button"
+                className="platform-faq-trigger"
+                aria-expanded={openFaqIndex === idx}
+                onClick={() => setOpenFaqIndex((prev) => (prev === idx ? -1 : idx))}
+              >
+                <h3>{item.question}</h3>
+                <i className="fas fa-chevron-down"></i>
+              </button>
+              <div className={`platform-faq-answer ${openFaqIndex === idx ? 'is-open' : ''}`}>
+                <p>{item.answer}</p>
+              </div>
             </article>
           ))}
         </div>

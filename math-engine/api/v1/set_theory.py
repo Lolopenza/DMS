@@ -3,8 +3,8 @@ from collections import Counter
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from schemas.set_theory_schemas import SetOperationRequest, SetTheoryRequest
-from core.set_theory.set_operations import (
+from schemas.discrete_math.set_theory import SetOperationRequest, SetTheoryRequest
+from core.discrete_math.set_theory.set_operations import (
     get_power_set, set_complement, cartesian_product,
     set_union, set_intersection, set_difference,
     set_symmetric_difference, is_subset,

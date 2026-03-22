@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import Hub from './pages/platform/Hub.jsx';
@@ -10,6 +10,7 @@ import Calculator from './pages/Calculator.jsx';
 import Roadmap from './pages/Roadmap.jsx';
 import Tracks from './pages/platform/Tracks.jsx';
 import SubjectEntry from './pages/platform/SubjectEntry.jsx';
+import ModuleDashboard from './pages/platform/ModuleDashboard.jsx';
 import SubjectRouter from './pages/subjects/_shared/SubjectRouter.jsx';
 import SignIn from './pages/auth/SignIn.jsx';
 import SignUp from './pages/auth/SignUp.jsx';
@@ -40,6 +41,17 @@ const MODULE_COMPONENTS = {
   // Phase 2: All discrete-math modules now use SubjectRouter for dynamic loading
   // MODULE_COMPONENTS enum deprecated - use discreteMathModules registry instead
 };
+
+const ModuleModePlaceholder = lazy(() => import('./pages/platform/ModuleModePlaceholder.jsx'));
+
+function RouteLoader() {
+  return (
+    <div className="ui-state ui-state-loading" role="status" style={{ margin: '6rem auto 0', maxWidth: '720px' }}>
+      <h3><i className="fas fa-spinner fa-spin"></i> Loading module mode</h3>
+      <p className="ui-state-message">Preparing theory and video content...</p>
+    </div>
+  );
+}
 
 export default function App() {
   const [chatHistory, setChatHistory] = useState([]);
@@ -87,6 +99,16 @@ export default function App() {
             <Route path="/:subject" element={<SubjectEntry />} />
             <Route path="/:subject/calculator" element={<Calculator />} />
             <Route path="/:subject/roadmap" element={<Roadmap />} />
+            <Route path="/:subject/:module" element={<ModuleDashboard />} />
+            <Route path="/:subject/:module/calculator" element={<SubjectRouter />} />
+            <Route
+              path="/:subject/:module/:mode"
+              element={(
+                <Suspense fallback={<RouteLoader />}>
+                  <ModuleModePlaceholder />
+                </Suspense>
+              )}
+            />
             <Route path={CALCULATOR_PATH} element={<Calculator />} />
             <Route path={ROADMAP_PATH} element={<Roadmap />} />
             

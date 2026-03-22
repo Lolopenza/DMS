@@ -7,7 +7,7 @@ except ImportError:
     HAS_SCIPY = False
 
 from fastapi import APIRouter, HTTPException
-from schemas.graph_schemas import (
+from schemas.discrete_math.graph import (
     MatrixPowerRequest, MatrixNodeRequest, MatrixRequest, GraphInfoRequest,
 )
 

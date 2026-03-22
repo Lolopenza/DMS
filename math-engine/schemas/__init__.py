@@ -1,13 +1,13 @@
-from .combinatorics_schemas import CombinatoricsRequest
-from .logic_schemas import LogicRequest
-from .set_theory_schemas import SetOperationRequest, SetTheoryRequest
-from .automata_schemas import AutomataRequest, PDARequest, TMRequest
-from .graph_schemas import GraphTheoryRequest, MatrixPowerRequest, MatrixNodeRequest, MatrixRequest, GraphInfoRequest
-from .probability_schemas import (
+from .discrete_math.combinatorics import CombinatoricsRequest
+from .discrete_math.logic import LogicRequest
+from .discrete_math.set_theory import SetOperationRequest, SetTheoryRequest
+from .discrete_math.automata import AutomataRequest, PDARequest, TMRequest
+from .discrete_math.graph import GraphTheoryRequest, MatrixPowerRequest, MatrixNodeRequest, MatrixRequest, GraphInfoRequest
+from .discrete_math.probability import (
     ProbabilityRequest, HypergeometricRequest, NegativeBinomialRequest,
     JointProbabilityRequest, CustomPMFRequest, StepByStepRequest, VennRequest, SimulateRequest,
 )
-from .number_theory_schemas import NumberTheoryRequest
+from .discrete_math.number_theory import NumberTheoryRequest
 
 __all__ = [
     'CombinatoricsRequest',

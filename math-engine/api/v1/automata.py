@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException
-from schemas.automata_schemas import AutomataRequest, PDARequest, TMRequest
-from core.automata.dfa import DFA
-from core.automata.nfa import NFA
-from core.automata.regex import RegexToNFA
-from core.automata.simulation import AutomatonSimulator
-from core.automata.validation import validate_input
-from core.automata.pda import PDA
-from core.automata.tm import TuringMachine
+from schemas.discrete_math.automata import AutomataRequest, PDARequest, TMRequest
+from core.discrete_math.automata.dfa import DFA
+from core.discrete_math.automata.nfa import NFA
+from core.discrete_math.automata.regex import RegexToNFA
+from core.discrete_math.automata.simulation import AutomatonSimulator
+from core.discrete_math.automata.validation import validate_input
+from core.discrete_math.automata.pda import PDA
+from core.discrete_math.automata.tm import TuringMachine
 
 router = APIRouter(prefix='/api/v1/automata', tags=['Automata'])
 

@@ -68,6 +68,14 @@ export function calcProbability(payload) {
   return request(`${MATH_ENGINE_BASE}/probability/`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
+export function calcLinearAlgebra(payload) {
+  return request(`${MATH_ENGINE_BASE}/linear_algebra/`, { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export function calcAlgorithms(payload) {
+  return request(`${MATH_ENGINE_BASE}/algorithms/`, { method: 'POST', body: JSON.stringify(payload) });
+}
+
 export function calcAdjacencyMatrix(subPath, payload) {
   return request(`${MATH_ENGINE_BASE}/adjacency_matrix/${subPath}`, { method: 'POST', body: JSON.stringify(payload) });
 }

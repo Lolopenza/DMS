@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from schemas.combinatorics_schemas import CombinatoricsRequest
-from core.combinatorics.basic import factorial, permutations, combinations
-from core.combinatorics.advanced import pigeonhole_principle, catalan_number, stirling_numbers_second_kind
+from schemas.discrete_math.combinatorics import CombinatoricsRequest
+from core.discrete_math.combinatorics.basic import factorial, permutations, combinations
+from core.discrete_math.combinatorics.advanced import pigeonhole_principle, catalan_number, stirling_numbers_second_kind
 
 router = APIRouter(prefix='/api/v1/combinatorics', tags=['Combinatorics'])
 

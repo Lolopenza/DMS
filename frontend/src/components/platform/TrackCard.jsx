@@ -10,15 +10,18 @@ function statusLabel(status) {
 export default function TrackCard({ track }) {
   const isActive = track.status === 'active' && track.hasCalculator;
   const cardClass = isActive ? 'hub-card' : 'hub-card is-disabled';
+  const classificationLabel = track.classification === 'foundation' ? 'Foundation Track' : 'Specialized Track';
+  const classificationClass = track.classification === 'foundation' ? 'scope-badge-intro' : 'scope-badge-deep-dive';
 
   if (!isActive) {
     return (
-      <article className={cardClass} style={{ opacity: 0.72 }} aria-disabled="true">
+      <article className={`${cardClass} track-card-muted`} aria-disabled="true">
         <div className="icon"><i className="fas fa-layer-group"></i></div>
         <h2>{track.label}</h2>
+        <span className={`scope-badge track-classification-badge ${classificationClass}`}>{classificationLabel}</span>
         <p>
           Status: {statusLabel(track.status)}. Sections: {track.sectionsCount}.<br />
-          Track is in platform roadmap and will be unlocked in next waves.
+          {track.goal || 'Track is in platform roadmap and will be unlocked in next waves.'}
         </p>
       </article>
     );
@@ -28,12 +31,13 @@ export default function TrackCard({ track }) {
     <Link to={track.subjectPath} className={cardClass} aria-label={`Open ${track.label} track`}>
       <div className="icon"><i className="fas fa-layer-group"></i></div>
       <h2>{track.label}</h2>
+      <span className={`scope-badge track-classification-badge ${classificationClass}`}>{classificationLabel}</span>
       <p>
         Status: {statusLabel(track.status)}. Sections: {track.sectionsCount}.<br />
-        Open the track page to choose your learning format.
+        {track.goal || 'Open the track page to choose your learning format.'}
       </p>
 
-      <span className="feature-btn" style={{ marginTop: '0.75rem', display: 'inline-flex' }}>
+      <span className="feature-btn track-card-open-btn">
         Open track
       </span>
     </Link>

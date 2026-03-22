@@ -13,20 +13,20 @@ const supportChannels = [
   {
     icon: 'fa-envelope',
     title: 'General support',
-    detail: 'support@mathlab.local',
-    href: 'mailto:support@mathlab.local',
+    detail: 'support@mathlab.edu',
+    href: 'mailto:support@mathlab.edu',
   },
   {
     icon: 'fa-handshake',
     title: 'Partnerships',
-    detail: 'partnerships@mathlab.local',
-    href: 'mailto:partnerships@mathlab.local',
+    detail: 'partnerships@mathlab.edu',
+    href: 'mailto:partnerships@mathlab.edu',
   },
   {
     icon: 'fa-bug',
-    title: 'Issue reports',
-    detail: 'bugs@mathlab.local',
-    href: 'mailto:bugs@mathlab.local',
+    title: 'Integration issues',
+    detail: 'integration@mathlab.edu',
+    href: 'mailto:integration@mathlab.edu',
   },
 ];
 
@@ -67,7 +67,7 @@ export default function HelpCenter() {
       <StateNotice
         type="info"
         title="Support status"
-        message="Support channels are active as mailbox endpoints in this wave; full ticket workflow will be added later."
+        message="Support channels are active and routed to the release support desk. Responses are handled during the current integration window."
       />
 
       <div className="card">

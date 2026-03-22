@@ -3,8 +3,11 @@ import logging
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
-import matplotlib
-matplotlib.use('Agg')
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+except Exception:
+    matplotlib = None
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
@@ -18,7 +21,7 @@ _repo_root = os.path.dirname(_app_dir)
 load_dotenv(os.path.join(_repo_root, '.env'))
 load_dotenv(os.path.join(_app_dir, '.env'), override=True)
 
-from api.v1 import combinatorics, logic, set_theory, automata, graph_theory, adjacency_matrix, probability, number_theory, chat, ocr
+from api.v1 import FEATURE_NAMES, ROUTERS
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -103,16 +106,8 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     payload = _error_envelope(request, 500, 'INTERNAL_ERROR', 'Internal server error')
     return JSONResponse(status_code=500, content=payload)
 
-app.include_router(combinatorics.router)
-app.include_router(logic.router)
-app.include_router(set_theory.router)
-app.include_router(automata.router)
-app.include_router(graph_theory.router)
-app.include_router(adjacency_matrix.router)
-app.include_router(probability.router)
-app.include_router(number_theory.router)
-app.include_router(chat.router)
-app.include_router(ocr.router)
+for router in ROUTERS:
+    app.include_router(router)
 
 
 @app.get('/api/v1/status', tags=['Health'])
@@ -120,10 +115,7 @@ def status():
     return {
         'status': 'online',
         'version': '2.0.0',
-        'features': [
-            'Graph Theory', 'Combinatorics', 'Probability',
-            'Automata', 'Set Theory', 'Number Theory', 'Logic', 'AI Chat',
-        ],
+        'features': FEATURE_NAMES,
     }
 
 

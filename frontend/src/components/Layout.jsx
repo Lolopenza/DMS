@@ -15,6 +15,7 @@ import {
   TRACKS_PATH,
   ROADMAP_PATH,
   USER_DASHBOARD_PATH,
+  getSubjectCatalog,
   getFooterLinkGroups,
   getTopNavItems,
   isMinimalNavPath,
@@ -32,6 +33,14 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
   const sectionEntry = navItems.find((item) => item.isSectionsEntry);
   const moduleItems = navItems.filter((item) => !item.isSectionsEntry);
   const { quickLinks, toolLinks } = getFooterLinkGroups(activeSubject);
+  const isOverviewPage = location.pathname === HOME_PATH || location.pathname === TRACKS_PATH;
+  const overviewTrackLinks = getSubjectCatalog()
+    .filter((subject) => subject.status === 'active' && subject.calculatorPath)
+    .map((subject) => ({
+      path: subject.calculatorPath,
+      icon: 'fa-layer-group',
+      label: subject.label,
+    }));
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -201,7 +210,7 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
               <p>A comprehensive platform for learning and solving mathematics problems, designed to help students and professionals build practical understanding across multiple topics.</p>
               <div className="footer-status-badge">
                 <i className="fas fa-circle-check"></i>
-                <span>Subject tracks are available, with Discrete Mathematics active now</span>
+                <span>Subject tracks are available with active foundation and deep-dive workspaces</span>
               </div>
             </div>
             <div className="footer-section">
@@ -216,12 +225,20 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
             <div className="footer-section">
               <h4>Learning Tools</h4>
               <ul className="footer-links">
-                {quickLinks.map(({ path, icon, label }) => (
-                  <li key={path}><Link to={path} onClick={handleFooterLinkClick}><i className={`fas ${icon}`}></i> {label}</Link></li>
-                ))}
-                {toolLinks.map(({ path, icon, label }) => (
-                  <li key={path}><Link to={path} onClick={handleFooterLinkClick}><i className={`fas ${icon}`}></i> {label}</Link></li>
-                ))}
+                {isOverviewPage
+                  ? overviewTrackLinks.map(({ path, icon, label }) => (
+                    <li key={path}><Link to={path} onClick={handleFooterLinkClick}><i className={`fas ${icon}`}></i> {label}</Link></li>
+                  ))
+                  : (
+                    <>
+                      {quickLinks.map(({ path, icon, label }) => (
+                        <li key={path}><Link to={path} onClick={handleFooterLinkClick}><i className={`fas ${icon}`}></i> {label}</Link></li>
+                      ))}
+                      {toolLinks.map(({ path, icon, label }) => (
+                        <li key={path}><Link to={path} onClick={handleFooterLinkClick}><i className={`fas ${icon}`}></i> {label}</Link></li>
+                      ))}
+                    </>
+                  )}
               </ul>
             </div>
             <div className="footer-section">

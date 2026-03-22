@@ -1,9 +1,15 @@
 import { discreteMathModules } from '../discrete-math/index.js';
 import { linearAlgebraModules } from '../linear-algebra/index.js';
+import { algorithmModules } from '../algorithms/index.js';
+import { probabilityStatisticsModules } from '../probability-statistics/index.js';
+import { itLogicModules } from '../it-logic/index.js';
 
 export const SUBJECT_MODULE_REGISTRIES = {
   'discrete-math': discreteMathModules,
   'linear-algebra': linearAlgebraModules,
+  'algorithms': algorithmModules,
+  'probability-statistics': probabilityStatisticsModules,
+  'it-logic': itLogicModules,
 };
 
 export function isSubjectImplemented(subjectSlug) {

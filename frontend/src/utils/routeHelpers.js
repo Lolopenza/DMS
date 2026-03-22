@@ -87,3 +87,13 @@ export function isSubjectPath(pathname) {
 export function isModulePath(pathname) {
   return extractModuleFromPath(pathname) !== null;
 }
+
+/**
+ * Shared UI-only network delay helper for auth/demo flows.
+ *
+ * @param {number} ms - delay in milliseconds
+ * @returns {Promise<void>}
+ */
+export function simulateNetworkDelay(ms = 200) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

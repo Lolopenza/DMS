@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from schemas.number_theory_schemas import NumberTheoryRequest
-from core.number_theory.divisibility import gcd, lcm, divisors, prime_factorization, euler_totient
-from core.number_theory.cryptography import (
+from schemas.discrete_math.number_theory import NumberTheoryRequest
+from core.discrete_math.number_theory.divisibility import gcd, lcm, divisors, prime_factorization, euler_totient
+from core.discrete_math.number_theory.cryptography import (
     modular_exponentiation, modular_inverse, generate_rsa_keys, rsa_encrypt, rsa_decrypt,
 )
 

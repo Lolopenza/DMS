@@ -106,5 +106,3 @@ math-engine/reports/
 # ─── Docs (optional) ─────────────────────────────────────────────────────────
 # If docs are local drafts only, uncomment the next line.
 /docs/
-
-frontend/src/pages/subjects/linear-algebra/

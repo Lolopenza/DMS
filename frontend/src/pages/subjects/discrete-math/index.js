@@ -5,7 +5,7 @@
  * 
  * Phase 2 Status:
  *   ✅ Batch 1 (migrated): combinatorics, logic, set-theory, graph-theory
- *   ✅ Batch 2 (migrated): automata, number-theory, probability, adjacency-matrix
+ *   ✅ Batch 2 (migrated): number-theory, probability, adjacency-matrix
  *   ⏳ Shared (pending): calculator, roadmap
  */
 
@@ -17,7 +17,6 @@ export const discreteMathModules = {
   'graph-theory': () => import('./modules/graph-theory/GraphTheory.jsx'),
   
   // Batch 2: Migrated to new subject structure
-  automata: () => import('./modules/automata/Automata.jsx'),
   'number-theory': () => import('./modules/number-theory/NumberTheory.jsx'),
   probability: () => import('./modules/probability/Probability.jsx'),
   'adjacency-matrix': () => import('./modules/adjacency-matrix/AdjacencyMatrix.jsx'),
