@@ -4,7 +4,7 @@ import StateNotice from '../../components/ui/StateNotice.jsx';
 
 export default function Profile() {
   const { user, updateProfile } = useAuth();
-  const [name, setName] = useState(user?.name || '');
+  const [name, setName] = useState(user?.name || user?.username || '');
   const [goal, setGoal] = useState(user?.goal || '');
   const [status, setStatus] = useState({ type: 'info', message: '' });
 
@@ -14,7 +14,7 @@ export default function Profile() {
       setStatus({ type: 'error', message: 'Name cannot be empty.' });
       return;
     }
-    updateProfile({ name, goal });
+    updateProfile({ name, username: name, goal });
     setStatus({ type: 'success', message: 'Profile updated successfully.' });
   }
 

@@ -44,7 +44,7 @@ test:
 	make test-java
 
 rag-eval:
-	cd math-engine && "$(PYTHON)" -m ai.rag.eval --k 3 --min-precision $(RAG_EVAL_MIN_PRECISION) --output reports/rag_eval_report.json
+	cd math-engine && PYTHONPATH=.. "$(PYTHON)" -m dmc_ai.rag.eval --k 3 --min-precision $(RAG_EVAL_MIN_PRECISION) --output reports/rag_eval_report.json
 
 # ── Утилиты ───────────────────────────────────────────────────────────────────
 

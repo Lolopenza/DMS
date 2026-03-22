@@ -1,51 +1,63 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
-
-const AUTH_STORAGE_KEY = 'mathLabAuthSession';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  getCurrentUser,
+  loginUser,
+  logoutCurrentSession,
+  registerUser,
+} from '../api.js';
 
 const AuthContext = createContext(null);
 
-function loadStoredSession() {
-  try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveStoredSession(session) {
-  try {
-    if (!session) {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-      return;
-    }
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
-  } catch {
-    // Ignore storage failures for local demo auth sessions.
-  }
-}
-
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(() => loadStoredSession());
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  function login({ email, name }) {
-    const normalizedEmail = email?.trim() || 'demo-admin@mathlab.edu';
-    const nextSession = {
-      id: 'demo-user-1',
-      email: normalizedEmail,
-      name: name || normalizedEmail.split('@')[0] || 'Demo User',
-      role: 'demo',
-      isDemoSession: true,
-      signedAt: new Date().toISOString(),
+  useEffect(() => {
+    let mounted = true;
+    async function bootstrapSession() {
+      try {
+        const user = await getCurrentUser();
+        if (mounted) {
+          setSession(user);
+        }
+      } catch {
+        if (mounted) {
+          setSession(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    bootstrapSession();
+    return () => {
+      mounted = false;
     };
+  }, []);
+
+  async function login({ email, password }) {
+    const response = await loginUser({ email, password });
+    const nextSession = response?.user || null;
     setSession(nextSession);
-    saveStoredSession(nextSession);
     return nextSession;
   }
 
-  function logout() {
+  async function register({ name, email, password }) {
+    const response = await registerUser({ name, email, password });
+    const nextSession = response?.user || null;
+    setSession(nextSession);
+    return nextSession;
+  }
+
+  async function logout() {
+    try {
+      await logoutCurrentSession();
+    } catch {
+      // Ensure local state is cleared even if API call fails.
+    }
     setSession(null);
-    saveStoredSession(null);
   }
 
   function updateProfile(payload) {
@@ -55,7 +67,6 @@ export function AuthProvider({ children }) {
         ...prev,
         ...payload,
       };
-      saveStoredSession(nextSession);
       return nextSession;
     });
   }
@@ -64,12 +75,14 @@ export function AuthProvider({ children }) {
     () => ({
       session,
       user: session,
+      loading,
       isAuthenticated: Boolean(session),
       login,
+      register,
       logout,
       updateProfile,
     }),
-    [session],
+    [session, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -3,10 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AUTH_SIGN_IN_PATH, USER_DASHBOARD_PATH } from '../../routes.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import StateNotice from '../../components/ui/StateNotice.jsx';
-import { simulateNetworkDelay } from '../../utils/routeHelpers.js';
 
 export default function SignUp() {
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [status, setStatus] = useState({ type: 'info', message: '' });
@@ -18,17 +17,21 @@ export default function SignUp() {
       setStatus({ type: 'error', message: 'All account fields are required.' });
       return;
     }
-    if (form.password.length < 6) {
-      setStatus({ type: 'error', message: 'Use at least 6 characters in the password.' });
+    if (form.password.length < 8) {
+      setStatus({ type: 'error', message: 'Use at least 8 characters in the password.' });
       return;
     }
 
     setSubmitting(true);
     setStatus({ type: 'loading', message: 'Creating your account and preparing your dashboard...' });
-    await simulateNetworkDelay();
-
-    login({ email: form.email, name: form.name });
-    navigate(USER_DASHBOARD_PATH, { replace: true });
+    try {
+      await register({ name: form.name, email: form.email, password: form.password });
+      navigate(USER_DASHBOARD_PATH, { replace: true });
+    } catch (error) {
+      setStatus({ type: 'error', message: error?.message || 'Sign up failed. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (

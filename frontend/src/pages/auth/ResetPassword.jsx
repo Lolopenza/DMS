@@ -2,18 +2,25 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AUTH_SIGN_IN_PATH } from '../../routes.js';
 import StateNotice from '../../components/ui/StateNotice.jsx';
+import { requestPasswordReset } from '../../api.js';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: 'info', message: '' });
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     if (!email.trim() || !email.includes('@')) {
       setStatus({ type: 'error', message: 'Enter a valid email address to receive reset instructions.' });
       return;
     }
-    setStatus({ type: 'success', message: `If an account exists for this email, reset instructions were sent to: ${email}` });
+    setStatus({ type: 'loading', message: 'Sending reset instructions...' });
+    try {
+      await requestPasswordReset(email);
+      setStatus({ type: 'success', message: `If an account exists for this email, reset instructions were sent to: ${email}` });
+    } catch (error) {
+      setStatus({ type: 'error', message: error?.message || 'Failed to send reset instructions.' });
+    }
   }
 
   return (

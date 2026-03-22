@@ -5,12 +5,13 @@ import { useAuth } from '../../context/AuthContext.jsx';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const displayName = user?.name || user?.username || 'Student';
 
   return (
     <div className="container">
       <div className="page-title">
         <h2>User Dashboard</h2>
-        <p className="subtitle">Welcome back, {user?.name || 'Student'}.</p>
+        <p className="subtitle">Welcome back, {displayName}.</p>
       </div>
 
       <div className="features-grid">

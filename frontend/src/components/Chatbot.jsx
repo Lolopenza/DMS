@@ -155,7 +155,7 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
 
     setTyping(true);
     try {
-      const messages = updatedHistory.map(({ role, content }) => ({ role, content }));
+      const messages = updatedHistory.map(({ role, content, image }) => ({ role, content, image }));
       const { subject, module } = getRouteScope();
       const res = await fetch('/api/v1/chat/', {
         method: 'POST',
@@ -163,13 +163,17 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
         body: JSON.stringify({ messages, subject, module }),
       });
       const data = await res.json().catch(() => ({}));
+      const errorMessage =
+        data?.error?.message ||
+        data?.detail ||
+        data?.error ||
+        `HTTP ${res.status}`;
       if (!res.ok) {
-        const message = data.detail || data.error || `HTTP ${res.status}`;
-        setChatHistory(prev => [...prev, { role: 'assistant', content: 'Error: ' + message }]);
+        setChatHistory(prev => [...prev, { role: 'assistant', content: 'Error: ' + errorMessage }]);
       } else if (data.reply && String(data.reply).trim()) {
         setChatHistory(prev => [...prev, { role: 'assistant', content: data.reply }]);
       } else {
-        const message = data.detail || data.error || 'AI returned an empty response. Please try again.';
+        const message = errorMessage || 'AI returned an empty response. Please try again.';
         setChatHistory(prev => [...prev, { role: 'assistant', content: 'Error: ' + message }]);
       }
     } catch (err) {

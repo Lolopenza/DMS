@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AUTH_RESET_PATH, AUTH_SIGN_UP_PATH, USER_DASHBOARD_PATH } from '../../routes.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import StateNotice from '../../components/ui/StateNotice.jsx';
-import { simulateNetworkDelay } from '../../utils/routeHelpers.js';
 
 export default function SignIn() {
   const { login } = useAuth();
@@ -24,10 +23,14 @@ export default function SignIn() {
 
     setSubmitting(true);
     setStatus({ type: 'loading', message: 'Signing in and preparing your dashboard...' });
-    await simulateNetworkDelay();
-
-    login({ email: form.email });
-    navigate(targetPath, { replace: true });
+    try {
+      await login({ email: form.email, password: form.password });
+      navigate(targetPath, { replace: true });
+    } catch (error) {
+      setStatus({ type: 'error', message: error?.message || 'Sign in failed. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (

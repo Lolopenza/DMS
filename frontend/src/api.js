@@ -9,6 +9,7 @@ function getAuthHeaders() {
 async function request(url, options = {}) {
   const res = await fetch(url, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
@@ -92,4 +93,38 @@ export function loginUser(credentials) {
 
 export function registerUser(data) {
   return request(`${BACKEND_BASE}/auth/register`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function refreshAuth() {
+  return request(`${BACKEND_BASE}/auth/refresh`, { method: 'POST' });
+}
+
+export function getCurrentUser() {
+  return request(`${BACKEND_BASE}/auth/me`);
+}
+
+export function logoutCurrentSession() {
+  return request(`${BACKEND_BASE}/auth/logout`, { method: 'POST' });
+}
+
+export function logoutAllSessions() {
+  return request(`${BACKEND_BASE}/auth/logout-all`, { method: 'POST' });
+}
+
+export function getActiveSessions() {
+  return request(`${BACKEND_BASE}/auth/sessions`);
+}
+
+export function requestPasswordReset(email) {
+  return request(`${BACKEND_BASE}/auth/password/reset-request`, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function confirmPasswordReset(token, newPassword) {
+  return request(`${BACKEND_BASE}/auth/password/reset-confirm`, {
+    method: 'POST',
+    body: JSON.stringify({ token, newPassword }),
+  });
 }

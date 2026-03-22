@@ -1,0 +1,41 @@
+services:
+  nginx:
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+    ports:
+      - "80:80"
+
+  backend:
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  math-engine:
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  postgres:
+    restart: always
+
+  redis:
+    restart: always
+
+  rabbitmq:
+    restart: always
