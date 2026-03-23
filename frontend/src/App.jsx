@@ -18,9 +18,11 @@ import ResetPassword from './pages/auth/ResetPassword.jsx';
 import Dashboard from './pages/user/Dashboard.jsx';
 import Profile from './pages/user/Profile.jsx';
 import Settings from './pages/user/Settings.jsx';
+import ContentAdmin from './pages/admin/ContentAdmin.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import {
+  ADMIN_CONTENT_PATH,
   AUTH_RESET_PATH,
   AUTH_SIGN_IN_PATH,
   AUTH_SIGN_UP_PATH,
@@ -91,6 +93,14 @@ export default function App() {
               element={(
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path={ADMIN_CONTENT_PATH}
+              element={(
+                <ProtectedRoute>
+                  <ContentAdmin />
                 </ProtectedRoute>
               )}
             />

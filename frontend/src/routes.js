@@ -80,6 +80,7 @@ export const AUTH_RESET_PATH = '/auth/reset';
 export const USER_DASHBOARD_PATH = '/user/dashboard';
 export const USER_PROFILE_PATH = '/user/profile';
 export const USER_SETTINGS_PATH = '/user/settings';
+export const ADMIN_CONTENT_PATH = '/admin/content';
 export const HELP_PATH = '/help';
 export const LEGAL_TERMS_PATH = '/legal/terms';
 export const LEGAL_PRIVACY_PATH = '/legal/privacy';
