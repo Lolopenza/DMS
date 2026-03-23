@@ -18,6 +18,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -146,7 +148,8 @@ public class AuthController {
         }
         try {
             return jwtService.parse(token).get("sessionId", String.class);
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            log.debug("Failed to parse access token for logout session extraction", ex);
             return null;
         }
     }
