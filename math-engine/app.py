@@ -4,10 +4,13 @@ import logging
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
+bootstrap_logger = logging.getLogger(__name__)
+
 try:
     import matplotlib
     matplotlib.use('Agg')
-except Exception:
+except Exception as exc:
+    bootstrap_logger.warning('Matplotlib setup failed, continuing without explicit backend setup: %s', exc)
     matplotlib = None
 
 from dotenv import load_dotenv
@@ -29,6 +32,7 @@ from api.v1 import FEATURE_NAMES, ROUTERS
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s: %(message)s')
 logger = logging.getLogger(__name__)
+INTERNAL_API_KEY = os.environ.get('DMC_MATH_ENGINE_API_KEY', '')
 
 
 def _error_envelope(request: Request, status_code: int, code: str, message: str, details=None):
@@ -80,6 +84,13 @@ app.add_middleware(
 
 @app.middleware('http')
 async def add_api_version_header(request: Request, call_next):
+    if request.url.path.startswith('/api/v1/') and request.url.path != '/api/v1/status':
+        if INTERNAL_API_KEY:
+            inbound_key = request.headers.get('X-Internal-Api-Key', '')
+            if inbound_key != INTERNAL_API_KEY:
+                payload = _error_envelope(request, 401, 'INTERNAL_API_KEY_INVALID', 'Invalid internal API key')
+                return JSONResponse(status_code=401, content=payload)
+
     response = await call_next(request)
     response.headers['X-API-Version'] = 'v1'
     return response

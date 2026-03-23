@@ -16,7 +16,6 @@ networkx==2.8.8
 scipy
 mpmath==1.3.0
 pyformlang==1.0.7
-pandas
 matplotlib-venn
 
 # ─── AI & APIs ────────────────────────────────────────────────────────────────

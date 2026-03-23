@@ -9,6 +9,7 @@ from api.v1 import (
     logic,
     number_theory,
     ocr,
+    problem_templates,
     probability,
     set_theory,
 )
@@ -26,6 +27,7 @@ ROUTERS = [
     algorithms.router,
     chat.router,
     ocr.router,
+    problem_templates.router,
 ]
 
 FEATURE_NAMES = [
@@ -39,4 +41,5 @@ FEATURE_NAMES = [
     'Algorithms',
     'Logic',
     'AI Chat',
+    'Problem Templates',
 ]

@@ -20,7 +20,7 @@ def try_number(x):
             return x
         n = float(x)
         return int(n) if n.is_integer() else n
-    except Exception:
+    except (TypeError, ValueError):
         return x
 
 
@@ -103,10 +103,10 @@ def parse_advanced_set(input_str: str, named_sets=None, named_universes=None) ->
     for x in items:
         try:
             s.add(int(x))
-        except Exception:
+        except (TypeError, ValueError):
             try:
                 s.add(float(x))
-            except Exception:
+            except (TypeError, ValueError):
                 s.add(x)
     steps.append(f'Parsed as plain set: {s}')
     return {'set': s, 'type': 'plain', 'steps': steps}
