@@ -157,10 +157,15 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
     try {
       const messages = updatedHistory.map(({ role, content, image }) => ({ role, content, image }));
       const { subject, module } = getRouteScope();
-      const res = await fetch('/api/v1/chat/', {
+      const chatPayload = { messages, subject };
+      if (module !== null) {
+        chatPayload.module = module;
+      }
+      const res = await fetch('/api/calculator/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages, subject, module }),
+        credentials: 'include',
+        body: JSON.stringify(chatPayload),
       });
       const data = await res.json().catch(() => ({}));
       const errorMessage =

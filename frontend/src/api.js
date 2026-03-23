@@ -1,4 +1,3 @@
-const MATH_ENGINE_BASE = '/api/v1';
 const BACKEND_BASE = '/api';
 
 function getAuthHeaders() {
@@ -38,51 +37,54 @@ async function request(url, options = {}) {
   return data ?? {};
 }
 
-// ── Math Engine ──────────────────────────────────────────────────────────────
+// ── Math Engine via Backend Proxy ───────────────────────────────────────────
 
 // URL paths match backend router prefixes (underscores, trailing slash)
 export function calcCombinatorics(payload) {
-  return request(`${MATH_ENGINE_BASE}/combinatorics/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/combinatorics`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcLogic(payload) {
-  return request(`${MATH_ENGINE_BASE}/logic/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/logic`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcSetTheory(payload) {
-  return request(`${MATH_ENGINE_BASE}/set_theory/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/set_theory`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcGraphTheory(payload) {
-  return request(`${MATH_ENGINE_BASE}/graph_theory/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/graph_theory`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcAutomata(payload) {
-  return request(`${MATH_ENGINE_BASE}/automata/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/automata`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcNumberTheory(payload) {
-  return request(`${MATH_ENGINE_BASE}/number_theory/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/number_theory`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcProbability(payload) {
-  return request(`${MATH_ENGINE_BASE}/probability/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/probability`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcLinearAlgebra(payload) {
-  return request(`${MATH_ENGINE_BASE}/linear_algebra/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/linear_algebra`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcAlgorithms(payload) {
-  return request(`${MATH_ENGINE_BASE}/algorithms/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/algorithms`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 export function calcAdjacencyMatrix(subPath, payload) {
-  return request(`${MATH_ENGINE_BASE}/adjacency_matrix/${subPath}`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${BACKEND_BASE}/calculator/adjacency_matrix/${subPath}`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
-export function sendChatMessage(messages) {
-  return request(`${MATH_ENGINE_BASE}/chat/`, { method: 'POST', body: JSON.stringify({ messages }) });
+export function sendChatMessage(messages, scope = {}) {
+  return request(`${BACKEND_BASE}/calculator/chat`, {
+    method: 'POST',
+    body: JSON.stringify({ messages, subject: scope.subject, module: scope.module }),
+  });
 }
 
 // ── Java Backend ─────────────────────────────────────────────────────────────
@@ -127,4 +129,30 @@ export function confirmPasswordReset(token, newPassword) {
     method: 'POST',
     body: JSON.stringify({ token, newPassword }),
   });
+}
+
+// ── Learning / Content Management ───────────────────────────────────────────
+
+export function listCourses() {
+  return request(`${BACKEND_BASE}/learning/courses`);
+}
+
+export function listModules(courseId) {
+  return request(`${BACKEND_BASE}/learning/courses/${courseId}/modules`);
+}
+
+export function listLessons(moduleId) {
+  return request(`${BACKEND_BASE}/learning/modules/${moduleId}/lessons`);
+}
+
+export function createCourse(payload) {
+  return request(`${BACKEND_BASE}/admin/courses`, { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export function createModule(payload) {
+  return request(`${BACKEND_BASE}/admin/modules`, { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export function createLesson(payload) {
+  return request(`${BACKEND_BASE}/admin/lessons`, { method: 'POST', body: JSON.stringify(payload) });
 }
