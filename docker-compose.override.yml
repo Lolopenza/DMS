@@ -14,6 +14,8 @@ services:
       - ./frontend:/app
     ports:
       - "3000:3000"
+    mem_limit: 768m
+    cpus: "1.00"
     depends_on:
       - math-engine
 
@@ -21,32 +23,41 @@ services:
     volumes:
       - ./math-engine:/app/math-engine
       - ./dmc_ai:/app/dmc_ai
-    environment:
-      FLASK_ENV: development
-      FLASK_DEBUG: "1"
     ports:
       - "8081:8081"
+    mem_limit: 1024m
+    cpus: "1.50"
 
   backend:
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
     ports:
       - "8080:8080"
+    mem_limit: 1024m
+    cpus: "1.50"
 
   postgres:
     ports:
       - "5432:5432"
+    mem_limit: 1024m
+    cpus: "1.00"
 
   redis:
     ports:
       - "6379:6379"
+    mem_limit: 512m
+    cpus: "0.50"
 
   rabbitmq:
     ports:
-      - "5673:5672"
-      - "15673:15672"
+      - "5672:5672"
+      - "15672:15672"
+    mem_limit: 768m
+    cpus: "1.00"
 
   nginx:
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
       - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+    mem_limit: 256m
+    cpus: "0.50"
