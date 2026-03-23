@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/refresh",
                                 "/api/auth/password/reset-request",
-                                "/api/auth/password/reset-confirm"
+                            "/api/auth/password/reset-confirm",
+                            "/api/calculator/chat"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
