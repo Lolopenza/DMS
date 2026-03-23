@@ -1,6 +1,9 @@
 import ast
 import itertools
+import logging
 from typing import Any, Callable, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 def negate(p: bool) -> bool:
     return not p
@@ -135,7 +138,8 @@ def parse_formula(formula_str: str, variable_names: List[str], execution_scope: 
     try:
         processed = formula_str.replace('&', ' and ').replace('|', ' or ').replace('~', 'not ')
         return _compile_safe_formula(processed, variable_names, execution_scope)
-    except Exception:
+    except (SyntaxError, ValueError, TypeError) as exc:
+        logger.debug('Failed to parse propositional formula="%s": %s', formula_str, exc)
         return None
 
 def generate_truth_table(variables: List[str], expression_func: Callable) -> Dict[str, List[bool]]:
@@ -147,7 +151,8 @@ def generate_truth_table(variables: List[str], expression_func: Callable) -> Dic
             table[var].append(values[i])
         try:
             result = expression_func(*values)
-        except Exception:
+        except (ValueError, TypeError) as exc:
+            logger.debug('Failed to evaluate formula for values=%s: %s', values, exc)
             result = None
         table['Result'].append(result)
     return table
