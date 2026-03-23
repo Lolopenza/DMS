@@ -34,6 +34,7 @@ services:
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       DMC_MATH_ENGINE_URL: ${MATH_ENGINE_URL}
+      DMC_MATH_ENGINE_API_KEY: ${MATH_ENGINE_API_KEY}
       DMC_JWT_SECRET: ${JWT_SECRET}
       DMC_JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
     depends_on:
@@ -61,6 +62,7 @@ services:
       GROQ_MODEL: ${GROQ_MODEL}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
+      DMC_MATH_ENGINE_API_KEY: ${MATH_ENGINE_API_KEY}
     depends_on:
       redis:
         condition: service_healthy
