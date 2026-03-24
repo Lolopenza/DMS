@@ -85,7 +85,8 @@ app.add_middleware(
 @app.middleware('http')
 async def add_api_version_header(request: Request, call_next):
     if request.url.path.startswith('/api/v1/') and request.url.path != '/api/v1/status':
-        if INTERNAL_API_KEY:
+        # Only validate API key if it's configured and not the default value
+        if INTERNAL_API_KEY and INTERNAL_API_KEY != 'change-me':
             inbound_key = request.headers.get('X-Internal-Api-Key', '')
             if inbound_key != INTERNAL_API_KEY:
                 payload = _error_envelope(request, 401, 'INTERNAL_API_KEY_INVALID', 'Invalid internal API key')
