@@ -32,7 +32,7 @@ function SourceBadge({ sourceModel, generationMode }) {
 
   if (isAI) {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+      <span className="practice-badge practice-badge-ai">
         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.789l1.599.799L9 4.323V3a1 1 0 011-1z" />
         </svg>
@@ -43,7 +43,7 @@ function SourceBadge({ sourceModel, generationMode }) {
 
   if (isFallback) {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+      <span className="practice-badge practice-badge-fallback">
         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
         </svg>
@@ -53,7 +53,7 @@ function SourceBadge({ sourceModel, generationMode }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+    <span className="practice-badge practice-badge-template">
       <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
       </svg>
@@ -63,14 +63,14 @@ function SourceBadge({ sourceModel, generationMode }) {
 }
 
 function DifficultyBadge({ difficulty }) {
-  const colors = {
-    EASY: 'bg-green-100 text-green-800',
-    MEDIUM: 'bg-yellow-100 text-yellow-800',
-    HARD: 'bg-red-100 text-red-800',
-  };
   const label = difficulty || 'MEDIUM';
+  const cls = label === 'EASY'
+    ? 'practice-badge-difficulty-easy'
+    : label === 'HARD'
+      ? 'practice-badge-difficulty-hard'
+      : 'practice-badge-difficulty-medium';
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[label] || colors.MEDIUM}`}>
+    <span className={`practice-badge ${cls}`}>
       {label.charAt(0) + label.slice(1).toLowerCase()}
     </span>
   );
@@ -220,7 +220,7 @@ export default function InteractivePractice() {
   const selectedMode = MODE_OPTIONS.find((item) => item.value === mode);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+    <div className="practice-lab max-w-4xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-slate-800">Personal Practice Lab</h2>
@@ -252,15 +252,15 @@ export default function InteractivePractice() {
       </div>
 
       {/* Settings Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="practice-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 space-y-5">
           {/* Feature chips */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+            <span className="practice-chip practice-chip-primary">
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
               Fast practice cycle
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
+            <span className="practice-chip practice-chip-secondary">
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 4a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" /></svg>
               Smart verification
             </span>
@@ -356,7 +356,7 @@ export default function InteractivePractice() {
 
       {/* Loading state */}
       {loading && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 flex flex-col items-center gap-4">
+        <div className="practice-card bg-white rounded-2xl shadow-sm border border-slate-200 p-10 flex flex-col items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center">
             <svg className="animate-spin w-7 h-7 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
           </div>
@@ -369,7 +369,7 @@ export default function InteractivePractice() {
 
       {/* Current Problem */}
       {current && !loading && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="practice-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
             <h3 className="text-lg font-semibold text-slate-800">Current Problem</h3>
             <div className="flex items-center gap-2">
@@ -440,7 +440,7 @@ export default function InteractivePractice() {
       )}
 
       {/* History */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="practice-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100">
           <h3 className="text-lg font-semibold text-slate-800">Recent Problems</h3>
         </div>
