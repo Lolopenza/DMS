@@ -7,10 +7,12 @@ import com.dmc.problem.dto.GeneratedProblemAttemptRequest;
 import com.dmc.problem.dto.GeneratedProblemAttemptResponse;
 import com.dmc.problem.dto.GeneratedProblemItemDto;
 import com.dmc.problem.dto.InteractiveProblemGenerateRequest;
+import com.dmc.problem.dto.NextProblemResponse;
 import com.dmc.problem.dto.ProblemAttemptRequest;
 import com.dmc.problem.dto.ProblemAttemptResponse;
 import com.dmc.problem.dto.ProblemDto;
 import com.dmc.problem.dto.ProblemTemplateDto;
+import com.dmc.problem.dto.StudentSkillDto;
 import com.dmc.problem.dto.TopicDto;
 import com.dmc.problem.entity.Difficulty;
 import com.dmc.problem.entity.GeneratedProblem;
@@ -19,12 +21,14 @@ import com.dmc.problem.entity.GenerationMode;
 import com.dmc.problem.entity.Problem;
 import com.dmc.problem.entity.ProblemAttempt;
 import com.dmc.problem.entity.ProblemTemplate;
+import com.dmc.problem.entity.StudentSkill;
 import com.dmc.problem.entity.Topic;
 import com.dmc.problem.repository.GeneratedProblemAttemptRepository;
 import com.dmc.problem.repository.GeneratedProblemRepository;
 import com.dmc.problem.repository.ProblemAttemptRepository;
 import com.dmc.problem.repository.ProblemRepository;
 import com.dmc.problem.repository.ProblemTemplateRepository;
+import com.dmc.problem.repository.StudentSkillRepository;
 import com.dmc.problem.repository.TopicRepository;
 import com.dmc.user.entity.User;
 import com.dmc.user.repository.UserRepository;
@@ -56,8 +60,10 @@ public class ProblemService {
     private final ProblemTemplateRepository templateRepository;
     private final GeneratedProblemRepository generatedProblemRepository;
     private final GeneratedProblemAttemptRepository generatedProblemAttemptRepository;
+    private final StudentSkillRepository studentSkillRepository;
     private final UserRepository userRepository;
     private final MathEngineClient mathEngineClient;
+    private final BktService bktService;
     private final ObjectMapper objectMapper;
 
     private final Random random = new Random();
@@ -116,6 +122,10 @@ public class ProblemService {
                 .createdAt(OffsetDateTime.now())
                 .build();
         problemAttemptRepository.save(attempt);
+
+        if (problem.getTopic() != null && !problem.getTopic().isBlank()) {
+            bktService.updateSkill(user, problem.getTopic(), correct);
+        }
 
         return new ProblemAttemptResponse(
                 problem.getId(),
@@ -367,6 +377,11 @@ public class ProblemService {
         }
         generatedProblemRepository.save(generatedProblem);
 
+        String topicSlug = generatedProblem.getTopicSlug();
+        if (topicSlug != null && !topicSlug.isBlank()) {
+            bktService.updateSkill(user, topicSlug, correct);
+        }
+
         return new GeneratedProblemAttemptResponse(
             generatedProblem.getId(),
             correct,
@@ -376,6 +391,76 @@ public class ProblemService {
             xpEarned
         );
         }
+
+    @Transactional
+    public NextProblemResponse getNextAdaptiveProblem(Long userId, String topicSlug, String mode) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
+
+        StudentSkill skill = bktService.getOrCreateSkill(user, topicSlug);
+        Difficulty recommended = difficultyFromPKnow(skill.getPKnow());
+
+        GenerationMode genMode = parseMode(mode);
+        InteractiveProblemGenerateRequest genRequest = new InteractiveProblemGenerateRequest(
+                null, topicSlug, recommended.name(), null, genMode.name()
+        );
+
+        GeneratedProblemItemDto generated = generateInteractive(userId, genRequest);
+
+        return new NextProblemResponse(
+                generated,
+                toSkillDto(skill),
+                recommended.name()
+        );
+    }
+
+    public List<StudentSkillDto> getStudentSkills(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
+        return studentSkillRepository.findByUserOrderByUpdatedAtDesc(user).stream()
+            .map(this::toSkillDto)
+            .toList();
+    }
+
+    public StudentSkillDto getStudentSkill(Long userId, String topicSlug) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
+        StudentSkill skill = bktService.getOrCreateSkill(user, topicSlug);
+        return toSkillDto(skill);
+    }
+
+    private Difficulty difficultyFromPKnow(double pKnow) {
+        if (pKnow < 0.4) {
+            return Difficulty.EASY;
+        } else if (pKnow < 0.7) {
+            return Difficulty.MEDIUM;
+        } else {
+            return Difficulty.HARD;
+        }
+    }
+
+    private String masteryLabel(double pKnow) {
+        if (pKnow < 0.3) return "NOVICE";
+        if (pKnow < 0.5) return "BEGINNER";
+        if (pKnow < 0.7) return "INTERMEDIATE";
+        if (pKnow < 0.9) return "ADVANCED";
+        return "MASTERED";
+    }
+
+    private StudentSkillDto toSkillDto(StudentSkill skill) {
+        return new StudentSkillDto(
+                skill.getId(),
+                skill.getTopicSlug(),
+                skill.getPKnow(),
+                skill.getPGuess(),
+                skill.getPSlip(),
+                skill.getPTransit(),
+                skill.getTotalAttempts(),
+                skill.getCorrectAttempts(),
+                masteryLabel(skill.getPKnow()),
+                skill.getUpdatedAt()
+        );
+    }
 
     private boolean isCorrect(JsonNode expected, JsonNode actual) {
         return expected != null && actual != null && expected.equals(actual);
