@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import {
   AUTH_SIGN_IN_PATH,
   AUTH_SIGN_UP_PATH,
+  CALCULATOR_PATH,
   HELP_PATH,
   HOME_PATH,
   LEGAL_COOKIES_PATH,
@@ -14,7 +15,9 @@ import {
   LEGAL_TERMS_PATH,
   TRACKS_PATH,
   ROADMAP_PATH,
+  MATH_ROADMAP_PATH,
   USER_DASHBOARD_PATH,
+  USER_PRACTICE_PATH,
   getSubjectCatalog,
   getFooterLinkGroups,
   getTopNavItems,
@@ -207,23 +210,23 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
           <div className="container">
             <div className="footer-section">
               <h4>Math Lab Platform</h4>
-              <p>A comprehensive platform for learning and solving mathematics problems, designed to help students and professionals build practical understanding across multiple topics.</p>
+              <p>Learn faster with focused tracks, interactive calculators, and a personal practice lab built for real problem solving.</p>
               <div className="footer-status-badge">
                 <i className="fas fa-circle-check"></i>
-                <span>Subject tracks are available with active foundation and deep-dive workspaces</span>
+                <span>Core learning tools are live and ready for daily practice</span>
               </div>
             </div>
             <div className="footer-section">
-              <h4>Platform</h4>
+              <h4>Quick Start</h4>
               <ul className="footer-links">
                 <li><Link to={HOME_PATH} onClick={handleFooterLinkClick}><i className="fas fa-house"></i> Home</Link></li>
                 <li><Link to={TRACKS_PATH} onClick={handleFooterLinkClick}><i className="fas fa-layer-group"></i> Tracks</Link></li>
-                <li><Link to={ROADMAP_PATH} onClick={handleFooterLinkClick}><i className="fas fa-route"></i> Roadmap</Link></li>
+                <li><Link to={MATH_ROADMAP_PATH} onClick={handleFooterLinkClick}><i className="fas fa-route"></i> Learning Roadmap</Link></li>
                 <li><Link to={USER_DASHBOARD_PATH} onClick={handleFooterLinkClick}><i className="fas fa-gauge"></i> Dashboard</Link></li>
               </ul>
             </div>
             <div className="footer-section">
-              <h4>Learning Tools</h4>
+              <h4>Learning Paths</h4>
               <ul className="footer-links">
                 {isOverviewPage
                   ? overviewTrackLinks.map(({ path, icon, label }) => (
@@ -242,13 +245,20 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
               </ul>
             </div>
             <div className="footer-section">
+                <h4>Practice</h4>
+                <ul className="footer-links">
+                  <li><Link to={USER_PRACTICE_PATH} onClick={handleFooterLinkClick}><i className="fas fa-wand-magic-sparkles"></i> Personal practice lab</Link></li>
+                  <li><Link to={CALCULATOR_PATH} onClick={handleFooterLinkClick}><i className="fas fa-calculator"></i> Topic calculators</Link></li>
+                  <li><Link to={HELP_PATH} onClick={handleFooterLinkClick}><i className="fas fa-circle-question"></i> Help center</Link></li>
+                </ul>
+              </div>
+              <div className="footer-section">
               <h4>Support</h4>
               <ul className="footer-links">
                 <li><Link to={AUTH_SIGN_IN_PATH} onClick={handleFooterLinkClick}><i className="fas fa-right-to-bracket"></i> Sign in</Link></li>
                 <li><Link to={AUTH_SIGN_UP_PATH} onClick={handleFooterLinkClick}><i className="fas fa-user-plus"></i> Sign up</Link></li>
-                <li><Link to={HELP_PATH} onClick={handleFooterLinkClick}><i className="fas fa-circle-question"></i> Help center</Link></li>
-                <li><a href="mailto:support@mathlab.local"><i className="fas fa-envelope"></i> support@mathlab.local</a></li>
-                <li><a href="mailto:partnerships@mathlab.local"><i className="fas fa-handshake"></i> partnerships@mathlab.local</a></li>
+                  <li><a href="mailto:support@mathlab.edu"><i className="fas fa-envelope"></i> support@mathlab.edu</a></li>
+                  <li><a href="mailto:partnerships@mathlab.edu"><i className="fas fa-handshake"></i> partnerships@mathlab.edu</a></li>
               </ul>
             </div>
             <div className="footer-section">
@@ -261,8 +271,17 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
             </div>
           </div>
           <div className="footer-bottom">
-            <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', padding: '12px 0' }}>
-              <span style={{ opacity: 0.7, fontSize: '1rem' }}>Math Lab Platform</span>
+            <div className="container">
+              <div className="footer-bottom-content">
+                <div className="footer-bottom-brand">
+                  <i className="fas fa-calculator"></i>
+                  <span>Math Lab Platform</span>
+                </div>
+                <div className="footer-bottom-copy">
+                  <span className="footer-tagline">Built for focused, practical math learning</span>
+                  <span className="footer-year">© 2026</span>
+                </div>
+              </div>
             </div>
           </div>
         </footer>

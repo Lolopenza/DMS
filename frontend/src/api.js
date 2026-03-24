@@ -156,3 +156,23 @@ export function createModule(payload) {
 export function createLesson(payload) {
   return request(`${BACKEND_BASE}/admin/lessons`, { method: 'POST', body: JSON.stringify(payload) });
 }
+
+// ── Interactive AI Problem Generation ─────────────────────────────────────
+
+export function generateInteractiveProblem(payload) {
+  return request(`${BACKEND_BASE}/problems/generated`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function listMyGeneratedProblems() {
+  return request(`${BACKEND_BASE}/problems/generated/me`);
+}
+
+export function submitGeneratedProblemAttempt(generatedProblemId, payload) {
+  return request(`${BACKEND_BASE}/problems/generated/${generatedProblemId}/attempt`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}

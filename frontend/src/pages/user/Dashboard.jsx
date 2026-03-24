@@ -1,6 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { CALCULATOR_PATH, ROADMAP_PATH, TRACKS_PATH, USER_PROFILE_PATH, USER_SETTINGS_PATH } from '../../routes.js';
+import {
+  CALCULATOR_PATH,
+  ROADMAP_PATH,
+  TRACKS_PATH,
+  USER_PRACTICE_PATH,
+  USER_PROFILE_PATH,
+  USER_SETTINGS_PATH,
+} from '../../routes.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 export default function Dashboard() {
@@ -10,48 +17,56 @@ export default function Dashboard() {
   return (
     <div className="container">
       <div className="page-title">
-        <h2>User Dashboard</h2>
-        <p className="subtitle">Welcome back, {displayName}.</p>
+        <h1><i className="fas fa-chart-line"></i> Welcome back, {displayName}!</h1>
+        <p className="subtitle">Pick up where you left off or explore something new today.</p>
       </div>
 
       <div className="features-grid">
         <Link to={CALCULATOR_PATH} className="feature-card">
           <div className="icon"><i className="fas fa-calculator"></i></div>
           <div className="content">
-            <h3>Continue practice</h3>
-            <p>Open calculator modules and continue solving problems.</p>
+            <h3>Practice with Calculators</h3>
+            <p>Master concepts with interactive tools for all major topics.</p>
           </div>
         </Link>
 
         <Link to={ROADMAP_PATH} className="feature-card">
           <div className="icon"><i className="fas fa-route"></i></div>
           <div className="content">
-            <h3>Learning roadmap</h3>
-            <p>Track progress through the discrete math learning path.</p>
+            <h3>Math Roadmap</h3>
+            <p>Explore learning paths across foundations and specialized domains.</p>
           </div>
         </Link>
 
         <Link to={TRACKS_PATH} className="feature-card">
           <div className="icon"><i className="fas fa-layer-group"></i></div>
           <div className="content">
-            <h3>All tracks</h3>
-            <p>Open active track and preview planned subject expansion.</p>
+            <h3>Subject Tracks</h3>
+            <p>Discover upcoming subjects and plan your learning journey.</p>
+          </div>
+        </Link>
+
+        <Link to={USER_PRACTICE_PATH} className="feature-card">
+          <div className="icon"><i className="fas fa-wand-magic-sparkles"></i></div>
+          <div className="content">
+            <h3>AI-Powered Practice</h3>
+            <p>Get personalized problems with instant feedback from AI.</p>
           </div>
         </Link>
 
         <Link to={USER_PROFILE_PATH} className="feature-card">
           <div className="icon"><i className="fas fa-id-badge"></i></div>
           <div className="content">
-            <h3>Profile</h3>
-            <p>Manage personal info and learner preferences.</p>
+            <h3>My Profile</h3>
+            <p>Update your information and learning goals.</p>
           </div>
         </Link>
 
         <Link to={USER_SETTINGS_PATH} className="feature-card">
           <div className="icon"><i className="fas fa-sliders"></i></div>
           <div className="content">
-            <h3>Settings</h3>
-            <p>Adjust notifications and interface behavior.</p>
+            <h3>Preferences</h3>
+            <p>Customize your learning experience and notifications.</p>
           </div>
         </Link>
       </div>
