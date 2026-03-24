@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,6 +32,14 @@ public class GlobalExceptionHandler {
         }
         log.warn("Validation error path={} fields={}", request.getRequestURI(), details.keySet());
         return ResponseEntity.badRequest().body(envelope("VALIDATION_ERROR", "Validation failed", details));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoResource(NoResourceFoundException ex, HttpServletRequest request) {
+        Map<String, Object> details = Map.of("path", request.getRequestURI());
+        log.warn("No resource found path={}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(envelope("NOT_FOUND", "Resource not found", details));
     }
 
     @ExceptionHandler(Exception.class)

@@ -3,15 +3,25 @@ package com.dmc.problem.service;
 import com.dmc.common.exception.ApiException;
 import com.dmc.infrastructure.mathengine.MathEngineClient;
 import com.dmc.problem.dto.GeneratedProblemDto;
+import com.dmc.problem.dto.GeneratedProblemAttemptRequest;
+import com.dmc.problem.dto.GeneratedProblemAttemptResponse;
+import com.dmc.problem.dto.GeneratedProblemItemDto;
+import com.dmc.problem.dto.InteractiveProblemGenerateRequest;
 import com.dmc.problem.dto.ProblemAttemptRequest;
 import com.dmc.problem.dto.ProblemAttemptResponse;
 import com.dmc.problem.dto.ProblemDto;
 import com.dmc.problem.dto.ProblemTemplateDto;
 import com.dmc.problem.dto.TopicDto;
+import com.dmc.problem.entity.Difficulty;
+import com.dmc.problem.entity.GeneratedProblem;
+import com.dmc.problem.entity.GeneratedProblemAttempt;
+import com.dmc.problem.entity.GenerationMode;
 import com.dmc.problem.entity.Problem;
 import com.dmc.problem.entity.ProblemAttempt;
 import com.dmc.problem.entity.ProblemTemplate;
 import com.dmc.problem.entity.Topic;
+import com.dmc.problem.repository.GeneratedProblemAttemptRepository;
+import com.dmc.problem.repository.GeneratedProblemRepository;
 import com.dmc.problem.repository.ProblemAttemptRepository;
 import com.dmc.problem.repository.ProblemRepository;
 import com.dmc.problem.repository.ProblemTemplateRepository;
@@ -27,6 +37,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +54,8 @@ public class ProblemService {
     private final ProblemAttemptRepository problemAttemptRepository;
     private final TopicRepository topicRepository;
     private final ProblemTemplateRepository templateRepository;
+    private final GeneratedProblemRepository generatedProblemRepository;
+    private final GeneratedProblemAttemptRepository generatedProblemAttemptRepository;
     private final UserRepository userRepository;
     private final MathEngineClient mathEngineClient;
     private final ObjectMapper objectMapper;
@@ -208,6 +222,160 @@ public class ProblemService {
         );
     }
 
+        @Transactional
+        public GeneratedProblemItemDto generateInteractive(Long userId, InteractiveProblemGenerateRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
+
+        GenerationMode mode = parseMode(request.mode());
+            ProblemTemplate template = null;
+            GeneratedProblemDto generated;
+            Difficulty difficulty;
+            String sourceModel;
+            JsonNode correctAnswer = null;
+
+            if (mode == GenerationMode.AI) {
+                JsonNode ai = mathEngineClient.generateAiProblem(request.topicSlug(), request.difficulty(), request.skillLevel());
+                ObjectNode paramsNode = objectMapper.createObjectNode();
+                JsonNode aiParams = ai.path("parameters");
+                if (aiParams.isObject()) {
+                    paramsNode.setAll((ObjectNode) aiParams);
+                }
+
+                String question = ai.path("questionText").asText(null);
+                String answerExpression = ai.path("answerExpression").asText(null);
+                String operation = ai.path("operation").asText(null);
+                if (question == null || answerExpression == null || operation == null) {
+                    throw new ApiException(HttpStatus.BAD_GATEWAY, "AI_GENERATION_INVALID", "AI generation response missing required fields");
+                }
+
+                generated = new GeneratedProblemDto(null, question, paramsNode, answerExpression, operation);
+                sourceModel = ai.path("sourceModel").asText("gemini");
+                String diffRaw = request.difficulty() == null ? "MEDIUM" : request.difficulty();
+                difficulty = parseDifficultyOrDefault(diffRaw);
+                if (ai.has("correctAnswer")) {
+                    correctAnswer = ai.get("correctAnswer");
+                }
+            } else {
+                template = resolveTemplateForInteractive(request);
+                generated = generateFromTemplate(template.getId());
+                sourceModel = "template";
+                difficulty = template.getDifficulty() == null ? Difficulty.MEDIUM : template.getDifficulty();
+            }
+
+        GeneratedProblem problem = GeneratedProblem.builder()
+            .user(user)
+            .template(template)
+            .generationMode(mode)
+                    .sourceModel(sourceModel)
+                    .topicSlug(mode == GenerationMode.AI ? request.topicSlug() : template.getTopicSlug())
+            .difficulty(difficulty)
+            .difficultyScore(toDifficultyScore(difficulty))
+            .questionText(generated.question())
+            .paramsJson(generated.parameters())
+                    .correctAnswer(correctAnswer)
+            .answerExpression(generated.answerExpression())
+            .operation(generated.operation())
+            .attemptCount(0)
+            .correctCount(0)
+            .build();
+
+        return toGeneratedItemDto(generatedProblemRepository.save(problem));
+        }
+
+        public List<GeneratedProblemItemDto> myGeneratedProblems(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
+        return generatedProblemRepository.findByUserAndDeletedAtIsNullOrderByCreatedAtDesc(user).stream()
+            .map(this::toGeneratedItemDto)
+            .toList();
+        }
+
+        @Transactional
+        public GeneratedProblemAttemptResponse submitGeneratedAttempt(Long userId, Long generatedProblemId, GeneratedProblemAttemptRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
+
+        GeneratedProblem generatedProblem = generatedProblemRepository.findByIdAndDeletedAtIsNull(generatedProblemId)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "GENERATED_PROBLEM_NOT_FOUND", "Generated problem not found"));
+
+        if (!generatedProblem.getUser().getId().equals(userId)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Generated problem belongs to another user");
+        }
+
+        if (request.answer() == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "ANSWER_REQUIRED", "Answer is required");
+        }
+
+        boolean symbolicCorrect = false;
+        if (generatedProblem.getAnswerExpression() != null && generatedProblem.getOperation() != null) {
+            try {
+                symbolicCorrect = mathEngineClient.validateTemplateAnswer(
+                    generatedProblem.getOperation(),
+                    generatedProblem.getAnswerExpression(),
+                    generatedProblem.getParamsJson(),
+                    request.answer()
+                );
+            } catch (ApiException ex) {
+                // AI-generated expressions may be non-symbolic; continue with semantic verification.
+                symbolicCorrect = false;
+            }
+        }
+
+        boolean semanticCorrect = false;
+        BigDecimal semanticConfidence = BigDecimal.valueOf(0.50);
+        String semanticFeedback = "Semantic verification completed";
+        if (!symbolicCorrect) {
+            JsonNode semantic = mathEngineClient.semanticVerify(
+                generatedProblem.getQuestionText(),
+                request.answer(),
+                generatedProblem.getCorrectAnswer(),
+                generatedProblem.getAnswerExpression(),
+                generatedProblem.getOperation(),
+                generatedProblem.getParamsJson()
+            );
+            semanticCorrect = semantic.path("correct").asBoolean(false);
+            semanticConfidence = BigDecimal.valueOf(semantic.path("confidence").asDouble(0.5));
+            semanticFeedback = semantic.path("feedback").asText("Semantic verification completed");
+        }
+
+        boolean correct = symbolicCorrect || semanticCorrect;
+        String method = symbolicCorrect ? "symbolic" : "semantic";
+        BigDecimal confidence = symbolicCorrect ? BigDecimal.valueOf(0.99) : semanticConfidence;
+        int xpEarned = correct ? 10 : 0;
+        String feedback = correct
+            ? "Correct answer"
+            : semanticFeedback;
+
+        GeneratedProblemAttempt attempt = GeneratedProblemAttempt.builder()
+            .user(user)
+            .generatedProblem(generatedProblem)
+            .answer(request.answer())
+            .correct(correct)
+            .confidence(confidence)
+            .verificationMethod(method)
+            .feedback(feedback)
+            .xpEarned(xpEarned)
+            .createdAt(OffsetDateTime.now())
+            .build();
+        generatedProblemAttemptRepository.save(attempt);
+
+        generatedProblem.setAttemptCount((generatedProblem.getAttemptCount() == null ? 0 : generatedProblem.getAttemptCount()) + 1);
+        if (correct) {
+            generatedProblem.setCorrectCount((generatedProblem.getCorrectCount() == null ? 0 : generatedProblem.getCorrectCount()) + 1);
+        }
+        generatedProblemRepository.save(generatedProblem);
+
+        return new GeneratedProblemAttemptResponse(
+            generatedProblem.getId(),
+            correct,
+            confidence,
+            method,
+            feedback,
+            xpEarned
+        );
+        }
+
     private boolean isCorrect(JsonNode expected, JsonNode actual) {
         return expected != null && actual != null && expected.equals(actual);
     }
@@ -260,4 +428,76 @@ public class ProblemService {
     private <T> Iterable<T> iterable(java.util.Iterator<T> iterator) {
         return () -> iterator;
     }
+
+    private GeneratedProblemItemDto toGeneratedItemDto(GeneratedProblem problem) {
+        return new GeneratedProblemItemDto(
+                problem.getId(),
+                problem.getTemplate() == null ? null : problem.getTemplate().getId(),
+                problem.getGenerationMode(),
+                problem.getSourceModel(),
+                problem.getTopicSlug(),
+                problem.getDifficulty(),
+                problem.getDifficultyScore(),
+                problem.getQuestionText(),
+                problem.getParamsJson(),
+                problem.getAttemptCount(),
+                problem.getCorrectCount(),
+                problem.getCreatedAt()
+        );
+    }
+
+    private GenerationMode parseMode(String rawMode) {
+        if (rawMode == null || rawMode.isBlank()) {
+            return GenerationMode.TEMPLATE;
+        }
+        try {
+            return GenerationMode.valueOf(rawMode.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_GENERATION_MODE", "Unknown generation mode: " + rawMode);
+        }
+    }
+
+    private Difficulty parseDifficultyOrDefault(String rawDifficulty) {
+        if (rawDifficulty == null || rawDifficulty.isBlank()) {
+            return Difficulty.MEDIUM;
+        }
+        try {
+            return Difficulty.valueOf(rawDifficulty.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_DIFFICULTY", "Unknown difficulty: " + rawDifficulty);
+        }
+    }
+
+    private ProblemTemplate resolveTemplateForInteractive(InteractiveProblemGenerateRequest request) {
+        if (request.templateId() != null) {
+            return templateRepository.findByIdAndDeletedAtIsNull(request.templateId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "TEMPLATE_NOT_FOUND", "Template not found"));
+        }
+
+        List<ProblemTemplate> candidates;
+        if (request.topicSlug() != null && !request.topicSlug().isBlank()) {
+            candidates = templateRepository.findByDeletedAtIsNullAndActiveTrueAndTopicSlugOrderByCreatedAtDesc(request.topicSlug());
+        } else {
+            Difficulty difficulty = parseDifficultyOrDefault(request.difficulty());
+            candidates = templateRepository.findByDeletedAtIsNullAndActiveTrueAndDifficultyOrderByCreatedAtDesc(difficulty);
+            if (candidates.isEmpty()) {
+                candidates = templateRepository.findByDeletedAtIsNullAndActiveTrueOrderByCreatedAtDesc();
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "TEMPLATE_NOT_FOUND", "No active templates available");
+        }
+        return candidates.get(random.nextInt(candidates.size()));
+    }
+
+    private BigDecimal toDifficultyScore(Difficulty difficulty) {
+        double score = switch (difficulty) {
+            case EASY -> 0.35;
+            case MEDIUM -> 0.60;
+            case HARD -> 0.85;
+        };
+        return BigDecimal.valueOf(score).setScale(3, RoundingMode.HALF_UP);
+    }
+
 }
