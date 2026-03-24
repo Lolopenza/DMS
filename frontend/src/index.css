@@ -1103,3 +1103,194 @@ body.dark-theme .module-load-error-text {
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+/* ── Practice Lab semantic chips/badges ─────────────────────────────────── */
+.practice-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.practice-chip-primary {
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+
+.practice-chip-secondary {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+
+.practice-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  line-height: 1.2;
+}
+
+.practice-badge-ai {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.practice-badge-fallback {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.practice-badge-template {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.practice-badge-difficulty-easy {
+  background: #ecfdf5;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.practice-badge-difficulty-medium {
+  background: #fefce8;
+  color: #854d0e;
+  border-color: #fde047;
+}
+
+.practice-badge-difficulty-hard {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+/* ── Practice Lab dark theme fixes ───────────────────────────────────────── */
+body.dark-theme .practice-lab h2,
+body.dark-theme .practice-lab h3,
+body.dark-theme .practice-lab h4 {
+  color: #f1f5f9 !important;
+}
+
+body.dark-theme .practice-lab p,
+body.dark-theme .practice-lab span,
+body.dark-theme .practice-lab label {
+  color: #cbd5e1;
+}
+
+body.dark-theme .practice-lab .practice-card {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+body.dark-theme .practice-lab a.bg-white,
+body.dark-theme .practice-lab button.bg-white {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+body.dark-theme .practice-lab .bg-slate-50 {
+  background: #1e293b !important;
+}
+
+body.dark-theme .practice-lab .text-slate-800,
+body.dark-theme .practice-lab .text-slate-700,
+body.dark-theme .practice-lab .text-slate-600 {
+  color: #e2e8f0 !important;
+}
+
+body.dark-theme .practice-lab .text-slate-500,
+body.dark-theme .practice-lab .text-slate-400,
+body.dark-theme .practice-lab .text-slate-300 {
+  color: #94a3b8 !important;
+}
+
+body.dark-theme .practice-lab .border-slate-200,
+body.dark-theme .practice-lab .border-slate-100 {
+  border-color: #334155 !important;
+}
+
+body.dark-theme .practice-lab select,
+body.dark-theme .practice-lab input {
+  background: #0b1220 !important;
+  color: #f1f5f9 !important;
+  border-color: #475569 !important;
+}
+
+body.dark-theme .practice-lab select:focus,
+body.dark-theme .practice-lab input:focus {
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 1px #818cf8 !important;
+}
+
+body.dark-theme .practice-lab input::placeholder {
+  color: #64748b !important;
+}
+
+body.dark-theme .practice-lab .hover\:bg-indigo-50:hover {
+  background: #172554 !important;
+}
+
+body.dark-theme .practice-lab .hover\:border-indigo-200:hover {
+  border-color: #4338ca !important;
+}
+
+body.dark-theme .practice-lab .practice-chip-primary {
+  background: rgba(99, 102, 241, 0.16);
+  color: #c7d2fe;
+  border-color: rgba(129, 140, 248, 0.45);
+}
+
+body.dark-theme .practice-lab .practice-chip-secondary {
+  background: rgba(168, 85, 247, 0.18);
+  color: #e9d5ff;
+  border-color: rgba(192, 132, 252, 0.45);
+}
+
+body.dark-theme .practice-lab .practice-badge-ai {
+  background: rgba(16, 185, 129, 0.2);
+  color: #a7f3d0;
+  border-color: rgba(52, 211, 153, 0.5);
+}
+
+body.dark-theme .practice-lab .practice-badge-fallback {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+body.dark-theme .practice-lab .practice-badge-template {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+body.dark-theme .practice-lab .practice-badge-difficulty-easy {
+  background: rgba(34, 197, 94, 0.2);
+  color: #bbf7d0;
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+body.dark-theme .practice-lab .practice-badge-difficulty-medium {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fde68a;
+  border-color: rgba(250, 204, 21, 0.5);
+}
+
+body.dark-theme .practice-lab .practice-badge-difficulty-hard {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.5);
+}
