@@ -23,12 +23,9 @@ def chatbot(req: ChatRequest):
 
     if 'error' in result:
         err = result['error']
-        if '429' in err or 'rate limit' in err.lower() or 'too many requests' in err.lower():
-            raise HTTPException(429, err)
-        if '401' in err:
-            raise HTTPException(401, err)
-        if '402' in err:
-            raise HTTPException(402, err)
+        status = result.get('status', 500)
+        if isinstance(status, int) and 400 <= status <= 599:
+            raise HTTPException(status, err)
         raise HTTPException(500, err)
 
     return result
