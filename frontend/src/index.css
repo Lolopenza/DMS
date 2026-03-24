@@ -2,6 +2,202 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── DMC Design Tokens (Phase 2) ─────────────────────────────────────────── */
+:root {
+  --dmc-bg-page: #f8fafc;
+  --dmc-bg-card: #ffffff;
+  --dmc-bg-soft: #f8fafc;
+  --dmc-border: #e2e8f0;
+  --dmc-border-soft: #f1f5f9;
+
+  --dmc-text-primary: #1e293b;
+  --dmc-text-secondary: #334155;
+  --dmc-text-muted: #64748b;
+  --dmc-text-subtle: #94a3b8;
+
+  --dmc-primary-500: #4f46e5;
+  --dmc-primary-600: #4338ca;
+  --dmc-primary-700: #3730a3;
+  --dmc-on-primary: #ffffff;
+
+  --dmc-ai-bg: #ecfdf5;
+  --dmc-ai-text: #065f46;
+  --dmc-ai-border: #a7f3d0;
+
+  --dmc-fallback-bg: #fffbeb;
+  --dmc-fallback-text: #92400e;
+  --dmc-fallback-border: #fde68a;
+}
+
+/* Dark theme skeleton (can be extended globally page-by-page) */
+body.dark-theme {
+  --dmc-bg-page: #020617;
+  --dmc-bg-card: #0f172a;
+  --dmc-bg-soft: #1e293b;
+  --dmc-border: #334155;
+  --dmc-border-soft: #334155;
+
+  --dmc-text-primary: #f1f5f9;
+  --dmc-text-secondary: #e2e8f0;
+  --dmc-text-muted: #cbd5e1;
+  --dmc-text-subtle: #94a3b8;
+
+  --dmc-primary-500: #818cf8;
+  --dmc-primary-600: #6366f1;
+  --dmc-primary-700: #4f46e5;
+  --dmc-on-primary: #ffffff;
+
+  --dmc-ai-bg: rgba(16, 185, 129, 0.2);
+  --dmc-ai-text: #a7f3d0;
+  --dmc-ai-border: rgba(52, 211, 153, 0.5);
+
+  --dmc-fallback-bg: rgba(245, 158, 11, 0.2);
+  --dmc-fallback-text: #fde68a;
+  --dmc-fallback-border: rgba(251, 191, 36, 0.5);
+}
+
+/* Base semantic UI primitives for new screens */
+.dmc-card {
+  background: var(--dmc-bg-card);
+  border: 1px solid var(--dmc-border);
+  @apply rounded-2xl shadow-sm overflow-hidden;
+}
+
+.dmc-card-header {
+  border-bottom: 1px solid var(--dmc-border-soft);
+  @apply px-6 py-4;
+}
+
+.dmc-card-body {
+  @apply p-6;
+}
+
+.dmc-title {
+  color: var(--dmc-text-primary);
+}
+
+.dmc-subtitle {
+  color: var(--dmc-text-muted);
+}
+
+.dmc-surface-soft {
+  background: var(--dmc-bg-soft);
+}
+
+.dmc-input,
+.dmc-select {
+  background: var(--dmc-bg-card);
+  color: var(--dmc-text-primary);
+  border: 1px solid var(--dmc-border);
+  @apply w-full rounded-lg px-3 py-2.5 text-sm shadow-sm outline-none transition-colors;
+}
+
+.dmc-input::placeholder {
+  color: var(--dmc-text-subtle);
+}
+
+.dmc-input:focus,
+.dmc-select:focus {
+  border-color: var(--dmc-primary-500);
+  box-shadow: 0 0 0 1px var(--dmc-primary-500);
+}
+
+.dmc-button-primary {
+  background: var(--dmc-primary-600);
+  color: var(--dmc-on-primary);
+  @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm;
+}
+
+.dmc-button-primary:hover {
+  background: var(--dmc-primary-700);
+}
+
+.dmc-button-secondary {
+  background: var(--dmc-text-primary);
+  color: var(--dmc-on-primary);
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm;
+}
+
+.dmc-button-secondary:hover {
+  filter: brightness(0.92);
+}
+
+.dmc-button-primary:disabled,
+.dmc-button-secondary:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.dmc-chip {
+  border: 1px solid var(--dmc-border);
+  color: var(--dmc-text-secondary);
+  background: var(--dmc-bg-soft);
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.dmc-badge-ai {
+  background: var(--dmc-ai-bg);
+  color: var(--dmc-ai-text);
+  border: 1px solid var(--dmc-ai-border);
+}
+
+.dmc-badge-fallback {
+  background: var(--dmc-fallback-bg);
+  color: var(--dmc-fallback-text);
+  border: 1px solid var(--dmc-fallback-border);
+}
+
+@layer components {
+  .dmc-link-ghost {
+    background: var(--dmc-bg-card);
+    border: 1px solid var(--dmc-border);
+    color: var(--dmc-text-secondary);
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm;
+  }
+
+  .dmc-link-ghost:hover {
+    background: var(--dmc-bg-soft);
+    border-color: color-mix(in srgb, var(--dmc-border) 70%, var(--dmc-primary-500) 30%);
+    color: var(--dmc-text-primary);
+  }
+
+  .dmc-badge-difficulty-easy {
+    background: #ecfdf5;
+    color: #166534;
+    border: 1px solid #86efac;
+  }
+
+  .dmc-badge-difficulty-medium {
+    background: #fefce8;
+    color: #854d0e;
+    border: 1px solid #fde047;
+  }
+
+  .dmc-badge-difficulty-hard {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  body.dark-theme .dmc-badge-difficulty-easy {
+    background: rgba(34, 197, 94, 0.2);
+    color: #bbf7d0;
+    border-color: rgba(74, 222, 128, 0.5);
+  }
+
+  body.dark-theme .dmc-badge-difficulty-medium {
+    background: rgba(234, 179, 8, 0.2);
+    color: #fde68a;
+    border-color: rgba(250, 204, 21, 0.5);
+  }
+
+  body.dark-theme .dmc-badge-difficulty-hard {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fecaca;
+    border-color: rgba(248, 113, 113, 0.5);
+  }
+}
+
+
 /* ── Roadmap page ───────────────────────────────────────────────────────── */
 body.roadmap-page {
   min-height: 100vh;
@@ -1293,4 +1489,253 @@ body.dark-theme .practice-lab .practice-badge-difficulty-hard {
   background: rgba(239, 68, 68, 0.2);
   color: #fecaca;
   border-color: rgba(248, 113, 113, 0.5);
+}
+
+/* ── Math Roadmap (subject map page) ─────────────────────────────────────── */
+.roadmap-overview {
+  margin-bottom: 1.25rem;
+  background: rgba(30, 41, 59, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+}
+
+.roadmap-overview h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  color: #f1f5f9;
+}
+
+.roadmap-overview-text {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+.math-roadmap-section {
+  margin-bottom: 1.35rem;
+  background: rgba(30, 41, 59, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.math-roadmap-header {
+  margin-bottom: 0.9rem;
+}
+
+.math-roadmap-tier-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.math-roadmap-tier-desc {
+  margin: 0.4rem 0 0;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.math-subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.9rem;
+}
+
+.math-subject-card {
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 205px;
+}
+
+.math-subject-card-specialized {
+  border-left: 3px solid #22c55e;
+}
+
+.math-subject-card-header {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.math-subject-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.2);
+  color: #c7d2fe;
+  border: 1px solid rgba(129, 140, 248, 0.45);
+}
+
+.math-subject-badge-specialized {
+  background: rgba(34, 197, 94, 0.2);
+  color: #bbf7d0;
+  border: 1px solid rgba(74, 222, 128, 0.45);
+}
+
+.math-subject-title {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 1.03rem;
+  line-height: 1.35;
+}
+
+.math-subject-goal {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.5;
+  font-size: 0.93rem;
+}
+
+.math-subject-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.math-feature-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(51, 65, 85, 0.55);
+}
+
+.math-subject-actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.math-subject-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.72rem;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.math-subject-btn:hover {
+  transform: translateY(-1px);
+}
+
+.math-subject-btn-calc {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(129, 140, 248, 0.45);
+  color: #c7d2fe;
+}
+
+.math-subject-btn-roadmap {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(96, 165, 250, 0.45);
+  color: #bfdbfe;
+}
+
+.math-roadmap-guidance {
+  margin-top: 1rem;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+}
+
+.math-roadmap-guidance h3 {
+  margin: 0 0 0.75rem;
+  color: #f1f5f9;
+  font-size: 1.05rem;
+}
+
+.math-guidance-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.math-guidance-list li {
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
+.math-guidance-list strong {
+  color: #f8fafc;
+}
+
+body.roadmap-page:not(.dark-theme) .roadmap-overview,
+body.roadmap-page:not(.dark-theme) .math-roadmap-section,
+body.roadmap-page:not(.dark-theme) .math-roadmap-guidance {
+  background: #ffffff;
+  border-color: var(--gray-200, #e2e8f0);
+}
+
+body.roadmap-page:not(.dark-theme) .roadmap-overview h2,
+body.roadmap-page:not(.dark-theme) .math-roadmap-tier-title,
+body.roadmap-page:not(.dark-theme) .math-subject-title,
+body.roadmap-page:not(.dark-theme) .math-roadmap-guidance h3,
+body.roadmap-page:not(.dark-theme) .math-guidance-list strong {
+  color: var(--gray-800, #1f2937);
+}
+
+body.roadmap-page:not(.dark-theme) .roadmap-overview-text,
+body.roadmap-page:not(.dark-theme) .math-roadmap-tier-desc,
+body.roadmap-page:not(.dark-theme) .math-subject-goal,
+body.roadmap-page:not(.dark-theme) .math-guidance-list li {
+  color: var(--gray-600, #4b5563);
+}
+
+body.roadmap-page:not(.dark-theme) .math-subject-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+body.roadmap-page:not(.dark-theme) .math-feature-chip {
+  color: #475569;
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+body.roadmap-page:not(.dark-theme) .math-subject-badge {
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+
+body.roadmap-page:not(.dark-theme) .math-subject-badge-specialized {
+  background: #ecfdf5;
+  color: #166534;
+  border-color: #86efac;
+}
+
+body.roadmap-page:not(.dark-theme) .math-subject-btn-calc {
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+
+body.roadmap-page:not(.dark-theme) .math-subject-btn-roadmap {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
 }

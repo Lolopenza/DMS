@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   CALCULATOR_PATH,
-  ROADMAP_PATH,
+  MATH_ROADMAP_PATH,
   TRACKS_PATH,
   USER_PRACTICE_PATH,
   USER_PROFILE_PATH,
@@ -30,7 +30,7 @@ export default function Dashboard() {
           </div>
         </Link>
 
-        <Link to={ROADMAP_PATH} className="feature-card">
+        <Link to={MATH_ROADMAP_PATH} className="feature-card">
           <div className="icon"><i className="fas fa-route"></i></div>
           <div className="content">
             <h3>Math Roadmap</h3>

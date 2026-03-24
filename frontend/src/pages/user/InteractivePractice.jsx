@@ -32,7 +32,7 @@ function SourceBadge({ sourceModel, generationMode }) {
 
   if (isAI) {
     return (
-      <span className="practice-badge practice-badge-ai">
+      <span className="practice-badge practice-badge-ai dmc-badge-ai">
         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.789l1.599.799L9 4.323V3a1 1 0 011-1z" />
         </svg>
@@ -43,7 +43,7 @@ function SourceBadge({ sourceModel, generationMode }) {
 
   if (isFallback) {
     return (
-      <span className="practice-badge practice-badge-fallback">
+      <span className="practice-badge practice-badge-fallback dmc-badge-fallback">
         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
         </svg>
@@ -65,10 +65,10 @@ function SourceBadge({ sourceModel, generationMode }) {
 function DifficultyBadge({ difficulty }) {
   const label = difficulty || 'MEDIUM';
   const cls = label === 'EASY'
-    ? 'practice-badge-difficulty-easy'
+    ? 'dmc-badge-difficulty-easy'
     : label === 'HARD'
-      ? 'practice-badge-difficulty-hard'
-      : 'practice-badge-difficulty-medium';
+      ? 'dmc-badge-difficulty-hard'
+      : 'dmc-badge-difficulty-medium';
   return (
     <span className={`practice-badge ${cls}`}>
       {label.charAt(0) + label.slice(1).toLowerCase()}
@@ -223,8 +223,8 @@ export default function InteractivePractice() {
     <div className="practice-lab max-w-4xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-slate-800">Personal Practice Lab</h2>
-        <p className="text-slate-500 text-base max-w-xl mx-auto">
+        <h2 className="dmc-title text-3xl font-bold">Personal Practice Lab</h2>
+        <p className="dmc-subtitle text-base max-w-xl mx-auto">
           Generate focused problems by topic and difficulty, submit your answer, and get immediate feedback.
         </p>
       </div>
@@ -233,7 +233,7 @@ export default function InteractivePractice() {
       <div className="flex items-center justify-center gap-3">
         <Link
           to={USER_DASHBOARD_PATH}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-sm"
+          className="dmc-link-ghost"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -242,7 +242,7 @@ export default function InteractivePractice() {
         </Link>
         <Link
           to={TRACKS_PATH}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-sm"
+          className="dmc-link-ghost"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -252,15 +252,15 @@ export default function InteractivePractice() {
       </div>
 
       {/* Settings Card */}
-      <div className="practice-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="practice-card dmc-card">
         <div className="p-6 space-y-5">
           {/* Feature chips */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="practice-chip practice-chip-primary">
+            <span className="practice-chip practice-chip-primary dmc-chip">
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
               Fast practice cycle
             </span>
-            <span className="practice-chip practice-chip-secondary">
+            <span className="practice-chip practice-chip-secondary dmc-chip">
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 4a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" /></svg>
               Smart verification
             </span>
@@ -269,11 +269,11 @@ export default function InteractivePractice() {
           {/* Selects grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Topic</label>
+              <label className="block text-sm font-medium dmc-title mb-1.5">Topic</label>
               <select
                 value={topicSlug}
                 onChange={(e) => setTopicSlug(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+                className="dmc-select"
               >
                 {TOPIC_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -282,11 +282,11 @@ export default function InteractivePractice() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Difficulty</label>
+              <label className="block text-sm font-medium dmc-title mb-1.5">Difficulty</label>
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+                className="dmc-select"
               >
                 {DIFFICULTY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -295,11 +295,11 @@ export default function InteractivePractice() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Practice Mode</label>
+              <label className="block text-sm font-medium dmc-title mb-1.5">Practice Mode</label>
               <select
                 value={mode}
                 onChange={(e) => setMode(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+                className="dmc-select"
               >
                 {MODE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -308,11 +308,11 @@ export default function InteractivePractice() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Skill Level</label>
+              <label className="block text-sm font-medium dmc-title mb-1.5">Skill Level</label>
               <select
                 value={skillLevel}
                 onChange={(e) => setSkillLevel(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors"
+                className="dmc-select"
               >
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
@@ -322,7 +322,7 @@ export default function InteractivePractice() {
           </div>
 
           {/* Mode hint */}
-          <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
+          <div className="dmc-surface-soft flex items-center gap-2 text-sm dmc-subtitle rounded-lg px-3 py-2">
             <svg className="w-4 h-4 flex-shrink-0 text-slate-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
             <span>{selectedMode?.hint || 'Choose a mode to continue.'}</span>
           </div>
@@ -332,7 +332,7 @@ export default function InteractivePractice() {
             type="button"
             onClick={onGenerate}
             disabled={loading}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
+            className="w-full sm:w-auto dmc-button-primary focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-60"
           >
             {loading ? (
               <>
@@ -356,56 +356,56 @@ export default function InteractivePractice() {
 
       {/* Loading state */}
       {loading && (
-        <div className="practice-card bg-white rounded-2xl shadow-sm border border-slate-200 p-10 flex flex-col items-center gap-4">
+        <div className="practice-card dmc-card p-10 flex flex-col items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center">
             <svg className="animate-spin w-7 h-7 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
           </div>
-          <p className="text-base font-medium text-slate-700">
+          <p className="text-base font-medium dmc-title">
             {mode === 'AI' ? 'AI is generating your problem…' : 'Generating problem from template…'}
           </p>
-          <p className="text-sm text-slate-400">This may take a few seconds</p>
+          <p className="text-sm dmc-subtitle">This may take a few seconds</p>
         </div>
       )}
 
       {/* Current Problem */}
       {current && !loading && (
-        <div className="practice-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
-            <h3 className="text-lg font-semibold text-slate-800">Current Problem</h3>
+        <div className="practice-card dmc-card">
+          <div className="dmc-card-header flex items-center justify-between flex-wrap gap-2">
+            <h3 className="text-lg font-semibold dmc-title">Current Problem</h3>
             <div className="flex items-center gap-2">
               <SourceBadge sourceModel={current.sourceModel} generationMode={current.generationMode} />
               <DifficultyBadge difficulty={current.difficulty} />
             </div>
           </div>
 
-          <div className="p-6 space-y-5">
+          <div className="dmc-card-body space-y-5">
             {/* Question */}
-            <div className="bg-slate-50 rounded-xl p-4">
-              <p className="text-slate-800 whitespace-pre-wrap leading-relaxed">{current.questionText}</p>
+            <div className="dmc-surface-soft rounded-xl p-4">
+              <p className="dmc-title whitespace-pre-wrap leading-relaxed">{current.questionText}</p>
             </div>
 
             {/* Meta info */}
-            <div className="flex items-center gap-4 text-xs text-slate-400">
-              <span>Topic: <strong className="text-slate-600">{current.topicSlug || 'n/a'}</strong></span>
+            <div className="flex items-center gap-4 text-xs dmc-subtitle">
+              <span>Topic: <strong className="dmc-title">{current.topicSlug || 'n/a'}</strong></span>
               {current.difficultyScore != null && (
-                <span>Score: <strong className="text-slate-600">{Number(current.difficultyScore).toFixed(2)}</strong></span>
+                <span>Score: <strong className="dmc-title">{Number(current.difficultyScore).toFixed(2)}</strong></span>
               )}
             </div>
 
             {/* Answer form */}
             <form onSubmit={onSubmitAnswer} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Your Answer</label>
+                <label className="block text-sm font-medium dmc-title mb-1.5">Your Answer</label>
                 <input
                   type="text"
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   placeholder="Enter your answer (e.g. 28, n*(n-1)/2)"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors placeholder:text-slate-400"
+                  className="dmc-input"
                 />
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-2 text-xs dmc-subtitle">
                 <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" /></svg>
                 <span>Tip: submit a clean numeric or symbolic answer.</span>
               </div>
@@ -413,7 +413,7 @@ export default function InteractivePractice() {
               <button
                 type="submit"
                 disabled={submitting || !String(answer).trim()}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-slate-800 hover:bg-slate-900 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                className="dmc-button-secondary focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
               >
                 {submitting ? (
                   <>
@@ -440,13 +440,13 @@ export default function InteractivePractice() {
       )}
 
       {/* History */}
-      <div className="practice-card bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100">
-          <h3 className="text-lg font-semibold text-slate-800">Recent Problems</h3>
+      <div className="practice-card dmc-card">
+        <div className="dmc-card-header">
+          <h3 className="text-lg font-semibold dmc-title">Recent Problems</h3>
         </div>
-        <div className="p-6">
+        <div className="dmc-card-body">
           {!history.length && (
-            <p className="text-sm text-slate-400 text-center py-4">No generated problems yet. Generate your first one above!</p>
+            <p className="text-sm dmc-subtitle text-center py-4">No generated problems yet. Generate your first one above!</p>
           )}
           {history.length > 0 && (
             <div className="space-y-2">
@@ -455,15 +455,15 @@ export default function InteractivePractice() {
                   type="button"
                   key={item.id}
                   onClick={() => useHistoryItem(item)}
-                  className="w-full text-left rounded-xl border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 px-4 py-3 transition-colors group"
+                  className="w-full text-left rounded-xl border border-slate-200 dmc-surface-soft hover:bg-indigo-50 hover:border-indigo-200 px-4 py-3 transition-colors group"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-700 group-hover:text-indigo-700 truncate">
-                        <span className="text-slate-400 font-normal">#{item.id}</span>{' '}
+                      <p className="text-sm font-medium dmc-title group-hover:text-indigo-700 truncate">
+                        <span className="dmc-subtitle font-normal">#{item.id}</span>{' '}
                         {item.questionText}
                       </p>
-                      <div className="mt-1 flex items-center gap-3 text-xs text-slate-400">
+                      <div className="mt-1 flex items-center gap-3 text-xs dmc-subtitle">
                         <SourceBadge sourceModel={item.sourceModel} generationMode={item.generationMode} />
                         <DifficultyBadge difficulty={item.difficulty} />
                         <span>Attempts: {item.attemptCount}</span>
