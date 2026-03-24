@@ -3,6 +3,10 @@ package com.dmc.problem.controller;
 import com.dmc.common.exception.ApiException;
 import com.dmc.common.security.UserPrincipal;
 import com.dmc.problem.dto.GeneratedProblemDto;
+import com.dmc.problem.dto.GeneratedProblemAttemptRequest;
+import com.dmc.problem.dto.GeneratedProblemAttemptResponse;
+import com.dmc.problem.dto.GeneratedProblemItemDto;
+import com.dmc.problem.dto.InteractiveProblemGenerateRequest;
 import com.dmc.problem.dto.ProblemAttemptRequest;
 import com.dmc.problem.dto.ProblemAttemptResponse;
 import com.dmc.problem.dto.ProblemDto;
@@ -77,6 +81,27 @@ public class ProblemController {
     @PostMapping("/templates/{id}/generate")
     public ResponseEntity<GeneratedProblemDto> generate(@PathVariable Long id) {
         return ResponseEntity.ok(problemService.generateFromTemplate(id));
+    }
+
+    @PostMapping("/generated")
+    public ResponseEntity<GeneratedProblemItemDto> generateInteractive(
+            @RequestBody InteractiveProblemGenerateRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(problemService.generateInteractive(currentUserId(), request));
+    }
+
+    @GetMapping("/generated/me")
+    public ResponseEntity<List<GeneratedProblemItemDto>> myGeneratedProblems() {
+        return ResponseEntity.ok(problemService.myGeneratedProblems(currentUserId()));
+    }
+
+    @PostMapping("/generated/{id}/attempt")
+    public ResponseEntity<GeneratedProblemAttemptResponse> submitGeneratedAttempt(
+            @PathVariable Long id,
+            @RequestBody GeneratedProblemAttemptRequest request
+    ) {
+        return ResponseEntity.ok(problemService.submitGeneratedAttempt(currentUserId(), id, request));
     }
 
     @PostMapping("/templates/validate")

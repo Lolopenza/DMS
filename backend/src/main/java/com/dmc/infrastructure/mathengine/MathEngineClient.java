@@ -15,6 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
@@ -69,5 +70,45 @@ public class MathEngineClient {
         request.set("candidateAnswer", candidateAnswer);
         JsonNode response = post("/api/v1/problem_templates/validate", request);
         return response.path("correct").asBoolean(false);
+    }
+
+    public JsonNode generateAiProblem(String topicSlug, String difficulty, String skillLevel) {
+        ObjectNode request = objectMapper.createObjectNode();
+        if (topicSlug != null && !topicSlug.isBlank()) {
+            request.put("topicSlug", topicSlug);
+        }
+        if (difficulty != null && !difficulty.isBlank()) {
+            request.put("difficulty", difficulty.toUpperCase(Locale.ROOT));
+        }
+        if (skillLevel != null && !skillLevel.isBlank()) {
+            request.put("skillLevel", skillLevel);
+        }
+        return post("/api/v1/problem_generation/generate", request);
+    }
+
+    public JsonNode semanticVerify(
+            String questionText,
+            JsonNode candidateAnswer,
+            JsonNode expectedAnswer,
+            String answerExpression,
+            String operation,
+            JsonNode params
+    ) {
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("questionText", questionText == null ? "" : questionText);
+        request.set("candidateAnswer", candidateAnswer);
+        if (expectedAnswer != null) {
+            request.set("expectedAnswer", expectedAnswer);
+        }
+        if (answerExpression != null && !answerExpression.isBlank()) {
+            request.put("answerExpression", answerExpression);
+        }
+        if (operation != null && !operation.isBlank()) {
+            request.put("operation", operation);
+        }
+        if (params != null && !params.isNull()) {
+            request.set("params", params);
+        }
+        return post("/api/v1/problem_generation/verify", request);
     }
 }
