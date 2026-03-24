@@ -1,10 +1,12 @@
 package com.dmc.problem.dto;
 
+import jakarta.validation.constraints.Size;
+
 public record InteractiveProblemGenerateRequest(
         Long templateId,
-        String topicSlug,
-        String difficulty,
-        String skillLevel,
-        String mode
+        @Size(max = 120) String topicSlug,
+        @Size(max = 20) String difficulty,
+        @Size(max = 30) String skillLevel,
+        @Size(max = 20) String mode
 ) {
 }
