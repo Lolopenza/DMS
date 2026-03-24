@@ -7,10 +7,12 @@ import com.dmc.problem.dto.GeneratedProblemAttemptRequest;
 import com.dmc.problem.dto.GeneratedProblemAttemptResponse;
 import com.dmc.problem.dto.GeneratedProblemItemDto;
 import com.dmc.problem.dto.InteractiveProblemGenerateRequest;
+import com.dmc.problem.dto.NextProblemResponse;
 import com.dmc.problem.dto.ProblemAttemptRequest;
 import com.dmc.problem.dto.ProblemAttemptResponse;
 import com.dmc.problem.dto.ProblemDto;
 import com.dmc.problem.dto.ProblemTemplateDto;
+import com.dmc.problem.dto.StudentSkillDto;
 import com.dmc.problem.dto.TemplateValidationRequest;
 import com.dmc.problem.dto.TopicDto;
 import com.dmc.problem.service.ProblemService;
@@ -118,6 +120,24 @@ public class ProblemController {
         );
         boolean correct = problemService.validateGeneratedAnswer(generated, request.candidateAnswer());
         return ResponseEntity.ok(Map.of("correct", correct));
+    }
+
+    @GetMapping("/next")
+    public ResponseEntity<NextProblemResponse> nextAdaptiveProblem(
+            @RequestParam String topic,
+            @RequestParam(required = false, defaultValue = "TEMPLATE") String mode
+    ) {
+        return ResponseEntity.ok(problemService.getNextAdaptiveProblem(currentUserId(), topic, mode));
+    }
+
+    @GetMapping("/skills/me")
+    public ResponseEntity<List<StudentSkillDto>> mySkills() {
+        return ResponseEntity.ok(problemService.getStudentSkills(currentUserId()));
+    }
+
+    @GetMapping("/skills/me/{topicSlug}")
+    public ResponseEntity<StudentSkillDto> mySkillForTopic(@PathVariable String topicSlug) {
+        return ResponseEntity.ok(problemService.getStudentSkill(currentUserId(), topicSlug));
     }
 
     private Long currentUserId() {
