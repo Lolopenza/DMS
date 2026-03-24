@@ -82,7 +82,7 @@ export default function MathRoadmap() {
                     </Link>
                   )}
                   {subject.features?.roadmap && (
-                    <Link to={`${subject.slug}/roadmap`} className="math-subject-btn math-subject-btn-roadmap">
+                    <Link to={`/${subject.slug}/roadmap`} className="math-subject-btn math-subject-btn-roadmap">
                       <i className="fas fa-map"></i> View Roadmap
                     </Link>
                   )}
@@ -128,7 +128,7 @@ export default function MathRoadmap() {
                     </Link>
                   )}
                   {subject.features?.roadmap && (
-                    <Link to={`${subject.slug}/roadmap`} className="math-subject-btn math-subject-btn-roadmap">
+                    <Link to={`/${subject.slug}/roadmap`} className="math-subject-btn math-subject-btn-roadmap">
                       <i className="fas fa-map"></i> View Roadmap
                     </Link>
                   )}
