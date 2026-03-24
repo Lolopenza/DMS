@@ -1,5 +1,7 @@
 import json
+import logging
 import random
+import re
 from typing import Any, Dict, Optional
 
 import sympy as sp
@@ -8,6 +10,7 @@ from pydantic import BaseModel
 
 from dmc_ai.chatbot import get_chatbot_service
 
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix='/api/v1/problem_generation', tags=['Problem Generation'])
 
@@ -28,12 +31,29 @@ class VerifyRequest(BaseModel):
     params: Optional[Dict[str, Any]] = None
 
 
-def _strip_code_fence(text: str) -> str:
+def _clean_llm_json(text: str) -> str:
+    """Extract valid JSON from LLM output that may be wrapped in markdown fences or commentary."""
     value = text.strip()
+
+    # Strip ```json ... ``` or ``` ... ``` fences (handles optional language tag)
+    fence_match = re.search(r'```(?:json|JSON)?\s*\n?(.*?)```', value, re.DOTALL)
+    if fence_match:
+        value = fence_match.group(1).strip()
+
+    # If the whole string still starts with ```, do a simpler strip
     if value.startswith('```'):
-        value = value.split('\n', 1)[1] if '\n' in value else value
-        if value.endswith('```'):
-            value = value[:-3]
+        value = value.lstrip('`').strip()
+        if value.lower().startswith('json'):
+            value = value[4:].strip()
+    if value.endswith('```'):
+        value = value[:-3].strip()
+
+    # Try to extract JSON object even if surrounded by prose
+    brace_start = value.find('{')
+    brace_end = value.rfind('}')
+    if brace_start != -1 and brace_end > brace_start:
+        value = value[brace_start:brace_end + 1]
+
     return value.strip()
 
 
@@ -74,12 +94,19 @@ def generate_problem(req: GenerateRequest):
     skill_level = req.skillLevel or 'intermediate'
 
     system_prompt = (
-        'Return ONLY valid JSON with keys: questionText, parameters, answerExpression, operation. '
-        'Use algebraic/symbolic format for answerExpression. No markdown, no commentary.'
+        'You are a discrete-math problem generator. '
+        'RESPOND WITH RAW JSON ONLY. '
+        'DO NOT wrap the response in markdown code fences (```). '
+        'DO NOT add any text before or after the JSON object. '
+        'The JSON must have exactly these keys: questionText (string), parameters (object with numeric values), '
+        'answerExpression (algebraic/symbolic string using {{key}} placeholders), operation (string). '
+        'Example: {"questionText":"Find C(5,2).","parameters":{"n":5,"k":2},'
+        '"answerExpression":"{{n}}! / ({{k}}! * ({{n}}-{{k}})!)","operation":"combination"}'
     )
     user_prompt = (
         f'Generate one discrete math problem for topic={topic_slug}, difficulty={difficulty}, '
-        f'skillLevel={skill_level}. Keep it solvable by symbolic expression.'
+        f'skillLevel={skill_level}. Keep it solvable by symbolic expression. '
+        'Return raw JSON only, no markdown.'
     )
 
     result = service.chat(
@@ -92,13 +119,15 @@ def generate_problem(req: GenerateRequest):
     )
 
     if 'error' in result:
+        logger.warning('LLM returned error during generation: %s', result['error'])
         fallback = _fallback_generated(topic_slug, difficulty)
         fallback['llmError'] = result['error']
         return fallback
 
-    raw_reply = _strip_code_fence(str(result.get('reply', '')))
+    raw_reply = str(result.get('reply', ''))
+    cleaned = _clean_llm_json(raw_reply)
     try:
-        parsed = json.loads(raw_reply)
+        parsed = json.loads(cleaned)
         question = parsed.get('questionText')
         params = parsed.get('parameters')
         answer_expression = parsed.get('answerExpression')
@@ -106,7 +135,6 @@ def generate_problem(req: GenerateRequest):
         if not question or not isinstance(params, dict) or not answer_expression or not operation:
             raise ValueError('Missing required keys in generated JSON')
 
-        # Ensure symbolic expression can actually be evaluated with provided params.
         resolved = answer_expression
         for key, value in params.items():
             resolved = resolved.replace('{{' + str(key) + '}}', str(value))
@@ -125,11 +153,12 @@ def generate_problem(req: GenerateRequest):
             'operation': operation,
             'difficultyScore': _difficulty_score(difficulty),
             'topicSlug': topic_slug,
-            'sourceModel': 'gemini',
+            'sourceModel': result.get('model', 'gemini'),
         }
-    except Exception:
+    except Exception as exc:
+        logger.warning('Failed to parse LLM generation reply: %s — raw: %s', exc, raw_reply[:300])
         fallback = _fallback_generated(topic_slug, difficulty)
-        fallback['rawReply'] = raw_reply
+        fallback['rawReply'] = raw_reply[:500]
         return fallback
 
 
@@ -156,13 +185,18 @@ def verify_answer(req: VerifyRequest):
     # Semantic evaluation fallback via LLM judge.
     service = get_chatbot_service()
     judge_system = (
-        'You are a strict math checker. Return ONLY JSON with keys: correct (boolean), confidence (0..1), feedback (string).'
+        'You are a strict math answer checker. '
+        'RESPOND WITH RAW JSON ONLY. '
+        'DO NOT wrap the response in markdown code fences (```). '
+        'DO NOT add any text before or after the JSON. '
+        'The JSON must have exactly these keys: correct (boolean), confidence (number 0 to 1), feedback (string). '
+        'The feedback should be a helpful educational hint if incorrect.'
     )
     judge_user = (
         f'Question: {req.questionText}\n'
         f'Expected answer: {req.expectedAnswer}\n'
         f'Candidate answer: {req.candidateAnswer}\n'
-        'Decide if candidate is mathematically correct.'
+        'Decide if candidate is mathematically correct. Return raw JSON only.'
     )
     result = service.chat(
         [
@@ -174,32 +208,35 @@ def verify_answer(req: VerifyRequest):
     )
 
     if 'error' in result:
+        logger.warning('LLM judge returned error: %s', result['error'])
         if req.expectedAnswer is not None:
             correct = str(req.expectedAnswer).strip() == str(req.candidateAnswer).strip()
             return {
                 'correct': correct,
                 'confidence': 0.60 if correct else 0.30,
                 'method': 'semantic-fallback',
-                'feedback': 'Fallback text comparison used due to AI verification issue',
+                'feedback': 'Automatic comparison used — AI verification was unavailable.',
             }
         raise HTTPException(status_code=502, detail=result['error'])
 
-    raw_reply = _strip_code_fence(str(result.get('reply', '')))
+    raw_reply = str(result.get('reply', ''))
+    cleaned = _clean_llm_json(raw_reply)
     try:
-        parsed = json.loads(raw_reply)
+        parsed = json.loads(cleaned)
         return {
             'correct': bool(parsed.get('correct', False)),
             'confidence': float(parsed.get('confidence', 0.5)),
             'method': 'semantic',
             'feedback': str(parsed.get('feedback', 'Semantic verification completed')),
         }
-    except Exception:
+    except Exception as exc:
+        logger.warning('Failed to parse LLM judge reply: %s — raw: %s', exc, raw_reply[:300])
         if req.expectedAnswer is not None:
             correct = str(req.expectedAnswer).strip() == str(req.candidateAnswer).strip()
             return {
                 'correct': correct,
                 'confidence': 0.58 if correct else 0.28,
                 'method': 'semantic-fallback',
-                'feedback': 'Could not parse AI judge response; fallback comparison used',
+                'feedback': 'Automatic comparison used — could not parse AI verification.',
             }
         raise HTTPException(status_code=400, detail='Semantic verification parsing failed')
