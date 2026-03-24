@@ -1,12 +1,16 @@
 package com.dmc.learning.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 public record LessonDto(
         Long id,
-        Long moduleId,
-        String title,
-        String slug,
+        @NotNull Long moduleId,
+        @NotBlank @Size(max = 255) String title,
+        @NotBlank @Size(max = 255) String slug,
         String contentText,
-        String contentVideoUrl,
+        @Size(max = 512) String contentVideoUrl,
         Boolean freeOnly,
         Integer orderIndex
 ) {

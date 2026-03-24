@@ -169,14 +169,28 @@ export default function InteractivePractice() {
           </p>
 
           <button type="button" className="btn btn-primary" onClick={onGenerate} disabled={loading}>
-            {loading ? 'Generating...' : 'Generate Problem'}
+            {loading
+              ? <><i className="fas fa-spinner fa-spin" style={{ marginRight: '0.5em' }}></i>Generating...</>
+              : 'Generate Problem'}
           </button>
 
           {error && <div className="ui-state ui-state-error">{error}</div>}
         </div>
       </div>
 
-      {current && (
+      {loading && (
+        <div className="card" style={{ marginBottom: '1rem' }}>
+          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2.5rem 1rem' }}>
+            <i className="fas fa-spinner fa-spin" style={{ fontSize: '2.5rem', color: 'var(--primary, #6366f1)' }}></i>
+            <p style={{ margin: 0, fontSize: '1.1rem', color: '#64748b' }}>
+              {mode === 'AI' ? 'AI is generating your problem...' : 'Generating problem from template...'}
+            </p>
+            <small style={{ color: '#94a3b8' }}>This may take a few seconds</small>
+          </div>
+        </div>
+      )}
+
+      {current && !loading && (
         <div className="card" style={{ marginBottom: '1rem' }}>
           <div className="card-body">
             <h3>Current problem</h3>
@@ -199,8 +213,16 @@ export default function InteractivePractice() {
                 <span>Tip: submit a clean numeric or symbolic answer (examples: 28, n*(n-1)/2).</span>
               </p>
               <button type="submit" className="btn btn-secondary" disabled={submitting}>
-                {submitting ? 'Checking...' : 'Submit Answer'}
+                {submitting
+                  ? <><i className="fas fa-spinner fa-spin" style={{ marginRight: '0.5em' }}></i>Verifying answer...</>
+                  : 'Submit Answer'}
               </button>
+              {submitting && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b', fontSize: '0.95rem' }}>
+                  <i className="fas fa-brain" style={{ color: 'var(--primary, #6366f1)' }}></i>
+                  <span>AI is verifying your answer...</span>
+                </div>
+              )}
             </form>
 
             {result && (

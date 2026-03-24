@@ -12,6 +12,7 @@ import com.dmc.auth.service.AuthService;
 import com.dmc.auth.service.RequestMetadata;
 import com.dmc.common.exception.ApiException;
 import com.dmc.common.security.CookieService;
+import com.dmc.common.security.JwtBlacklistService;
 import com.dmc.common.security.JwtService;
 import com.dmc.common.security.UserPrincipal;
 import jakarta.servlet.http.Cookie;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,6 +45,7 @@ public class AuthController {
     private final AuthService authService;
     private final CookieService cookieService;
     private final JwtService jwtService;
+    private final JwtBlacklistService jwtBlacklistService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request,
@@ -73,6 +76,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logout(HttpServletRequest request, HttpServletResponse response) {
+        blacklistAccessToken(request);
         String sessionId = extractSessionIdFromAccessCookie(request);
         authService.logoutCurrentSession(sessionId);
         cookieService.clearAuthCookies(response);
@@ -80,7 +84,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout-all")
-    public ResponseEntity<MessageResponse> logoutAll(HttpServletResponse response) {
+    public ResponseEntity<MessageResponse> logoutAll(HttpServletRequest request, HttpServletResponse response) {
+        blacklistAccessToken(request);
         authService.logoutAll(currentUserId());
         cookieService.clearAuthCookies(response);
         return ResponseEntity.ok(new MessageResponse("Logged out from all sessions"));
@@ -139,6 +144,23 @@ public class AuthController {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Authentication is required");
         }
         return principal.getId();
+    }
+
+    private void blacklistAccessToken(HttpServletRequest request) {
+        String token = getCookieValue(request, CookieService.ACCESS_COOKIE);
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        try {
+            var claims = jwtService.parse(token);
+            String jti = claims.getId();
+            if (jti != null) {
+                long ttl = jwtService.getAccessTokenTtlSeconds();
+                jwtBlacklistService.blacklist(jti, Duration.ofSeconds(ttl));
+            }
+        } catch (Exception ex) {
+            log.debug("Could not blacklist access token on logout", ex);
+        }
     }
 
     private String extractSessionIdFromAccessCookie(HttpServletRequest request) {
