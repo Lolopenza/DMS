@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 import requests
 from google import genai
 from google.genai import types
+from google.genai import errors as genai_errors
 from dotenv import load_dotenv
 from dmc_ai.rag.pipeline import get_rag_pipeline
 
@@ -18,7 +19,7 @@ load_dotenv(os.path.join(_repo_root, '.env'))
 
 class ChatbotService:
     """Service for handling AI chatbot requests via Google Gemini API."""
-    
+
     def __init__(self):
         self.api_key = os.environ.get("GOOGLE_AI_API_KEY", "")
         self.model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
@@ -69,22 +70,32 @@ class ChatbotService:
             )
 
             if response.status_code == 429:
-                return {'error': 'Groq rate limit exceeded. Please wait a minute.'}
+                return {'error': 'Groq rate limit exceeded. Please wait a minute.', 'status': 429}
             if response.status_code in {401, 403}:
-                return {'error': 'Groq API key invalid or restricted. Please verify GROQ_API_KEY.'}
+                return {
+                    'error': 'Groq API key invalid or restricted. Please verify GROQ_API_KEY.',
+                    'status': response.status_code,
+                }
 
             response.raise_for_status()
             data = response.json()
             choices = data.get('choices') or []
             if not choices:
-                return {'error': 'Empty response from Groq. Please try again.'}
+                return {'error': 'Empty response from Groq. Please try again.', 'status': 502}
             message = choices[0].get('message') or {}
             reply = (message.get('content') or '').strip()
             if not reply:
-                return {'error': 'Empty response from Groq. Please try again.'}
+                return {'error': 'Empty response from Groq. Please try again.', 'status': 502}
             return {'reply': reply}
+        except requests.exceptions.Timeout:
+            return {'error': 'Groq request timed out. Please try again.', 'status': 504}
+        except requests.exceptions.ConnectionError:
+            return {'error': 'Could not connect to Groq API.', 'status': 502}
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response is not None else 502
+            return {'error': f'Groq HTTP error: {e}', 'status': status}
         except Exception as e:
-            return {'error': f'Groq Error: {e}'}
+            return {'error': f'Groq Error: {e}', 'status': 500}
 
     def format_messages_for_gemini(self, messages: List[Dict]) -> List[Dict]:
         """
@@ -180,23 +191,38 @@ class ChatbotService:
 
             return {'reply': reply}
 
+        except genai_errors.ClientError as e:
+            code = getattr(e, 'code', None) or 0
+            if code == 429:
+                return self._chat_with_groq(augmented_messages)
+            if code == 403:
+                return self._chat_with_groq(augmented_messages)
+            if code == 404:
+                return self._chat_with_groq(augmented_messages)
+            lower_msg = str(e).lower()
+            if 'safety' in lower_msg or 'blocked' in lower_msg:
+                return {
+                    'error': 'Response blocked by Gemini safety filters. Please rephrase your request.',
+                    'status': 422,
+                }
+            return {'error': f'Gemini Error: {e}', 'status': code if code else 500}
+        except genai_errors.ServerError:
+            return self._chat_with_groq(augmented_messages)
         except Exception as e:
             error_msg = str(e)
             lower_msg = error_msg.lower()
-            if '429' in lower_msg or 'rate limit' in lower_msg or 'resource_exhausted' in lower_msg:
-                return self._chat_with_groq(augmented_messages)
-            if '403' in lower_msg or 'permission' in lower_msg or 'api key' in lower_msg:
+            if 'rate limit' in lower_msg or 'resource_exhausted' in lower_msg:
                 return self._chat_with_groq(augmented_messages)
             if 'safety' in lower_msg or 'blocked' in lower_msg:
-                return {'error': 'Response blocked by Gemini safety filters. Please rephrase your request.'}
-            if '404' in lower_msg or 'not_found' in lower_msg or 'model' in lower_msg:
-                return self._chat_with_groq(augmented_messages)
+                return {
+                    'error': 'Response blocked by Gemini safety filters. Please rephrase your request.',
+                    'status': 422,
+                }
+            return {'error': f'Gemini Error: {error_msg}', 'status': 500}
 
-            return {'error': f'Gemini Error: {error_msg}'}
 
-
-# Singleton instance
 _chatbot_service = None
+
 
 def get_chatbot_service() -> ChatbotService:
     """Get singleton chatbot service instance"""

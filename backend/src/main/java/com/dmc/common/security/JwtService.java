@@ -10,6 +10,7 @@ import java.security.Key;
 import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -46,11 +47,16 @@ public class JwtService {
         return "refresh".equals(parse(token).get("tokenType", String.class));
     }
 
+    public long getAccessTokenTtlSeconds() {
+        return properties.getAccessTokenTtlSeconds();
+    }
+
     private String generateToken(Long userId, String email, String role, String sessionId, long ttlSeconds, String tokenType) {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime exp = now.plusSeconds(ttlSeconds);
 
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .issuer(properties.getIssuer())
                 .subject(String.valueOf(userId))
                 .issuedAt(Date.from(now.toInstant()))

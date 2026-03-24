@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
 import java.util.HashSet;
@@ -24,6 +25,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "problems")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
 @NoArgsConstructor

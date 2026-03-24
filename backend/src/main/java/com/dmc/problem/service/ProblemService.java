@@ -185,8 +185,9 @@ public class ProblemService {
     }
 
     public GeneratedProblemDto generateFromTemplate(Long templateId) {
-        ProblemTemplate template = templateRepository.findById(templateId)
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "TEMPLATE_NOT_FOUND", "Template not found"));
+        ProblemTemplate template = templateRepository.findByIdAndDeletedAtIsNull(templateId)
+                .filter(t -> Boolean.TRUE.equals(t.getActive()))
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "TEMPLATE_NOT_FOUND", "Template not found or inactive"));
 
         ObjectNode generatedParams = objectMapper.createObjectNode();
         String question = template.getQuestionTemplate();

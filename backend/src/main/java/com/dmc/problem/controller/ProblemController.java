@@ -14,6 +14,7 @@ import com.dmc.problem.dto.ProblemTemplateDto;
 import com.dmc.problem.dto.TemplateValidationRequest;
 import com.dmc.problem.dto.TopicDto;
 import com.dmc.problem.service.ProblemService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +42,7 @@ public class ProblemController {
     }
 
     @PostMapping("/{id}/attempt")
-    public ResponseEntity<ProblemAttemptResponse> submitAttempt(@PathVariable Long id, @RequestBody ProblemAttemptRequest request) {
+    public ResponseEntity<ProblemAttemptResponse> submitAttempt(@PathVariable Long id, @Valid @RequestBody ProblemAttemptRequest request) {
         return ResponseEntity.ok(problemService.submitAttempt(currentUserId(), id, request));
     }
 
@@ -57,13 +58,13 @@ public class ProblemController {
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PostMapping
-    public ResponseEntity<ProblemDto> createProblem(@RequestBody ProblemDto request) {
+    public ResponseEntity<ProblemDto> createProblem(@Valid @RequestBody ProblemDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(problemService.createProblem(request));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PostMapping("/topics")
-    public ResponseEntity<TopicDto> createTopic(@RequestBody TopicDto request) {
+    public ResponseEntity<TopicDto> createTopic(@Valid @RequestBody TopicDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(problemService.createTopic(request));
     }
 
@@ -74,7 +75,7 @@ public class ProblemController {
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PostMapping("/templates")
-    public ResponseEntity<ProblemTemplateDto> createTemplate(@RequestBody ProblemTemplateDto request) {
+    public ResponseEntity<ProblemTemplateDto> createTemplate(@Valid @RequestBody ProblemTemplateDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(problemService.createTemplate(request));
     }
 
@@ -85,7 +86,7 @@ public class ProblemController {
 
     @PostMapping("/generated")
     public ResponseEntity<GeneratedProblemItemDto> generateInteractive(
-            @RequestBody InteractiveProblemGenerateRequest request
+            @Valid @RequestBody InteractiveProblemGenerateRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(problemService.generateInteractive(currentUserId(), request));
@@ -99,14 +100,14 @@ public class ProblemController {
     @PostMapping("/generated/{id}/attempt")
     public ResponseEntity<GeneratedProblemAttemptResponse> submitGeneratedAttempt(
             @PathVariable Long id,
-            @RequestBody GeneratedProblemAttemptRequest request
+            @Valid @RequestBody GeneratedProblemAttemptRequest request
     ) {
         return ResponseEntity.ok(problemService.submitGeneratedAttempt(currentUserId(), id, request));
     }
 
     @PostMapping("/templates/validate")
     public ResponseEntity<Map<String, Object>> validateGenerated(
-            @RequestBody TemplateValidationRequest request
+            @Valid @RequestBody TemplateValidationRequest request
     ) {
         GeneratedProblemDto generated = new GeneratedProblemDto(
             request.templateId(),

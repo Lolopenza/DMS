@@ -8,6 +8,7 @@ import com.dmc.learning.dto.CourseModuleDto;
 import com.dmc.learning.dto.LessonDto;
 import com.dmc.learning.dto.LessonProgressDto;
 import com.dmc.learning.service.LearningService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,13 +53,13 @@ public class LearningController {
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PostMapping("/admin/courses")
-    public ResponseEntity<CourseDto> createCourse(@RequestBody CourseDto request) {
+    public ResponseEntity<CourseDto> createCourse(@Valid @RequestBody CourseDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(learningService.createCourse(request));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PutMapping("/admin/courses/{id}")
-    public ResponseEntity<CourseDto> updateCourse(@PathVariable Long id, @RequestBody CourseDto request) {
+    public ResponseEntity<CourseDto> updateCourse(@PathVariable Long id, @Valid @RequestBody CourseDto request) {
         return ResponseEntity.ok(learningService.updateCourse(id, request));
     }
 
@@ -71,13 +72,13 @@ public class LearningController {
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PostMapping("/admin/modules")
-    public ResponseEntity<CourseModuleDto> createModule(@RequestBody CourseModuleDto request) {
+    public ResponseEntity<CourseModuleDto> createModule(@Valid @RequestBody CourseModuleDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(learningService.createModule(request));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PutMapping("/admin/modules/{id}")
-    public ResponseEntity<CourseModuleDto> updateModule(@PathVariable Long id, @RequestBody CourseModuleDto request) {
+    public ResponseEntity<CourseModuleDto> updateModule(@PathVariable Long id, @Valid @RequestBody CourseModuleDto request) {
         return ResponseEntity.ok(learningService.updateModule(id, request));
     }
 
@@ -90,13 +91,13 @@ public class LearningController {
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PostMapping("/admin/lessons")
-    public ResponseEntity<LessonDto> createLesson(@RequestBody LessonDto request) {
+    public ResponseEntity<LessonDto> createLesson(@Valid @RequestBody LessonDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(learningService.createLesson(request));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @PutMapping("/admin/lessons/{id}")
-    public ResponseEntity<LessonDto> updateLesson(@PathVariable Long id, @RequestBody LessonDto request) {
+    public ResponseEntity<LessonDto> updateLesson(@PathVariable Long id, @Valid @RequestBody LessonDto request) {
         return ResponseEntity.ok(learningService.updateLesson(id, request));
     }
 
