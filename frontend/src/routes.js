@@ -9,6 +9,7 @@ export const SUBJECTS = [
     classification: 'foundation',
     goal: 'Foundational gateway: understand abstract objects and core structures.',
     status: 'active',
+    calculatorPath: '/discrete-math/calculator',
     features: {
       calculator: true,
       roadmap: true,
@@ -21,6 +22,7 @@ export const SUBJECTS = [
     classification: 'specialized',
     goal: 'Spatial and matrix computation for graphics, optimization, and ML.',
     status: 'active',
+    calculatorPath: '/linear-algebra/calculator',
     features: {
       calculator: true,
       roadmap: false,
@@ -33,6 +35,7 @@ export const SUBJECTS = [
     classification: 'specialized',
     goal: 'Work with uncertainty and data for analytics and machine learning.',
     status: 'active',
+    calculatorPath: '/probability-statistics/calculator',
     features: {
       calculator: true,
       roadmap: false,
@@ -45,6 +48,7 @@ export const SUBJECTS = [
     classification: 'specialized',
     goal: 'Design fast code with complexity-aware and step-by-step problem solving.',
     status: 'active',
+    calculatorPath: '/algorithms/calculator',
     features: {
       calculator: true,
       roadmap: false,
@@ -57,6 +61,7 @@ export const SUBJECTS = [
     classification: 'specialized',
     goal: 'Deep formal logic for systems, compilers, and finite-state computation.',
     status: 'active',
+    calculatorPath: '/it-logic/calculator',
     features: {
       calculator: true,
       roadmap: false,
@@ -72,12 +77,15 @@ export function getSubjectBasePath(subjectSlug = DEFAULT_SUBJECT) {
 export const SUBJECT_BASE_PATH = getSubjectBasePath(DEFAULT_SUBJECT);
 export const CALCULATOR_PATH = `${SUBJECT_BASE_PATH}/calculator`;
 export const ROADMAP_PATH = `${SUBJECT_BASE_PATH}/roadmap`;
+export const MATH_ROADMAP_PATH = '/math-roadmap';
 export const TRACKS_PATH = '/tracks';
 export const HOME_PATH = '/';
 export const AUTH_SIGN_IN_PATH = '/auth/sign-in';
 export const AUTH_SIGN_UP_PATH = '/auth/sign-up';
 export const AUTH_RESET_PATH = '/auth/reset';
 export const USER_DASHBOARD_PATH = '/user/dashboard';
+export const USER_PRACTICE_PATH = '/user/practice';
+export const USER_GENERATED_PRACTICE_PATH = '/user/practice/generated';
 export const USER_PROFILE_PATH = '/user/profile';
 export const USER_SETTINGS_PATH = '/user/settings';
 export const ADMIN_CONTENT_PATH = '/admin/content';

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import Breadcrumb from '../../components/Breadcrumb.jsx';
 import StateNotice from '../../components/ui/StateNotice.jsx';
+import { USER_DASHBOARD_PATH } from '../../routes.js';
 
 export default function Settings() {
   const [settings, setSettings] = useState({
@@ -16,14 +18,19 @@ export default function Settings() {
 
   return (
     <div className="container">
+      <Breadcrumb items={[
+        { label: 'Dashboard', href: USER_DASHBOARD_PATH },
+        { label: 'Settings' }
+      ]} />
+
       <div className="page-title">
-        <h2>Settings</h2>
-        <p className="subtitle">Control your notifications and interface preferences</p>
+        <h1><i className="fas fa-sliders"></i> Preferences</h1>
+        <p className="subtitle">Customize your learning experience and notification settings</p>
       </div>
 
-      <div className="card" style={{ maxWidth: '640px', margin: '0 auto' }}>
+      <div className="card" style={{ maxWidth: '680px', margin: '0 auto' }}>
         <div className="card-header">
-          <h3><i className="fas fa-sliders"></i> Preferences</h3>
+          <h2><i className="fas fa-bell"></i> Notification & Display Settings</h2>
         </div>
         <div className="card-body">
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

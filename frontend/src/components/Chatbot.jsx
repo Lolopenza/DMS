@@ -44,22 +44,8 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
     }
   }, [open, minimized]);
 
-  // Restore saved position/size
-  useEffect(() => {
-    const saved = localStorage.getItem('chatbotWidgetState');
-    if (!saved || !widgetRef.current) return;
-    try {
-      const s = JSON.parse(saved);
-      if (s.width) widgetRef.current.style.width = s.width + 'px';
-      if (s.height) widgetRef.current.style.height = s.height + 'px';
-      if (s.left && s.top) {
-        widgetRef.current.style.left = s.left;
-        widgetRef.current.style.top = s.top;
-        widgetRef.current.style.right = 'auto';
-        widgetRef.current.style.bottom = 'auto';
-      }
-    } catch {}
-  }, []);
+  // Position is now fixed and not draggable
+  // Removed: localStorage restore for position/size
 
   function getRouteScope() {
     const pathname = window.location.pathname;
@@ -74,67 +60,11 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
     return { subject, module };
   }
 
-  function saveState() {
-    if (!widgetRef.current) return;
-    localStorage.setItem('chatbotWidgetState', JSON.stringify({
-      width: widgetRef.current.offsetWidth,
-      height: widgetRef.current.offsetHeight,
-      left: widgetRef.current.style.left,
-      top: widgetRef.current.style.top,
-    }));
-  }
+  // saveState removed - position is now fixed
 
-  // Drag header
-  function onHeaderMouseDown(e) {
-    if (e.target.closest('button')) return;
-    e.preventDefault();
-    dragState.current.dragging = true;
-    pos.current.mouseX = e.clientX - widgetRef.current.offsetLeft;
-    pos.current.mouseY = e.clientY - widgetRef.current.offsetTop;
-    document.body.style.userSelect = 'none';
-  }
+  // Dragging disabled - widget position is fixed
 
-  // Resize corner
-  function onResizerMouseDown(e) {
-    e.preventDefault();
-    dragState.current.resizing = true;
-    pos.current.mouseX = e.clientX;
-    pos.current.mouseY = e.clientY;
-    pos.current.w = widgetRef.current.offsetWidth;
-    pos.current.h = widgetRef.current.offsetHeight;
-    document.body.style.userSelect = 'none';
-  }
-
-  useEffect(() => {
-    function onMouseMove(e) {
-      if (dragState.current.dragging && widgetRef.current) {
-        widgetRef.current.style.left = (e.clientX - pos.current.mouseX) + 'px';
-        widgetRef.current.style.top = (e.clientY - pos.current.mouseY) + 'px';
-        widgetRef.current.style.right = 'auto';
-        widgetRef.current.style.bottom = 'auto';
-      }
-      if (dragState.current.resizing && widgetRef.current) {
-        const dx = e.clientX - pos.current.mouseX;
-        const dy = e.clientY - pos.current.mouseY;
-        widgetRef.current.style.width = Math.max(320, pos.current.w + dx) + 'px';
-        widgetRef.current.style.height = Math.max(280, pos.current.h + dy) + 'px';
-      }
-    }
-    function onMouseUp() {
-      if (dragState.current.dragging || dragState.current.resizing) {
-        saveState();
-      }
-      dragState.current.dragging = false;
-      dragState.current.resizing = false;
-      document.body.style.userSelect = '';
-    }
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-  }, []);
+  // Mouse event listeners removed - dragging is disabled
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -289,7 +219,6 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
           {/* Header */}
           <div
             id="chatbot-header"
-            onMouseDown={onHeaderMouseDown}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -299,7 +228,6 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
               padding: '0.7rem 1.1rem',
               fontSize: '1.1rem',
               fontWeight: 600,
-              cursor: 'move',
               borderTopLeftRadius: '16px',
               borderTopRightRadius: '16px',
               userSelect: 'none',
@@ -431,16 +359,7 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
             Powered by <span style={{ color: '#6366f1', fontWeight: 600 }}>OpenRouter AI</span>
           </div>
 
-          {/* Resize handle */}
-          <div
-            onMouseDown={onResizerMouseDown}
-            style={{
-              position: 'absolute', width: '18px', height: '18px',
-              right: 0, bottom: 0, cursor: 'se-resize',
-              background: 'linear-gradient(135deg,#6366f1 60%,transparent 100%)',
-              borderRadius: '0 0 1.2rem 0', zIndex: 2,
-            }}
-          />
+          {/* Resize handle - disabled */}
         </div>
       )}
     </>

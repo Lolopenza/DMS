@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import Breadcrumb from '../../components/Breadcrumb.jsx';
 import StateNotice from '../../components/ui/StateNotice.jsx';
+import { USER_DASHBOARD_PATH } from '../../routes.js';
 
 export default function Profile() {
   const { user, updateProfile } = useAuth();
@@ -20,14 +22,19 @@ export default function Profile() {
 
   return (
     <div className="container">
+      <Breadcrumb items={[
+        { label: 'Dashboard', href: USER_DASHBOARD_PATH },
+        { label: 'Profile' }
+      ]} />
+      
       <div className="page-title">
-        <h2>User Profile</h2>
-        <p className="subtitle">Manage your personal details and learning preferences</p>
+        <h1><i className="fas fa-user-circle"></i> My Profile</h1>
+        <p className="subtitle">Manage your personal information and learning preferences</p>
       </div>
 
-      <div className="card" style={{ maxWidth: '640px', margin: '0 auto' }}>
+      <div className="card" style={{ maxWidth: '680px', margin: '0 auto' }}>
         <div className="card-header">
-          <h3><i className="fas fa-id-badge"></i> Personal data</h3>
+          <h2><i className="fas fa-id-badge"></i> Personal Information</h2>
         </div>
         <div className="card-body">
           <form onSubmit={handleSubmit}>
@@ -39,8 +46,8 @@ export default function Profile() {
               <label htmlFor="profileGoal">Current learning goal</label>
               <textarea id="profileGoal" className="form-control" value={goal} onChange={(e) => setGoal(e.target.value)} rows={3} />
             </div>
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.75rem' }}>
-              <i className="fas fa-floppy-disk"></i> Save profile
+            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+              <i className="fas fa-check-circle"></i> Save Changes
             </button>
           </form>
 

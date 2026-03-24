@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import Hub from './pages/platform/Hub.jsx';
 import HelpCenter from './pages/platform/HelpCenter.jsx';
+import MathRoadmap from './pages/platform/MathRoadmap.jsx';
 import LegalTerms from './pages/platform/LegalTerms.jsx';
 import LegalPrivacy from './pages/platform/LegalPrivacy.jsx';
 import LegalCookies from './pages/platform/LegalCookies.jsx';
@@ -16,6 +17,7 @@ import SignIn from './pages/auth/SignIn.jsx';
 import SignUp from './pages/auth/SignUp.jsx';
 import ResetPassword from './pages/auth/ResetPassword.jsx';
 import Dashboard from './pages/user/Dashboard.jsx';
+import InteractivePractice from './pages/user/InteractivePractice.jsx';
 import Profile from './pages/user/Profile.jsx';
 import Settings from './pages/user/Settings.jsx';
 import ContentAdmin from './pages/admin/ContentAdmin.jsx';
@@ -31,10 +33,13 @@ import {
   LEGAL_COOKIES_PATH,
   LEGAL_PRIVACY_PATH,
   LEGAL_TERMS_PATH,
+  MATH_ROADMAP_PATH,
   ROADMAP_PATH,
   SECTIONS,
   TRACKS_PATH,
   USER_DASHBOARD_PATH,
+  USER_GENERATED_PRACTICE_PATH,
+  USER_PRACTICE_PATH,
   USER_PROFILE_PATH,
   USER_SETTINGS_PATH,
 } from './routes.js';
@@ -65,6 +70,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Hub />} />
             <Route path={TRACKS_PATH} element={<Tracks />} />
+            <Route path={MATH_ROADMAP_PATH} element={<MathRoadmap />} />
             <Route path={HELP_PATH} element={<HelpCenter />} />
             <Route path={LEGAL_TERMS_PATH} element={<LegalTerms />} />
             <Route path={LEGAL_PRIVACY_PATH} element={<LegalPrivacy />} />
@@ -77,6 +83,22 @@ export default function App() {
               element={(
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path={USER_PRACTICE_PATH}
+              element={(
+                <ProtectedRoute>
+                  <InteractivePractice />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path={USER_GENERATED_PRACTICE_PATH}
+              element={(
+                <ProtectedRoute>
+                  <Navigate to={USER_PRACTICE_PATH} replace />
                 </ProtectedRoute>
               )}
             />
