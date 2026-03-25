@@ -20,6 +20,9 @@
   --dmc-primary-700: #3730a3;
   --dmc-on-primary: #ffffff;
 
+  --dmc-btn-secondary-bg: #0f172a;
+  --dmc-btn-secondary-text: #ffffff;
+
   --dmc-ai-bg: #ecfdf5;
   --dmc-ai-text: #065f46;
   --dmc-ai-border: #a7f3d0;
@@ -47,6 +50,9 @@ body.dark-theme {
   --dmc-primary-700: #4f46e5;
   --dmc-on-primary: #ffffff;
 
+  --dmc-btn-secondary-bg: #e2e8f0;
+  --dmc-btn-secondary-text: #0f172a;
+
   --dmc-ai-bg: rgba(16, 185, 129, 0.2);
   --dmc-ai-text: #a7f3d0;
   --dmc-ai-border: rgba(52, 211, 153, 0.5);
@@ -61,6 +67,29 @@ body.dark-theme {
   background: var(--dmc-bg-card);
   border: 1px solid var(--dmc-border);
   @apply rounded-2xl shadow-sm overflow-hidden;
+}
+
+.skill-mastery-badge {
+  /* In case some global styles or themes override text color */
+  color: inherit;
+}
+
+body.dark-theme .skill-mastery .skill-mastery-badge-beginner {
+  background: rgba(34, 197, 94, 0.2) !important;
+  color: #bbf7d0 !important;
+  border-color: rgba(74, 222, 128, 0.5) !important;
+}
+
+body.dark-theme .skill-mastery .skill-mastery-badge-learning {
+  background: rgba(99, 102, 241, 0.2) !important;
+  color: #c7d2fe !important;
+  border-color: rgba(129, 140, 248, 0.5) !important;
+}
+
+body.dark-theme .skill-mastery .skill-mastery-badge-master {
+  background: rgba(234, 179, 8, 0.2) !important;
+  color: #fde68a !important;
+  border-color: rgba(250, 204, 21, 0.5) !important;
 }
 
 .dmc-card-header {
@@ -113,8 +142,8 @@ body.dark-theme {
 }
 
 .dmc-button-secondary {
-  background: var(--dmc-text-primary);
-  color: var(--dmc-on-primary);
+  background: var(--dmc-btn-secondary-bg);
+  color: var(--dmc-btn-secondary-text);
   @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm;
 }
 
@@ -1379,10 +1408,33 @@ body.dark-theme .practice-lab h4 {
   color: #f1f5f9 !important;
 }
 
-body.dark-theme .practice-lab p,
-body.dark-theme .practice-lab span,
-body.dark-theme .practice-lab label {
-  color: #cbd5e1;
+/* Avoid forcing every <p>/<span> color — breaks status panels. */
+body.dark-theme .practice-lab .dmc-title {
+  color: #f1f5f9 !important;
+}
+
+body.dark-theme .practice-lab .dmc-subtitle {
+  color: #cbd5e1 !important;
+}
+
+/* Feedback panel in dark theme */
+body.dark-theme .practice-lab .practice-feedback {
+  background: rgba(245, 158, 11, 0.16) !important; /* amber-ish */
+  border-color: rgba(251, 191, 36, 0.35) !important;
+  color: #fef3c7 !important;
+}
+
+body.dark-theme .practice-lab .practice-feedback.practice-feedback-success {
+  background: rgba(16, 185, 129, 0.16) !important; /* emerald-ish */
+  border-color: rgba(52, 211, 153, 0.35) !important;
+  color: #d1fae5 !important;
+}
+
+/* Ensure XP badge remains readable in dark theme feedback panels */
+body.dark-theme .practice-lab .practice-feedback .practice-xp-badge {
+  background: rgba(250, 204, 21, 0.22) !important;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  color: #fef9c3 !important;
 }
 
 body.dark-theme .practice-lab .practice-card {

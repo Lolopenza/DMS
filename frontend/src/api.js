@@ -192,3 +192,7 @@ export function submitGeneratedProblemAttempt(generatedProblemId, payload) {
     timeoutMs: TIMEOUT_AI_MS,
   });
 }
+
+export function getUserSkills() {
+  return request(`${BACKEND_BASE}/problems/skills/me`);
+}
