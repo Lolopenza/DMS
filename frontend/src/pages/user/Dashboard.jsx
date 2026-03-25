@@ -9,6 +9,7 @@ import {
   USER_SETTINGS_PATH,
 } from '../../routes.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import SkillMasteryDashboard from '../../components/SkillMasteryDashboard.jsx';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -20,6 +21,8 @@ export default function Dashboard() {
         <h1><i className="fas fa-chart-line"></i> Welcome back, {displayName}!</h1>
         <p className="subtitle">Pick up where you left off or explore something new today.</p>
       </div>
+
+      <SkillMasteryDashboard />
 
       <div className="features-grid">
         <Link to={CALCULATOR_PATH} className="feature-card">

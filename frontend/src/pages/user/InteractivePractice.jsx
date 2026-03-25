@@ -121,14 +121,14 @@ function FeedbackPanel({ result }) {
   }
 
   return (
-    <div className={`mt-4 rounded-xl border p-4 ${containerClass}`}>
+    <div className={`practice-feedback mt-4 rounded-xl border p-4 ${isCorrect ? 'practice-feedback-success' : ''} ${containerClass}`}>
       <div className="flex items-start gap-3">
         {icon}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-semibold text-base">{title}</h4>
             {xp > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-200 text-yellow-900">
+              <span className="practice-xp-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-200 text-yellow-900">
                 +{xp} XP
               </span>
             )}
