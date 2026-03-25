@@ -104,5 +104,4 @@ instance/
 math-engine/reports/
 
 # ─── Docs (optional) ─────────────────────────────────────────────────────────
-# If docs are local drafts only, uncomment the next line.
-/docs/
+# /docs/ is tracked — diploma chapters and technical specs live here.

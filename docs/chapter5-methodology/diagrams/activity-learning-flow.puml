@@ -1,0 +1,80 @@
+@startuml activity_learning_flow
+!theme plain
+skinparam activity {
+  BackgroundColor #F8F9FA
+  BorderColor #495057
+  ArrowColor #495057
+  DiamondBackgroundColor #E9ECEF
+}
+
+title Activity Diagram — Adaptive Learning Flow
+
+start
+
+:Student logs in;
+
+:Browse subject tracks\n(Discrete Math, Linear Algebra,\nAlgorithms, Probability, Logic);
+
+:Select a topic\n(e.g., Combinatorics);
+
+:System fetches StudentSkill\n(BKT state for this topic);
+
+if (First interaction?) then (yes)
+  :Create default skill record\nP(L₀) = 0.25;
+else (no)
+  :Load existing P(know);
+endif
+
+:Map P(know) to difficulty\nvia Zone of Proximal Development;
+
+note right
+  P(know) < 0.4 → EASY
+  0.4 ≤ P(know) < 0.7 → MEDIUM
+  P(know) ≥ 0.7 → HARD
+end note
+
+:Generate problem at\nrecommended difficulty;
+
+fork
+  :AI mode: Gemini generates\nproblem + SymPy validates;
+fork again
+  :Template mode: fill params,\ncompute via SymPy;
+end fork
+
+:Display problem to student;
+
+:Student submits answer;
+
+:Hybrid verification;
+
+if (Symbolic check possible?) then (yes)
+  :SymPy: simplify(expected − answer) == 0;
+else (no)
+  :LLM semantic verification\n(Gemini with confidence score);
+  if (LLM available?) then (no)
+    :String comparison fallback;
+  endif
+endif
+
+if (Answer correct?) then (yes)
+  :Show positive feedback;
+  :BKT posterior update (correct)\nP(know) increases;
+else (no)
+  :Show feedback + hints;
+  :BKT posterior update (incorrect)\nP(know) decreases;
+endif
+
+:BKT learning transition\nP(Lₙ₊₁) = P(Lₙ|obs) + (1−P(Lₙ|obs))·P(T);
+
+:Update mastery level label\n(NOVICE → BEGINNER → ... → MASTERED);
+
+if (Continue practicing?) then (yes)
+  :Re-evaluate recommended difficulty;
+  -> :Generate problem at\nrecommended difficulty;
+else (no)
+  :Return to dashboard\n(view progress summary);
+endif
+
+stop
+
+@enduml

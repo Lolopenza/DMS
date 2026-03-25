@@ -1,0 +1,64 @@
+@startuml use_case_diagram
+!theme plain
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #F8F9FA
+  BorderColor #495057
+  ArrowColor #495057
+}
+
+title DMC Platform — Use Case Diagram
+
+actor "Student" as student
+actor "Teacher" as teacher
+actor "Admin" as admin
+actor "Math Engine\n(AI Service)" as engine <<system>>
+
+rectangle "DMC Platform" {
+  usecase "Register / Login" as UC1
+  usecase "Browse Subject Tracks" as UC2
+  usecase "Use Calculator Modules" as UC3
+  usecase "Practice Problems\n(Interactive)" as UC4
+  usecase "Generate AI Problem" as UC5
+  usecase "Submit Answer\n& Get Feedback" as UC6
+  usecase "View Skill Mastery\n(BKT Dashboard)" as UC7
+  usecase "Chat with AI Tutor" as UC8
+  usecase "View Learning Progress" as UC9
+  usecase "Manage Topics\n& Templates" as UC10
+  usecase "Create Courses\n& Lessons" as UC11
+  usecase "Manage Users\n& Roles" as UC12
+  usecase "Manage Platform\nContent" as UC13
+  usecase "Symbolic Verification\n(SymPy)" as UC14
+  usecase "Semantic Verification\n(Gemini LLM)" as UC15
+  usecase "Adaptive Difficulty\nSelection (BKT)" as UC16
+}
+
+student --> UC1
+student --> UC2
+student --> UC3
+student --> UC4
+student --> UC6
+student --> UC7
+student --> UC8
+student --> UC9
+
+teacher --> UC1
+teacher --> UC10
+teacher --> UC11
+
+admin --> UC1
+admin --> UC12
+admin --> UC13
+
+UC4 ..> UC5 : <<include>>
+UC5 ..> UC16 : <<include>>
+UC6 ..> UC14 : <<include>>
+UC6 ..> UC15 : <<extend>>
+
+UC5 --> engine
+UC14 --> engine
+UC15 --> engine
+UC8 --> engine
+
+@enduml

@@ -1,0 +1,110 @@
+@startuml component_diagram
+!theme plain
+skinparam component {
+  BackgroundColor #F8F9FA
+  BorderColor #495057
+}
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #6C757D
+}
+
+title DMC Platform — Component Diagram
+
+package "Client Layer" {
+  [React SPA] as FE
+  note right of FE
+    React 18, Vite, Tailwind CSS
+    Subject modules, Auth pages,
+    Interactive Practice, Dashboard
+  end note
+}
+
+package "API Gateway Layer" {
+  [Nginx] as NGINX
+  note right of NGINX
+    Reverse proxy
+    Static SPA serving (prod)
+    Route: /api/* → Backend
+    Route: /api/v1/* → Math Engine
+  end note
+}
+
+package "Backend (Spring Boot 3.2, Java 21)" {
+  [AuthController] as AUTH
+  [LearningController] as LEARN
+  [ProblemController] as PROB
+  [CalculatorController] as CALC
+  [BktService] as BKT
+  [ProblemService] as PS
+  [AuthService] as AS
+  [LearningService] as LS
+  [CalculatorProxyService] as CPS
+  [MathEngineClient] as MEC
+  [Spring Security\n(JWT Filter)] as SEC
+
+  AUTH --> AS
+  LEARN --> LS
+  PROB --> PS
+  PROB --> BKT
+  CALC --> CPS
+  CPS --> MEC
+  PS --> MEC
+  SEC --> AUTH
+}
+
+package "Math Engine (FastAPI, Python)" {
+  [Calculator Routers\n(12 domains)] as CALC_R
+  [Problem Generation\n(/generate, /verify)] as PG
+  [Chat Router\n(AI conversation)] as CHAT
+  [OCR Router] as OCR
+  [SymPy Core\n(symbolic algebra)] as SYMPY
+  [dmc_ai Module\n(Gemini/Groq)] as DMAI
+
+  CALC_R --> SYMPY
+  PG --> SYMPY
+  PG --> DMAI
+  CHAT --> DMAI
+}
+
+package "Data Layer" {
+  database "PostgreSQL 16" as PG_DB
+  database "Redis 7" as REDIS
+  queue "RabbitMQ 3.13" as RMQ
+}
+
+package "External Services" {
+  cloud "Google Gemini API" as GEMINI
+  cloud "Groq API\n(fallback)" as GROQ
+}
+
+FE --> NGINX : HTTPS
+NGINX --> AUTH : /api/auth/*
+NGINX --> LEARN : /api/courses/*
+NGINX --> PROB : /api/problems/*
+NGINX --> CALC : /api/calculator/*
+NGINX --> CALC_R : /api/v1/* (dev proxy)
+
+MEC --> PG : HTTP + X-Internal-Api-Key
+MEC --> CHAT
+
+AUTH --> PG_DB : JPA/Hibernate
+LEARN --> PG_DB
+PS --> PG_DB
+BKT --> PG_DB
+
+DMAI --> GEMINI
+DMAI --> GROQ
+
+note bottom of REDIS
+  Planned: JWT blacklist,
+  response caching,
+  rate limiting
+end note
+
+note bottom of RMQ
+  Planned: async AI tasks,
+  collaborative sessions
+end note
+
+@enduml

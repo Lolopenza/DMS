@@ -1,0 +1,67 @@
+@startuml deployment_diagram
+!theme plain
+skinparam node {
+  BackgroundColor #F8F9FA
+  BorderColor #495057
+}
+
+title DMC Platform — Deployment Diagram
+
+node "Client Machine" {
+  [Web Browser\n(Chrome/Firefox)] as BROWSER
+}
+
+node "Docker Host / Server" {
+  node "Nginx Container (:80)" as NGINX_N {
+    [Nginx Reverse Proxy] as NGINX
+    artifact "frontend/dist/\n(static SPA)" as DIST
+  }
+
+  node "Backend Container (:8080)" as BE_N {
+    [Spring Boot 3.2\nJava 21 (JRE)] as SPRING
+    note bottom of SPRING
+      Flyway migrations (V1–V14)
+      JWT auth, API gateway
+      BKT adaptive engine
+    end note
+  }
+
+  node "Math Engine Container (:8081)" as ME_N {
+    [FastAPI + Uvicorn\nPython 3.11] as FASTAPI
+    [SymPy] as SYMPY
+    [dmc_ai (Gemini SDK)] as DMAI
+  }
+
+  node "PostgreSQL Container (:5432)" as PG_N {
+    database "dmc_db" as DB
+  }
+
+  node "Redis Container (:6379)" as REDIS_N {
+    database "Cache Store" as CACHE
+  }
+
+  node "RabbitMQ Container\n(:5672 / :15672 mgmt)" as RMQ_N {
+    queue "Message Broker" as MQ
+  }
+}
+
+cloud "Google Cloud" {
+  [Gemini API] as GEMINI
+}
+
+cloud "Groq Cloud" {
+  [Groq API\n(fallback)] as GROQ
+}
+
+BROWSER --> NGINX : HTTPS / HTTP
+NGINX --> DIST : serve static
+NGINX --> SPRING : proxy /api/*
+NGINX --> FASTAPI : proxy /api/v1/* (dev)
+SPRING --> DB : JDBC (5432)
+SPRING --> CACHE : Jedis (6379)
+SPRING --> MQ : AMQP (5672)
+SPRING --> FASTAPI : HTTP + API Key (8081)
+FASTAPI --> GEMINI : HTTPS (REST)
+FASTAPI --> GROQ : HTTPS (REST)
+
+@enduml

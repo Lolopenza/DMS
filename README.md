@@ -144,6 +144,7 @@ npm run build
 | **[waves/wave-4/README.md](docs/waves/wave-4/README.md)** | 🔐 Отложенный план Auth/Security Phase 2 (backlog) |
 | **[TAXONOMY.md](docs/TAXONOMY.md)** | 📚 Классификация предметов и модулей платформы |
 | **[ADD-NEW-SUBJECT-PLAYBOOK.md](docs/ADD-NEW-SUBJECT-PLAYBOOK.md)** | ➕ Playbook для добавления нового предмета |
+| **[chapter5-methodology/](docs/chapter5-methodology/)** | 📖 Chapter 5: Methodology and System Design (diploma thesis) |
 
 Дополнительно по backend-структуре: **[backend/README.md](backend/README.md)**.
 

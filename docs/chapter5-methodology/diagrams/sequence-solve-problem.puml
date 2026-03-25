@@ -1,0 +1,51 @@
+@startuml sequence_solve_problem
+!theme plain
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipant underline
+
+title Sequence Diagram — Solve a Generated Problem
+
+actor Student as S
+participant "React SPA\n(Frontend)" as FE
+participant "Spring Boot\n(Backend :8080)" as BE
+database "PostgreSQL" as DB
+participant "FastAPI\n(Math Engine :8081)" as ME
+participant "Google Gemini\n(LLM)" as AI
+
+== Problem Generation ==
+S -> FE : Select topic, difficulty, mode (AI/Template)
+FE -> BE : POST /api/problems/generated\n{topicSlug, difficulty, mode}
+BE -> BE : Authenticate JWT, resolve User
+BE -> DB : Fetch StudentSkill (BKT state)
+BE -> ME : POST /api/v1/problems/generate/\n{topic, difficulty, params}\nHeader: X-Internal-Api-Key
+alt mode = AI
+  ME -> AI : Generate problem via Gemini prompt
+  AI --> ME : JSON {question, answer, expression, params}
+  ME -> ME : Validate answer with SymPy
+else mode = TEMPLATE
+  ME -> ME : Fill template params, compute answer via SymPy
+end
+ME --> BE : GeneratedProblem JSON
+BE -> DB : INSERT generated_problems (JSONB snapshot)
+BE --> FE : {problem, skill, recommendedDifficulty}
+FE --> S : Display problem
+
+== Answer Submission & Verification ==
+S -> FE : Enter answer, click Submit
+FE -> BE : POST /api/problems/generated/{id}/attempt\n{studentAnswer}
+BE -> ME : POST /api/v1/problems/verify/\n{studentAnswer, expectedAnswer, expression}
+alt Symbolic path available
+  ME -> ME : SymPy simplify(expected − student) == 0
+  ME --> BE : {correct: true/false, method: "symbolic",\nconfidence: 1.0}
+else Symbolic path fails
+  ME -> AI : Semantic verification prompt
+  AI --> ME : {correct, confidence, feedback}
+  ME --> BE : {correct, confidence, method: "llm",\nfeedback}
+end
+BE -> DB : INSERT generated_problem_attempts
+BE -> BE : BktService.updateSkill(user, topic, isCorrect)
+BE -> DB : UPDATE student_skills (new p_know)
+BE --> FE : {result, updatedSkill, feedback}
+FE --> S : Show result, feedback, updated mastery
+
+@enduml
