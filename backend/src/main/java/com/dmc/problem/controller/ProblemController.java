@@ -16,6 +16,8 @@ import com.dmc.problem.dto.StudentSkillDto;
 import com.dmc.problem.dto.TemplateValidationRequest;
 import com.dmc.problem.dto.TopicDto;
 import com.dmc.problem.service.ProblemService;
+import com.dmc.learning.dto.LearningFeedbackRequest;
+import com.dmc.learning.dto.LearningFeedbackResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -58,13 +60,13 @@ public class ProblemController {
         return ResponseEntity.ok(problemService.listTopics());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProblemDto> createProblem(@Valid @RequestBody ProblemDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(problemService.createProblem(request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/topics")
     public ResponseEntity<TopicDto> createTopic(@Valid @RequestBody TopicDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(problemService.createTopic(request));
@@ -75,7 +77,7 @@ public class ProblemController {
         return ResponseEntity.ok(problemService.listTemplates());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/templates")
     public ResponseEntity<ProblemTemplateDto> createTemplate(@Valid @RequestBody ProblemTemplateDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(problemService.createTemplate(request));
@@ -138,6 +140,13 @@ public class ProblemController {
     @GetMapping("/skills/me/{topicSlug}")
     public ResponseEntity<StudentSkillDto> mySkillForTopic(@PathVariable String topicSlug) {
         return ResponseEntity.ok(problemService.getStudentSkill(currentUserId(), topicSlug));
+    }
+
+    @PostMapping("/learning/feedback")
+    public ResponseEntity<LearningFeedbackResponse> learningFeedback(@Valid @RequestBody LearningFeedbackRequest request) {
+        int windowDays = request.windowDays() == null ? 30 : request.windowDays();
+        int topN = request.topNTopics() == null ? 3 : request.topNTopics();
+        return ResponseEntity.ok(problemService.generateLearningFeedback(currentUserId(), windowDays, topN));
     }
 
     private Long currentUserId() {

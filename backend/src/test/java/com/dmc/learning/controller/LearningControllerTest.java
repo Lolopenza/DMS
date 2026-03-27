@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.*;
  * Tests for /api/learning endpoints (courses, modules, lessons).
  * 
  * Tests public list endpoints which require no authentication.
- * Admin endpoints (POST/PUT/DELETE) require ADMIN or TEACHER role.
+ * Admin endpoints (POST/PUT/DELETE) require ADMIN role.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc

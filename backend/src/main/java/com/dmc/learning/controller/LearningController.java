@@ -51,57 +51,57 @@ public class LearningController {
         return ResponseEntity.ok(learningService.markLessonCompleted(currentUserId(), lessonId));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/courses")
     public ResponseEntity<CourseDto> createCourse(@Valid @RequestBody CourseDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(learningService.createCourse(request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/courses/{id}")
     public ResponseEntity<CourseDto> updateCourse(@PathVariable Long id, @Valid @RequestBody CourseDto request) {
         return ResponseEntity.ok(learningService.updateCourse(id, request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/admin/courses/{id}")
     public ResponseEntity<MessageResponse> deleteCourse(@PathVariable Long id) {
         learningService.deleteCourse(id);
         return ResponseEntity.ok(new MessageResponse("Course deleted"));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/modules")
     public ResponseEntity<CourseModuleDto> createModule(@Valid @RequestBody CourseModuleDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(learningService.createModule(request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/modules/{id}")
     public ResponseEntity<CourseModuleDto> updateModule(@PathVariable Long id, @Valid @RequestBody CourseModuleDto request) {
         return ResponseEntity.ok(learningService.updateModule(id, request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/admin/modules/{id}")
     public ResponseEntity<MessageResponse> deleteModule(@PathVariable Long id) {
         learningService.deleteModule(id);
         return ResponseEntity.ok(new MessageResponse("Module deleted"));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/lessons")
     public ResponseEntity<LessonDto> createLesson(@Valid @RequestBody LessonDto request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(learningService.createLesson(request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/lessons/{id}")
     public ResponseEntity<LessonDto> updateLesson(@PathVariable Long id, @Valid @RequestBody LessonDto request) {
         return ResponseEntity.ok(learningService.updateLesson(id, request));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/admin/lessons/{id}")
     public ResponseEntity<MessageResponse> deleteLesson(@PathVariable Long id) {
         learningService.deleteLesson(id);

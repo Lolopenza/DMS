@@ -14,10 +14,12 @@ import com.dmc.problem.dto.ProblemDto;
 import com.dmc.problem.dto.ProblemTemplateDto;
 import com.dmc.problem.dto.StudentSkillDto;
 import com.dmc.problem.dto.TopicDto;
+import com.dmc.learning.dto.LearningFeedbackResponse;
 import com.dmc.problem.entity.Difficulty;
 import com.dmc.problem.entity.GeneratedProblem;
 import com.dmc.problem.entity.GeneratedProblemAttempt;
 import com.dmc.problem.entity.GenerationMode;
+import com.dmc.problem.entity.ErrorType;
 import com.dmc.problem.entity.Problem;
 import com.dmc.problem.entity.ProblemAttempt;
 import com.dmc.problem.entity.ProblemTemplate;
@@ -41,6 +43,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashSet;
@@ -49,6 +52,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +73,7 @@ public class ProblemService {
     private final ObjectMapper objectMapper;
 
     private final Random random = new Random();
+    private static final int MAX_TIME_SPENT_SECONDS = 4 * 60 * 60;
 
     public List<ProblemDto> listProblems(String topic, String difficulty) {
         List<Problem> problems;
@@ -83,6 +90,18 @@ public class ProblemService {
             problems = problemRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
         }
         return problems.stream().map(this::toDto).toList();
+    }
+
+    public Page<ProblemDto> listProblemsPage(String topicSlug, int page, int size) {
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(100, Math.max(1, size));
+        PageRequest pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<Problem> problems = (topicSlug == null || topicSlug.isBlank())
+                ? problemRepository.findByDeletedAtIsNullOrderByCreatedAtDesc(pageable)
+                : problemRepository.findByDeletedAtIsNullAndTopicOrderByCreatedAtDesc(topicSlug, pageable);
+
+        return problems.map(this::toDto);
     }
 
     @Transactional
@@ -112,6 +131,10 @@ public class ProblemService {
 
         boolean correct = isCorrect(problem.getCorrectAnswer(), request.answer());
         int xp = correct ? (problem.getXpReward() == null ? 0 : problem.getXpReward()) : 0;
+        ErrorType resolvedErrorType = resolveErrorType(request.errorType(), correct, problem.getHintText());
+
+        Integer normalizedTimeSpent = sanitizeTimeSpent(request.timeSpentSeconds());
+        Integer normalizedTimeToFirstAction = sanitizeTimeToFirstAction(request.timeToFirstActionSeconds(), normalizedTimeSpent);
 
         ProblemAttempt attempt = ProblemAttempt.builder()
                 .user(user)
@@ -119,6 +142,13 @@ public class ProblemService {
                 .answer(request.answer())
                 .correct(correct)
                 .xpEarned(xp)
+                .timeSpentSeconds(normalizedTimeSpent)
+                .timeToFirstActionSeconds(normalizedTimeToFirstAction)
+                .hintUsed(Boolean.TRUE.equals(request.hintUsed()))
+                .errorType(resolvedErrorType)
+                .difficultyAtAttempt(parseDifficultyWithFallback(request.difficultyAtAttempt(), problem.getDifficulty()))
+                .topicSlug(firstNonBlank(request.topicSlug(), problem.getTopic()))
+                .topicPath(firstNonBlank(request.topicPath(), resolveTopicPath(problem.getTopic())))
                 .createdAt(OffsetDateTime.now())
                 .build();
         problemAttemptRepository.save(attempt);
@@ -357,6 +387,10 @@ public class ProblemService {
         String feedback = correct
             ? "Correct answer"
             : semanticFeedback;
+        ErrorType resolvedErrorType = resolveErrorType(request.errorType(), correct, semanticFeedback);
+
+        Integer normalizedTimeSpent = sanitizeTimeSpent(request.timeSpentSeconds());
+        Integer normalizedTimeToFirstAction = sanitizeTimeToFirstAction(request.timeToFirstActionSeconds(), normalizedTimeSpent);
 
         GeneratedProblemAttempt attempt = GeneratedProblemAttempt.builder()
             .user(user)
@@ -367,6 +401,13 @@ public class ProblemService {
             .verificationMethod(method)
             .feedback(feedback)
             .xpEarned(xpEarned)
+            .timeSpentSeconds(normalizedTimeSpent)
+            .timeToFirstActionSeconds(normalizedTimeToFirstAction)
+            .hintUsed(Boolean.TRUE.equals(request.hintUsed()))
+            .errorType(resolvedErrorType)
+            .difficultyAtAttempt(parseDifficultyWithFallback(request.difficultyAtAttempt(), generatedProblem.getDifficulty()))
+            .topicSlug(firstNonBlank(request.topicSlug(), generatedProblem.getTopicSlug()))
+            .topicPath(firstNonBlank(request.topicPath(), resolveTopicPath(generatedProblem.getTopicSlug())))
             .createdAt(OffsetDateTime.now())
             .build();
         generatedProblemAttemptRepository.save(attempt);
@@ -427,6 +468,38 @@ public class ProblemService {
             .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
         StudentSkill skill = bktService.getOrCreateSkill(user, topicSlug);
         return toSkillDto(skill);
+    }
+
+    public LearningFeedbackResponse generateLearningFeedback(Long userId, int windowDays, int topNTopics) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
+
+        ObjectNode payload = objectMapper.createObjectNode();
+        payload.put("userId", user.getId());
+        payload.put("windowDays", windowDays);
+        payload.put("topNTopics", topNTopics);
+
+        JsonNode response = mathEngineClient.post("/api/v1/learning/feedback", payload);
+        List<String> focusTopics = response.hasNonNull("focusTopics")
+                ? objectMapper.convertValue(response.get("focusTopics"), objectMapper.getTypeFactory().constructCollectionType(List.class, String.class))
+                : List.of();
+        List<String> strengths = response.hasNonNull("strengths")
+                ? objectMapper.convertValue(response.get("strengths"), objectMapper.getTypeFactory().constructCollectionType(List.class, String.class))
+                : List.of();
+        OffsetDateTime generatedAt;
+        try {
+            generatedAt = response.hasNonNull("generatedAt")
+                    ? OffsetDateTime.parse(response.get("generatedAt").asText())
+                    : OffsetDateTime.now();
+        } catch (Exception ignored) {
+            generatedAt = OffsetDateTime.now();
+        }
+        return new LearningFeedbackResponse(
+                response.path("feedbackText").asText(""),
+                focusTopics,
+                strengths,
+                generatedAt
+        );
     }
 
     private Difficulty difficultyFromPKnow(double pKnow) {
@@ -552,6 +625,98 @@ public class ProblemService {
         } catch (IllegalArgumentException ex) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_DIFFICULTY", "Unknown difficulty: " + rawDifficulty);
         }
+    }
+
+    private Difficulty parseDifficultyWithFallback(String rawDifficulty, Difficulty fallback) {
+        if (rawDifficulty == null || rawDifficulty.isBlank()) {
+            return fallback;
+        }
+        try {
+            return Difficulty.valueOf(rawDifficulty.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return fallback;
+        }
+    }
+
+    private ErrorType parseErrorType(String rawErrorType) {
+        if (rawErrorType == null || rawErrorType.isBlank()) {
+            return null;
+        }
+        try {
+            return ErrorType.valueOf(rawErrorType.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return ErrorType.OTHER;
+        }
+    }
+
+    private ErrorType resolveErrorType(String rawErrorType, boolean correct, String feedbackText) {
+        ErrorType parsed = parseErrorType(rawErrorType);
+        if (parsed != null) {
+            return parsed;
+        }
+        if (correct) {
+            return null;
+        }
+        String normalized = feedbackText == null ? "" : feedbackText.toLowerCase(Locale.ROOT);
+        if (normalized.contains("sign")) {
+            return ErrorType.SIGN_ERROR;
+        }
+        if (normalized.contains("arith") || normalized.contains("calculate") || normalized.contains("calculation")) {
+            return ErrorType.ARITHMETIC_ERROR;
+        }
+        if (normalized.contains("formula") || normalized.contains("identity")) {
+            return ErrorType.FORMULA_ERROR;
+        }
+        if (normalized.contains("logic") || normalized.contains("reason")) {
+            return ErrorType.LOGIC_ERROR;
+        }
+        return ErrorType.OTHER;
+    }
+
+    private String resolveTopicPath(String topicSlug) {
+        if (topicSlug == null || topicSlug.isBlank()) {
+            return null;
+        }
+        return topicRepository.findBySlugAndDeletedAtIsNull(topicSlug)
+                .map(this::buildTopicPath)
+                .orElse(topicSlug);
+    }
+
+    private String firstNonBlank(String primary, String fallback) {
+        return (primary == null || primary.isBlank()) ? fallback : primary;
+    }
+
+    private String buildTopicPath(Topic leaf) {
+        List<String> chain = new ArrayList<>();
+        Topic cursor = leaf;
+        int guard = 0;
+        while (cursor != null && guard < 10) {
+            chain.add(0, cursor.getSlug());
+            cursor = cursor.getParent();
+            guard++;
+        }
+        return String.join(".", chain);
+    }
+
+    private Integer sanitizeTimeSpent(Integer raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw < 0) {
+            return 0;
+        }
+        return Math.min(raw, MAX_TIME_SPENT_SECONDS);
+    }
+
+    private Integer sanitizeTimeToFirstAction(Integer rawFirstAction, Integer sanitizedSpent) {
+        if (rawFirstAction == null) {
+            return null;
+        }
+        int value = Math.max(0, rawFirstAction);
+        if (sanitizedSpent != null && value > sanitizedSpent) {
+            value = sanitizedSpent;
+        }
+        return value;
     }
 
     private ProblemTemplate resolveTemplateForInteractive(InteractiveProblemGenerateRequest request) {

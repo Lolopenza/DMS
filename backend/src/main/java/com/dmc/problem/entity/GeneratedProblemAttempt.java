@@ -4,6 +4,8 @@ import com.dmc.user.entity.User;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -61,6 +63,29 @@ public class GeneratedProblemAttempt {
 
     @Column(name = "xp_earned", nullable = false)
     private Integer xpEarned;
+
+    @Column(name = "time_spent_seconds")
+    private Integer timeSpentSeconds;
+
+    @Column(name = "time_to_first_action_seconds")
+    private Integer timeToFirstActionSeconds;
+
+    @Column(name = "hint_used", nullable = false)
+    private Boolean hintUsed;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "error_type", length = 32)
+    private ErrorType errorType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "difficulty_at_attempt", length = 16)
+    private Difficulty difficultyAtAttempt;
+
+    @Column(name = "topic_slug", length = 120)
+    private String topicSlug;
+
+    @Column(name = "topic_path", length = 255)
+    private String topicPath;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;

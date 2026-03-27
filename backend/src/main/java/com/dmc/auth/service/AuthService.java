@@ -27,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
@@ -263,6 +264,12 @@ public class AuthService {
     private AuthResult issueTokens(User user, RequestMetadata metadata, String sessionId) {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime refreshExpiry = now.plusSeconds(jwtProperties.getRefreshTokenTtlSeconds());
+        LocalDate today = LocalDate.now();
+
+        if (!today.equals(user.getLastActive())) {
+            user.setLastActive(today);
+            userRepository.save(user);
+        }
 
         UserSession session = userSessionRepository.findBySessionId(sessionId)
                 .orElseGet(() -> UserSession.builder()

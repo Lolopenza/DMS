@@ -62,3 +62,5 @@ app:
     lockout-threshold: ${AUTH_LOCKOUT_THRESHOLD:5}
     lockout-minutes: ${AUTH_LOCKOUT_MINUTES:15}
     password-reset-ttl-minutes: ${AUTH_PASSWORD_RESET_TTL_MINUTES:30}
+  feedback:
+    prompt-delay-seconds: ${FEEDBACK_PROMPT_DELAY_SECONDS:300}

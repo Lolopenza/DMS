@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.*;
  * 
  * Tests public list endpoints which require no authentication.
  * Submission endpoints (attempts) require authentication but not special roles.
- * Admin endpoints (POST templates) require ADMIN or TEACHER role.
+ * Admin endpoints (POST templates/topics) require ADMIN role.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -100,7 +100,7 @@ public class ProblemControllerTest {
     }
 
     /**
-     * Test that POST /api/problem/templates requires ADMIN/TEACHER role
+     * Test that POST /api/problem/templates requires ADMIN role
      */
     @Test
     void testCreateTemplateRequiresAuth() throws Exception {
@@ -144,7 +144,7 @@ public class ProblemControllerTest {
     }
 
     /**
-     * Test that POST /api/problem/topics requires ADMIN/TEACHER role
+     * Test that POST /api/problem/topics requires ADMIN role
      */
     @Test
     void testCreateTopicRequiresAuth() throws Exception {
