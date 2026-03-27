@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-const apiV1ProxyTarget = process.env.VITE_API_V1_PROXY_TARGET || 'http://localhost:8081';
+const apiV1ProxyTarget = process.env.VITE_API_V1_PROXY_TARGET || 'http://localhost:8080';
 const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080';
 
 export default defineConfig({
@@ -21,6 +21,22 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
+      '/api/v1/admin': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
+      '/api/v1/public': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
+      '/api/v1/feedback': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
+      '/api/v1/analytics': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
       '/api/v1': {
         target: apiV1ProxyTarget,
         changeOrigin: true,

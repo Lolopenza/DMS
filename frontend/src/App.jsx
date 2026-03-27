@@ -20,6 +20,7 @@ import Dashboard from './pages/user/Dashboard.jsx';
 import InteractivePractice from './pages/user/InteractivePractice.jsx';
 import Profile from './pages/user/Profile.jsx';
 import Settings from './pages/user/Settings.jsx';
+import Sandbox from './pages/user/Sandbox.jsx';
 import ContentAdmin from './pages/admin/ContentAdmin.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
@@ -41,6 +42,7 @@ import {
   USER_GENERATED_PRACTICE_PATH,
   USER_PRACTICE_PATH,
   USER_PROFILE_PATH,
+  USER_SANDBOX_PATH,
   USER_SETTINGS_PATH,
 } from './routes.js';
 
@@ -119,9 +121,17 @@ export default function App() {
               )}
             />
             <Route
-              path={ADMIN_CONTENT_PATH}
+              path={USER_SANDBOX_PATH}
               element={(
                 <ProtectedRoute>
+                  <Sandbox />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path={ADMIN_CONTENT_PATH}
+              element={(
+                <ProtectedRoute requiredRole="ADMIN">
                   <ContentAdmin />
                 </ProtectedRoute>
               )}

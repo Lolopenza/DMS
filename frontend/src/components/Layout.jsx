@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import {
   AUTH_SIGN_IN_PATH,
   AUTH_SIGN_UP_PATH,
+  ADMIN_CONTENT_PATH,
   CALCULATOR_PATH,
   HELP_PATH,
   HOME_PATH,
@@ -18,6 +19,7 @@ import {
   MATH_ROADMAP_PATH,
   USER_DASHBOARD_PATH,
   USER_PRACTICE_PATH,
+  SUBJECTS,
   getSubjectCatalog,
   getFooterLinkGroups,
   getTopNavItems,
@@ -28,14 +30,18 @@ import {
 export default function Layout({ children, chatHistory, setChatHistory }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const isHub = location.pathname === '/';
-  const isMinimalNav = isMinimalNavPath(location.pathname);
-  const activeSubject = resolveSubjectSlug(location.pathname);
-  const navItems = getTopNavItems(activeSubject);
+  const isAdminArea = location.pathname.startsWith('/admin');
+  const isMinimalNav = isMinimalNavPath(location.pathname) || isAdminArea;
+  const hasSubjectInPath = SUBJECTS.some((subject) => (
+    location.pathname === `/${subject.slug}` || location.pathname.startsWith(`/${subject.slug}/`)
+  ));
+  const activeSubject = hasSubjectInPath ? resolveSubjectSlug(location.pathname) : null;
+  const navItems = activeSubject ? getTopNavItems(activeSubject) : [];
   const sectionEntry = navItems.find((item) => item.isSectionsEntry);
   const moduleItems = navItems.filter((item) => !item.isSectionsEntry);
-  const { quickLinks, toolLinks } = getFooterLinkGroups(activeSubject);
+  const { quickLinks, toolLinks } = activeSubject ? getFooterLinkGroups(activeSubject) : { quickLinks: [], toolLinks: [] };
   const isOverviewPage = location.pathname === HOME_PATH || location.pathname === TRACKS_PATH;
   const overviewTrackLinks = getSubjectCatalog()
     .filter((subject) => subject.status === 'active' && subject.calculatorPath)
@@ -72,6 +78,11 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
           <div className="nav-links" style={{ marginLeft: 'auto' }}>
             {isAuthenticated ? (
               <>
+                {user?.role === 'ADMIN' ? (
+                  <NavLink to={ADMIN_CONTENT_PATH} className="nav-item" title="Admin panel" aria-label="Admin panel">
+                    <i className="fas fa-shield-halved"></i>
+                  </NavLink>
+                ) : null}
                 <NavLink to={USER_DASHBOARD_PATH} className="nav-item" title="Dashboard" aria-label="Dashboard">
                   <i className="fas fa-gauge"></i>
                 </NavLink>
@@ -153,6 +164,17 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
             <div className="nav-auth-group">
               {isAuthenticated ? (
                 <>
+                  {user?.role === 'ADMIN' ? (
+                    <NavLink
+                      to={ADMIN_CONTENT_PATH}
+                      className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+                      title="Admin panel"
+                      aria-label="Admin panel"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <i className="fas fa-shield-halved"></i>
+                    </NavLink>
+                  ) : null}
                   <NavLink
                     to={USER_DASHBOARD_PATH}
                     className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}

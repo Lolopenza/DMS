@@ -196,3 +196,81 @@ export function submitGeneratedProblemAttempt(generatedProblemId, payload) {
 export function getUserSkills() {
   return request(`${BACKEND_BASE}/problems/skills/me`);
 }
+
+export function getLearningFeedback(payload = {}) {
+  return request(`${BACKEND_BASE}/problems/learning/feedback`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    timeoutMs: TIMEOUT_AI_MS,
+  });
+}
+
+export function getMyAnalyticsCsvUrl(windowDays = 30) {
+  return `${BACKEND_BASE}/v1/analytics/me/raw.csv?windowDays=${encodeURIComponent(windowDays)}`;
+}
+
+export function getMyColabStarter(windowDays = 30, lessonMode = true) {
+  const qs = new URLSearchParams({
+    windowDays: String(windowDays),
+    lessonMode: String(Boolean(lessonMode)),
+  });
+  return request(`${BACKEND_BASE}/v1/analytics/me/colab-starter?${qs.toString()}`);
+}
+
+export function getMyRawAnalytics(windowDays = 30) {
+  return request(`${BACKEND_BASE}/v1/analytics/me/raw?windowDays=${encodeURIComponent(windowDays)}`);
+}
+
+export function submitStudentFeedback(payload) {
+  return request(`${BACKEND_BASE}/v1/feedback`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getStudentFeedbackStatus() {
+  return request(`${BACKEND_BASE}/v1/feedback/status`);
+}
+
+// ── Admin panel API ─────────────────────────────────────────────────────────
+
+export function getAdminStats() {
+  return request(`${BACKEND_BASE}/v1/admin/stats`);
+}
+
+export function getAdminUsers(page = 0, size = 20) {
+  return request(`${BACKEND_BASE}/v1/admin/users?page=${encodeURIComponent(page)}&size=${encodeURIComponent(size)}`);
+}
+
+export function deactivateAdminUser(userId) {
+  return request(`${BACKEND_BASE}/v1/admin/users/${userId}/deactivate`, {
+    method: 'PATCH',
+  });
+}
+
+export function activateAdminUser(userId) {
+  return request(`${BACKEND_BASE}/v1/admin/users/${userId}/activate`, {
+    method: 'PATCH',
+  });
+}
+
+export function getPublicSetting(key) {
+  return request(`${BACKEND_BASE}/v1/public/settings/${encodeURIComponent(key)}`);
+}
+
+export function putAdminSetting(key, value) {
+  return request(`${BACKEND_BASE}/v1/admin/settings/${encodeURIComponent(key)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ value }),
+  });
+}
+
+export function getAdminRawAnalytics(userId, windowDays = 30) {
+  return request(
+    `${BACKEND_BASE}/v1/admin/analytics/raw-preview?userId=${encodeURIComponent(userId)}&windowDays=${encodeURIComponent(windowDays)}`
+  );
+}
+
+export function getAdminRawAnalyticsCsvUrl(userId, windowDays = 30) {
+  return `${BACKEND_BASE}/v1/admin/analytics/raw-preview.csv?userId=${encodeURIComponent(userId)}&windowDays=${encodeURIComponent(windowDays)}`;
+}

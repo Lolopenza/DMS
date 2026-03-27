@@ -88,6 +88,7 @@ export const USER_PRACTICE_PATH = '/user/practice';
 export const USER_GENERATED_PRACTICE_PATH = '/user/practice/generated';
 export const USER_PROFILE_PATH = '/user/profile';
 export const USER_SETTINGS_PATH = '/user/settings';
+export const USER_SANDBOX_PATH = '/user/sandbox';
 export const ADMIN_CONTENT_PATH = '/admin/content';
 export const HELP_PATH = '/help';
 export const LEGAL_TERMS_PATH = '/legal/terms';

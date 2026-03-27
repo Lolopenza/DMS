@@ -26,6 +26,15 @@ const MODE_OPTIONS = [
   { value: 'TEMPLATE', label: 'Template', hint: 'Stable problem from curated templates' },
 ];
 
+function inferClientErrorType(answerText) {
+  const text = String(answerText || '').trim();
+  if (!text) return null;
+  if (/^[+-]?\d+([.,]\d+)?$/.test(text)) return 'ARITHMETIC_ERROR';
+  if (/[a-zA-Z]/.test(text) && /[()+\-*/^]/.test(text)) return 'FORMULA_ERROR';
+  if (/[<>]=?|=>|->/.test(text)) return 'LOGIC_ERROR';
+  return null;
+}
+
 function SourceBadge({ sourceModel, generationMode }) {
   const isAI = sourceModel && sourceModel !== 'template' && sourceModel !== 'fallback-template';
   const isFallback = sourceModel === 'fallback-template';
@@ -144,6 +153,7 @@ function FeedbackPanel({ result }) {
 }
 
 export default function InteractivePractice() {
+  const telemetryEnabled = String(import.meta.env.VITE_ENABLE_ATTEMPT_TELEMETRY || 'true').toLowerCase() !== 'false';
   const [topicSlug, setTopicSlug] = useState('combinatorics');
   const [difficulty, setDifficulty] = useState('MEDIUM');
   const [mode, setMode] = useState('AI');
@@ -155,6 +165,8 @@ export default function InteractivePractice() {
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState([]);
   const [error, setError] = useState('');
+  const [attemptStartedAt, setAttemptStartedAt] = useState(null);
+  const [firstActionAt, setFirstActionAt] = useState(null);
 
   async function loadHistory() {
     try {
@@ -182,6 +194,9 @@ export default function InteractivePractice() {
       });
       setCurrent(generated);
       setAnswer('');
+      const now = Date.now();
+      setAttemptStartedAt(now);
+      setFirstActionAt(null);
       await loadHistory();
     } catch (e) {
       setError(e.message || 'Failed to generate problem');
@@ -197,8 +212,25 @@ export default function InteractivePractice() {
     setSubmitting(true);
     setError('');
     try {
+      const now = Date.now();
+      const timeSpentSeconds = attemptStartedAt ? Math.max(0, Math.round((now - attemptStartedAt) / 1000)) : null;
+      const timeToFirstActionSeconds = (attemptStartedAt && firstActionAt)
+        ? Math.max(0, Math.round((firstActionAt - attemptStartedAt) / 1000))
+        : null;
+      const telemetryPayload = telemetryEnabled
+        ? {
+          timeSpentSeconds,
+          timeToFirstActionSeconds,
+          hintUsed: false,
+          errorType: inferClientErrorType(answer),
+          difficultyAtAttempt: current?.difficulty || difficulty,
+          topicSlug: current?.topicSlug || topicSlug,
+          topicPath: current?.topicSlug || topicSlug,
+        }
+        : {};
       const response = await submitGeneratedProblemAttempt(current.id, {
         answer: String(answer).trim(),
+        ...telemetryPayload,
       });
       setResult(response);
       await loadHistory();
@@ -399,7 +431,12 @@ export default function InteractivePractice() {
                 <input
                   type="text"
                   value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
+                  onChange={(e) => {
+                    if (!firstActionAt) {
+                      setFirstActionAt(Date.now());
+                    }
+                    setAnswer(e.target.value);
+                  }}
                   placeholder="Enter your answer (e.g. 28, n*(n-1)/2)"
                   className="dmc-input"
                 />
