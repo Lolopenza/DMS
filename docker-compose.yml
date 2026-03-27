@@ -37,6 +37,7 @@ services:
       DMC_MATH_ENGINE_API_KEY: ${MATH_ENGINE_API_KEY}
       DMC_JWT_SECRET: ${JWT_SECRET}
       DMC_JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+      FEEDBACK_PROMPT_DELAY_SECONDS: ${FEEDBACK_PROMPT_DELAY_SECONDS:-300}
     depends_on:
       postgres:
         condition: service_healthy
@@ -56,6 +57,7 @@ services:
       context: .
       dockerfile: ./math-engine/Dockerfile
     environment:
+      DMC_BACKEND_URL: http://backend:8080
       GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
       GROQ_API_KEY: ${GROQ_API_KEY}

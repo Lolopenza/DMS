@@ -25,6 +25,8 @@ services:
       - ./dmc_ai:/app/dmc_ai
     ports:
       - "8081:8081"
+    environment:
+      DMC_BACKEND_URL: http://backend:8080
     mem_limit: 1024m
     cpus: "1.50"
 

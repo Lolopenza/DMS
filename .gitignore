@@ -29,6 +29,7 @@ math-engine/venv/
 # Testing
 .pytest_cache/
 .coverage
+.cursor/
 htmlcov/
 math-engine/.coverage
 math-engine/htmlcov/
