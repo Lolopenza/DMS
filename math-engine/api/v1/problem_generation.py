@@ -57,6 +57,18 @@ def _clean_llm_json(text: str) -> str:
     return value.strip()
 
 
+def _normalize_logic_expression(expr: str) -> str:
+    if not expr:
+        return expr
+    return (
+        expr.replace('¬', '~')
+        .replace('∧', '&')
+        .replace('∨', '|')
+        .replace('→', '>>')
+        .replace('⇒', '>>')
+    )
+
+
 def _difficulty_score(raw: Optional[str]) -> float:
     if not raw:
         return 0.60
@@ -69,6 +81,75 @@ def _difficulty_score(raw: Optional[str]) -> float:
 
 
 def _fallback_generated(topic_slug: Optional[str], difficulty: Optional[str]) -> Dict[str, Any]:
+    slug = (topic_slug or 'combinatorics').strip().lower()
+
+    if slug == 'graph_theory':
+        n = random.randint(4, 9)
+        expr = '{{n}} * ({{n}} - 1) / 2'
+        resolved = expr.replace('{{n}}', str(n))
+        expected = int(sp.N(sp.sympify(resolved)))
+        return {
+            'questionText': f'How many edges does the complete graph K{n} have?',
+            'parameters': {'n': n},
+            'answerExpression': expr,
+            'correctAnswer': expected,
+            'operation': 'graph_edges_complete',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+        }
+
+    if slug == 'logic':
+        p = random.randint(0, 1)
+        q = random.randint(0, 1)
+        expr = '1 - ({{p}} * {{q}})'
+        resolved = expr.replace('{{p}}', str(p)).replace('{{q}}', str(q))
+        expected = int(sp.N(sp.sympify(resolved)))
+        return {
+            'questionText': f'Evaluate NAND(p, q) for p={p}, q={q} (use 0/1).',
+            'parameters': {'p': p, 'q': q},
+            'answerExpression': expr,
+            'correctAnswer': expected,
+            'operation': 'logic_nand',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+        }
+
+    if slug == 'number_theory':
+        a = random.randint(12, 70)
+        b = random.randint(12, 70)
+        expected = int(sp.gcd(a, b))
+        return {
+            'questionText': f'Find gcd({a}, {b}).',
+            'parameters': {'a': a, 'b': b},
+            'answerExpression': str(expected),
+            'correctAnswer': expected,
+            'operation': 'number_gcd',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+        }
+
+    if slug == 'set_theory':
+        a = random.randint(5, 18)
+        b = random.randint(5, 18)
+        inter = random.randint(0, min(a, b))
+        expr = '{{a}} + {{b}} - {{inter}}'
+        resolved = expr.replace('{{a}}', str(a)).replace('{{b}}', str(b)).replace('{{inter}}', str(inter))
+        expected = int(sp.N(sp.sympify(resolved)))
+        return {
+            'questionText': f'If |A|={a}, |B|={b}, |A∩B|={inter}, find |A∪B|.',
+            'parameters': {'a': a, 'b': b, 'inter': inter},
+            'answerExpression': expr,
+            'correctAnswer': expected,
+            'operation': 'set_union_cardinality',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+        }
+
+    # Default: combinatorics
     n = random.randint(6, 12)
     k = random.randint(2, min(5, n - 1))
     expr = '{{n}}! / ({{k}}! * ({{n}}-{{k}})!)'
@@ -81,7 +162,7 @@ def _fallback_generated(topic_slug: Optional[str], difficulty: Optional[str]) ->
         'correctAnswer': expected,
         'operation': 'combination',
         'difficultyScore': _difficulty_score(difficulty),
-        'topicSlug': topic_slug or 'combinatorics',
+        'topicSlug': slug,
         'sourceModel': 'fallback-template',
     }
 
@@ -98,15 +179,16 @@ def generate_problem(req: GenerateRequest):
         'RESPOND WITH RAW JSON ONLY. '
         'DO NOT wrap the response in markdown code fences (```). '
         'DO NOT add any text before or after the JSON object. '
-        'The JSON must have exactly these keys: questionText (string), parameters (object with numeric values), '
-        'answerExpression (algebraic/symbolic string using {{key}} placeholders), operation (string). '
+        'The JSON must have exactly these keys: questionText (string), parameters (object), '
+        'answerExpression (algebraic/symbolic string using {{key}} placeholders), operation (string), correctAnswer (number or boolean). '
         'Example: {"questionText":"Find C(5,2).","parameters":{"n":5,"k":2},'
-        '"answerExpression":"{{n}}! / ({{k}}! * ({{n}}-{{k}})!)","operation":"combination"}'
+        '"answerExpression":"{{n}}! / ({{k}}! * ({{n}}-{{k}})!)","operation":"combination","correctAnswer":10}'
     )
     user_prompt = (
         f'Generate one discrete math problem for topic={topic_slug}, difficulty={difficulty}, '
         f'skillLevel={skill_level}. Keep it solvable by symbolic expression. '
-        'Return raw JSON only, no markdown.'
+        'Return raw JSON only, no markdown. '
+        'For logic topic, use boolean-compatible expression with operators ~, &, |, >> and provide correctAnswer as 0/1 or true/false.'
     )
 
     result = service.chat(
@@ -128,22 +210,33 @@ def generate_problem(req: GenerateRequest):
     cleaned = _clean_llm_json(raw_reply)
     try:
         parsed = json.loads(cleaned)
-        question = parsed.get('questionText')
-        params = parsed.get('parameters')
-        answer_expression = parsed.get('answerExpression')
-        operation = parsed.get('operation')
+        question = parsed.get('questionText') or parsed.get('question') or parsed.get('problemText')
+        params = parsed.get('parameters') or parsed.get('params')
+        answer_expression = parsed.get('answerExpression') or parsed.get('expression')
+        operation = parsed.get('operation') or parsed.get('op')
+        parsed_correct_answer = parsed.get('correctAnswer')
         if not question or not isinstance(params, dict) or not answer_expression or not operation:
             raise ValueError('Missing required keys in generated JSON')
 
         resolved = answer_expression
         for key, value in params.items():
-            resolved = resolved.replace('{{' + str(key) + '}}', str(value))
-        expected = sp.sympify(resolved)
-        expected_num = float(sp.N(expected))
-        if expected_num.is_integer():
-            expected_value: Any = int(expected_num)
+            normalized_value = int(value) if isinstance(value, bool) else value
+            resolved = resolved.replace('{{' + str(key) + '}}', str(normalized_value))
+
+        expected_value: Any
+        if parsed_correct_answer is not None:
+            expected_value = int(parsed_correct_answer) if isinstance(parsed_correct_answer, bool) else parsed_correct_answer
         else:
-            expected_value = expected_num
+            try:
+                expected = sp.sympify(resolved)
+            except Exception:
+                resolved_logic = _normalize_logic_expression(resolved)
+                expected = sp.sympify(resolved_logic)
+            expected_num = float(sp.N(expected))
+            if expected_num.is_integer():
+                expected_value = int(expected_num)
+            else:
+                expected_value = expected_num
 
         return {
             'questionText': question,
