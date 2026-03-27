@@ -175,8 +175,12 @@ class ChatbotService:
             if not formatted:
                 return {'error': 'No valid messages to send to Gemini.'}
 
+            model_name = self.model_name or "gemini-1.5-flash"
+            if model_name.startswith("models/"):
+                model_name = model_name.split("/", 1)[1]
+
             response = self.client.models.generate_content(
-                model=self.model_name,
+                model=model_name,
                 contents=formatted,
                 config=types.GenerateContentConfig(
                     temperature=0.7,
