@@ -5,6 +5,10 @@ import com.dmc.problem.repository.StudentSkillRepository;
 import com.dmc.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
@@ -12,26 +16,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class BktServiceUnitTest {
 
+    @Mock
     private StudentSkillRepository repository;
+    @InjectMocks
     private BktService bktService;
     private User user;
 
     @BeforeEach
     void setUp() {
-        repository = mock(StudentSkillRepository.class);
-        bktService = new BktService(repository);
         user = User.builder().id(1L).email("test@test.com").username("test").password("pwd").build();
 
         when(repository.save(any(StudentSkill.class))).thenAnswer(inv -> inv.getArgument(0));
     }
 
     @Test
-    void correctAnswerIncreasesKnowledge() {
+    void should_increase_knowledge_after_correct_answer() {
         StudentSkill skill = defaultSkill();
         when(repository.findByUserAndTopicSlug(eq(user), eq("combinatorics")))
                 .thenReturn(Optional.of(skill));
@@ -42,7 +46,7 @@ class BktServiceUnitTest {
     }
 
     @Test
-    void incorrectAnswerDecreasesKnowledge() {
+    void should_decrease_knowledge_after_incorrect_answer() {
         StudentSkill skill = defaultSkill();
         skill.setPKnow(0.5);
         when(repository.findByUserAndTopicSlug(eq(user), eq("combinatorics")))
@@ -54,7 +58,7 @@ class BktServiceUnitTest {
     }
 
     @Test
-    void correctAnswerFormula_defaultParams() {
+    void should_apply_default_bkt_formula_for_correct_answer() {
         // P(know)=0.25, P(slip)=0.10, P(guess)=0.20, P(transit)=0.10
         // Posterior = (0.25 * 0.90) / (0.25 * 0.90 + 0.75 * 0.20) = 0.225 / 0.375 = 0.600
         // After transit = 0.600 + (1 - 0.600) * 0.10 = 0.640
@@ -70,7 +74,7 @@ class BktServiceUnitTest {
     }
 
     @Test
-    void incorrectAnswerFormula_fromHighKnowledge() {
+    void should_apply_bkt_formula_for_incorrect_answer_from_high_knowledge() {
         // P(know)=0.640, P(slip)=0.10, P(guess)=0.20, P(transit)=0.10
         // Posterior = (0.640 * 0.10) / (0.640 * 0.10 + 0.360 * 0.80) = 0.064 / 0.352 ≈ 0.18182
         // After transit = 0.18182 + (1 - 0.18182) * 0.10 ≈ 0.26364
@@ -87,7 +91,7 @@ class BktServiceUnitTest {
     }
 
     @Test
-    void multipleCorrectAnswers_convergesToHigh() {
+    void should_converge_to_high_mastery_after_multiple_correct_answers() {
         StudentSkill skill = defaultSkill();
         when(repository.findByUserAndTopicSlug(eq(user), eq("logic")))
                 .thenReturn(Optional.of(skill));
@@ -102,7 +106,7 @@ class BktServiceUnitTest {
     }
 
     @Test
-    void pKnowNeverExceedsOne() {
+    void should_keep_mastery_probability_in_bounds_when_almost_one() {
         StudentSkill skill = defaultSkill();
         skill.setPKnow(0.99);
         when(repository.findByUserAndTopicSlug(eq(user), eq("logic")))
@@ -115,7 +119,7 @@ class BktServiceUnitTest {
     }
 
     @Test
-    void pKnowNeverBelowZero() {
+    void should_keep_mastery_probability_non_negative() {
         StudentSkill skill = defaultSkill();
         skill.setPKnow(0.01);
         when(repository.findByUserAndTopicSlug(eq(user), eq("logic")))
@@ -127,7 +131,7 @@ class BktServiceUnitTest {
     }
 
     @Test
-    void createsDefaultSkillWhenNotFound() {
+    void should_create_default_skill_when_topic_has_no_history() {
         when(repository.findByUserAndTopicSlug(eq(user), eq("new-topic")))
                 .thenReturn(Optional.empty());
 

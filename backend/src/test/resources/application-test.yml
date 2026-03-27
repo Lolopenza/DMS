@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6399
+  mail:
+    host: localhost
+    port: 1025
+
+management:
+  health:
+    redis:
+      enabled: false
+    rabbit:
+      enabled: false
+    mail:
+      enabled: false
+
+app:
+  integration:
+    math-engine:
+      api-key: change-me
+  security:
+    jwt:
+      issuer: dmc-backend-test
+      access-token-ttl-seconds: 900
+      refresh-token-ttl-seconds: 604800
+      key: test-jwt-secret-key-with-at-least-64-characters-for-hs384-signing!
+      cookie-secure: false
+      cookie-same-site: Lax

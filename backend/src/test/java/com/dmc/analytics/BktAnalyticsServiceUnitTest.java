@@ -18,6 +18,10 @@ import com.dmc.user.entity.User;
 import com.dmc.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -27,35 +31,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class BktAnalyticsServiceUnitTest {
 
+    @Mock
     private UserRepository userRepository;
+    @Mock
     private StudentSkillRepository studentSkillRepository;
+    @Mock
     private ProblemAttemptRepository problemAttemptRepository;
+    @Mock
     private GeneratedProblemAttemptRepository generatedProblemAttemptRepository;
+    @Mock
+    private MathEngineProperties mathEngineProperties;
+    @InjectMocks
     private BktAnalyticsService service;
     private User user;
 
     @BeforeEach
     void setUp() {
-        userRepository = mock(UserRepository.class);
-        studentSkillRepository = mock(StudentSkillRepository.class);
-        problemAttemptRepository = mock(ProblemAttemptRepository.class);
-        generatedProblemAttemptRepository = mock(GeneratedProblemAttemptRepository.class);
-
-        MathEngineProperties props = new MathEngineProperties();
-        props.setApiKey("secret-key");
-        service = new BktAnalyticsService(
-                userRepository,
-                studentSkillRepository,
-                problemAttemptRepository,
-                generatedProblemAttemptRepository,
-                props
-        );
-
         user = User.builder()
                 .id(11L)
                 .email("student@example.com")
@@ -65,9 +61,8 @@ class BktAnalyticsServiceUnitTest {
     }
 
     @Test
-    void rawDataset_repairsInvalidTimesAndTracksMetadata() {
+    void should_repair_invalid_time_fields_and_keep_extended_attempt_metadata() {
         when(userRepository.findById(11L)).thenReturn(Optional.of(user));
-        when(studentSkillRepository.findByUserOrderByUpdatedAtDesc(any())).thenReturn(List.of());
 
         OffsetDateTime now = OffsetDateTime.now();
         Problem problem = new Problem();
@@ -143,7 +138,7 @@ class BktAnalyticsServiceUnitTest {
     }
 
     @Test
-    void summaryForUser_buildsStableAggregatesForMixedAttempts() {
+    void should_build_stable_aggregates_and_percentiles_for_mixed_attempts() {
         when(userRepository.findById(11L)).thenReturn(Optional.of(user));
         StudentSkill skill = StudentSkill.builder()
                 .user(user)
@@ -209,7 +204,7 @@ class BktAnalyticsServiceUnitTest {
     }
 
     @Test
-    void summaryForUser_rejectsInvalidWindow() {
+    void should_reject_invalid_window_days_for_summary_endpoint() {
         assertThatThrownBy(() -> service.summaryForUser(11L, 0))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("windowDays must be between 1 and 365");
@@ -218,10 +213,188 @@ class BktAnalyticsServiceUnitTest {
     }
 
     @Test
-    void assertInternalKey_rejectsWrongKeyWhenConfigured() {
+    void should_reject_wrong_internal_key_when_key_is_configured() {
+        when(mathEngineProperties.getApiKey()).thenReturn("secret-key");
+
         assertThatThrownBy(() -> service.assertInternalKey("wrong"))
                 .isInstanceOf(ApiException.class)
                 .hasMessageContaining("Invalid internal API key");
         service.assertInternalKey("secret-key");
+    }
+
+    @Test
+    void should_allow_missing_internal_key_when_default_change_me_is_used() {
+        when(mathEngineProperties.getApiKey()).thenReturn("change-me");
+
+        service.assertInternalKey(null);
+        service.assertInternalKey("any-value");
+    }
+
+    @Test
+    void should_return_zero_percentiles_for_first_attempt_only() {
+        when(userRepository.findById(11L)).thenReturn(Optional.of(user));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        ProblemAttempt firstAttempt = ProblemAttempt.builder()
+                .user(user)
+                .problem(problem(777L))
+                .correct(false)
+                .timeSpentSeconds(0)
+                .timeToFirstActionSeconds(0)
+                .hintUsed(true)
+                .errorType(com.dmc.problem.entity.ErrorType.ARITHMETIC_ERROR)
+                .difficultyAtAttempt(Difficulty.EASY)
+                .topicSlug("logic")
+                .topicPath("math.logic")
+                .createdAt(now)
+                .build();
+
+        when(problemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of(firstAttempt));
+        when(generatedProblemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of());
+
+        BktAnalyticsSummaryResponse summary = service.summaryForUser(11L, 30);
+
+        assertThat(summary.attemptAggregates().generatedAttemptsTotal()).isEqualTo(1);
+        assertThat(summary.attemptAggregates().avgTimeSpentSeconds()).isEqualTo(0.0);
+        assertThat(summary.attemptAggregates().p50TimeSpentSeconds()).isEqualTo(0.0);
+        assertThat(summary.attemptAggregates().p90TimeSpentSeconds()).isEqualTo(0.0);
+        assertThat(summary.stabilityFlags().speedVsAccuracyTrend()).isEqualTo("stable");
+    }
+
+    @Test
+    void should_calculate_percentiles_for_speed_accuracy_signal_with_instant_answers() {
+        when(userRepository.findById(11L)).thenReturn(Optional.of(user));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        List<ProblemAttempt> attempts = List.of(
+                attempt(11L, 1L, true, 0, 0, now.minusMinutes(4)),
+                attempt(11L, 2L, true, 10, 1, now.minusMinutes(3)),
+                attempt(11L, 3L, false, 20, 2, now.minusMinutes(2)),
+                attempt(11L, 4L, true, 40, 3, now.minusMinutes(1))
+        );
+        when(problemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(attempts);
+        when(generatedProblemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of());
+
+        BktAnalyticsSummaryResponse summary = service.summaryForUser(11L, 30);
+
+        assertThat(summary.attemptAggregates().p50TimeSpentSeconds()).isEqualTo(10.0);
+        assertThat(summary.attemptAggregates().p90TimeSpentSeconds()).isEqualTo(40.0);
+        assertThat(summary.attemptAggregates().avgTimeSpentSeconds()).isEqualTo(17.5);
+    }
+
+    @Test
+    void should_group_blank_topic_and_unknown_verification_method_in_summary() {
+        when(userRepository.findById(11L)).thenReturn(Optional.of(user));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        GeneratedProblemAttempt generated = GeneratedProblemAttempt.builder()
+                .user(user)
+                .generatedProblem(generatedProblem(808L))
+                .correct(true)
+                .verificationMethod(null)
+                .timeSpentSeconds(12)
+                .timeToFirstActionSeconds(2)
+                .hintUsed(false)
+                .errorType(null)
+                .difficultyAtAttempt(Difficulty.MEDIUM)
+                .topicSlug(" ")
+                .topicPath("math.unknown")
+                .createdAt(now)
+                .build();
+        when(problemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of());
+        when(generatedProblemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of(generated));
+
+        BktAnalyticsSummaryResponse summary = service.summaryForUser(11L, 30);
+
+        assertThat(summary.attemptAggregates().verificationMethodCounts()).containsEntry("unknown", 1);
+        assertThat(summary.topicKpis()).extracting(BktAnalyticsSummaryResponse.TopicKpiItem::topicSlug).contains("unknown");
+    }
+
+    @Test
+    void should_clamp_outlier_times_to_four_hours_in_raw_dataset() {
+        when(userRepository.findById(11L)).thenReturn(Optional.of(user));
+
+        ProblemAttempt attempt = attempt(11L, 991L, true, 20_000, 50_000, OffsetDateTime.now());
+        when(problemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of(attempt));
+        when(generatedProblemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of());
+
+        RawLearningAnalyticsDatasetResponse ds = service.rawDatasetForUser(11L, 7);
+
+        RawLearningAnalyticsDatasetResponse.AttemptRow row = ds.attempts().getFirst();
+        assertThat(row.timeSpentSeconds()).isEqualTo(14_400);
+        assertThat(row.timeToFirstActionSeconds()).isEqualTo(14_400);
+    }
+
+    @Test
+    void should_escape_quotes_commas_and_newlines_when_exporting_csv() {
+        when(userRepository.findById(11L)).thenReturn(Optional.of(user));
+
+        ProblemAttempt attempt = ProblemAttempt.builder()
+                .user(user)
+                .problem(problem(19L))
+                .correct(true)
+                .timeSpentSeconds(10)
+                .timeToFirstActionSeconds(1)
+                .hintUsed(false)
+                .errorType(com.dmc.problem.entity.ErrorType.ARITHMETIC_ERROR)
+                .difficultyAtAttempt(Difficulty.EASY)
+                .topicSlug("logic,\"core\"\nline")
+                .topicPath("math.logic")
+                .createdAt(OffsetDateTime.now())
+                .build();
+        when(problemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of(attempt));
+        when(generatedProblemAttemptRepository.findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(eq(user), any()))
+                .thenReturn(List.of());
+
+        String csv = service.rawDatasetCsvForUser(11L, 30);
+
+        assertThat(csv).contains("\"logic,\"\"core\"\"\nline\"");
+    }
+
+    @Test
+    void should_reject_invalid_window_for_raw_dataset_and_anonymized_export() {
+        assertThatThrownBy(() -> service.rawDatasetForUser(11L, 0))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("windowDays must be between 1 and 365");
+        assertThatThrownBy(() -> service.rawDatasetCsvForStudentsAnonymized(366))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("windowDays must be between 1 and 365");
+    }
+
+    private Problem problem(Long id) {
+        Problem problem = new Problem();
+        problem.setId(id);
+        return problem;
+    }
+
+    private GeneratedProblem generatedProblem(Long id) {
+        GeneratedProblem generatedProblem = new GeneratedProblem();
+        generatedProblem.setId(id);
+        return generatedProblem;
+    }
+
+    private ProblemAttempt attempt(Long userId, Long problemId, boolean correct, int spent, int firstAction, OffsetDateTime createdAt) {
+        return ProblemAttempt.builder()
+                .user(user)
+                .problem(problem(problemId))
+                .correct(correct)
+                .timeSpentSeconds(spent)
+                .timeToFirstActionSeconds(firstAction)
+                .hintUsed(false)
+                .errorType(com.dmc.problem.entity.ErrorType.ARITHMETIC_ERROR)
+                .difficultyAtAttempt(Difficulty.MEDIUM)
+                .topicSlug("combinatorics")
+                .topicPath("math.combinatorics")
+                .createdAt(createdAt)
+                .build();
     }
 }

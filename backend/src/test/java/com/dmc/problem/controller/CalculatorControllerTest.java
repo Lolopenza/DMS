@@ -1,7 +1,6 @@
 package com.dmc.problem.controller;
 
-import com.dmc.common.exception.ApiException;
-import com.dmc.problem.service.CalculatorProxyService;
+import com.dmc.support.AbstractPostgresIntegrationTest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -10,9 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,15 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Note: These tests require running with docker-compose services up.
  * Skipped if auth services are unavailable.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-    "spring.test.database.replace=any",
-    "spring.datasource.url=jdbc:postgresql://localhost:5432/dmc_db",
-    "spring.datasource.username=dmc_user",
-    "spring.datasource.password=1234"
-})
-public class CalculatorControllerTest {
+public class CalculatorControllerTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

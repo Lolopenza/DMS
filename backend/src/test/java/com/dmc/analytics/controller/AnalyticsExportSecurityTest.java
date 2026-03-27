@@ -1,35 +1,34 @@
 package com.dmc.analytics.controller;
 
+import com.dmc.support.AbstractPostgresIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class AnalyticsExportSecurityTest {
+class AnalyticsExportSecurityTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void studentExportRequiresAuthentication() throws Exception {
+    void should_require_authentication_for_student_csv_export() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/me/raw.csv").param("windowDays", "30"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void studentRawJsonRequiresAuthentication() throws Exception {
+    void should_require_authentication_for_student_raw_json_export() throws Exception {
         mockMvc.perform(get("/api/v1/analytics/me/raw").param("windowDays", "30"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void adminGroupExportRequiresAuthentication() throws Exception {
+    void should_require_authentication_for_admin_group_export() throws Exception {
         mockMvc.perform(get("/api/v1/admin/analytics/group-anonymized.csv").param("windowDays", "30"))
                 .andExpect(status().isUnauthorized());
     }

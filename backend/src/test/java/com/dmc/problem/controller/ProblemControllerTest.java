@@ -1,15 +1,13 @@
 package com.dmc.problem.controller;
 
+import com.dmc.support.AbstractPostgresIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -23,15 +21,8 @@ import static org.hamcrest.Matchers.*;
  * Submission endpoints (attempts) require authentication but not special roles.
  * Admin endpoints (POST templates/topics) require ADMIN role.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-    "spring.test.database.replace=any",
-    "spring.datasource.url=jdbc:postgresql://localhost:5432/dmc_db",
-    "spring.datasource.username=dmc_user",
-    "spring.datasource.password=1234"
-})
-public class ProblemControllerTest {
+public class ProblemControllerTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
