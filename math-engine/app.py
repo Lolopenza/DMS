@@ -35,6 +35,18 @@ logger = logging.getLogger(__name__)
 INTERNAL_API_KEY = os.environ.get('DMC_MATH_ENGINE_API_KEY', '')
 
 
+def _is_non_dev_environment() -> bool:
+    env = (os.environ.get('DMC_ENV') or os.environ.get('ENV') or os.environ.get('FASTAPI_ENV') or 'dev').strip().lower()
+    return env in {'prod', 'production', 'staging', 'stage', 'preprod'}
+
+
+def _validate_internal_key_or_fail() -> None:
+    if _is_non_dev_environment() and (not INTERNAL_API_KEY or INTERNAL_API_KEY.strip() == '' or INTERNAL_API_KEY == 'change-me'):
+        raise RuntimeError(
+            'Unsafe configuration: DMC_MATH_ENGINE_API_KEY must be set to a non-default value in non-dev environments'
+        )
+
+
 def _error_envelope(request: Request, status_code: int, code: str, message: str, details=None):
     safe_details = jsonable_encoder(
         details,
@@ -57,6 +69,7 @@ def _error_envelope(request: Request, status_code: int, code: str, message: str,
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _validate_internal_key_or_fail()
     api_key = os.environ.get('GOOGLE_AI_API_KEY', '')
     if api_key:
         logger.info('GOOGLE_AI_API_KEY is set: %s...%s', api_key[:4], api_key[-4:])

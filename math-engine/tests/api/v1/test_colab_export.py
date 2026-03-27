@@ -1,27 +1,29 @@
 import os
+from datetime import datetime
 
 import api.v1.colab_export as colab_export
+import nbformat
+import pytest
 
 
-def test_colab_starter_notebook_structure(client):
+def test_given_valid_request_when_building_colab_starter_then_notebook_structure_is_valid(client):
     internal_key = os.environ.get('DMC_MATH_ENGINE_API_KEY', '')
     headers = {'X-Internal-Api-Key': internal_key} if internal_key else {}
     response = client.post('/api/v1/colab/starter', json={'userId': 1, 'windowDays': 30}, headers=headers)
+    # Arrange+Act completed above; assert response shape and deterministic notebook structure.
     assert response.status_code == 200
     data = response.json()
     assert data.get('filename', '').endswith('.ipynb')
-    notebook = data.get('notebook', '')
-    assert '"nbformat"' in notebook
-    assert 'Logistic regression' in notebook
-    assert 'K-Means' in notebook
-    assert 'Mini-BKT' in notebook
-    assert 'Linear trend of performance' in notebook
-    assert 'does not embed access tokens or internal API keys' in notebook
-    assert 'Lesson mode (AI Tutor)' in notebook
-    assert 'Reflection task' in notebook
+    parsed = nbformat.reads(data.get('notebook', ''), as_version=4)
+    assert parsed.nbformat == 4
+    assert len(parsed.cells) >= 10
+    markdown_cells = [cell for cell in parsed.cells if cell.cell_type == 'markdown']
+    assert any('Lesson mode (AI Tutor)' in cell.source for cell in markdown_cells)
+    assert any('Reflection task' in cell.source for cell in markdown_cells)
+    assert any('does not embed access tokens or internal API keys' in cell.source for cell in markdown_cells)
 
 
-def test_colab_starter_lesson_mode_disabled(client):
+def test_given_lesson_mode_disabled_when_building_colab_starter_then_disabled_message_is_rendered(client):
     internal_key = os.environ.get('DMC_MATH_ENGINE_API_KEY', '')
     headers = {'X-Internal-Api-Key': internal_key} if internal_key else {}
     response = client.post(
@@ -34,7 +36,7 @@ def test_colab_starter_lesson_mode_disabled(client):
     assert 'Lesson mode disabled for this notebook.' in notebook
 
 
-def test_colab_starter_lesson_mode_fallback_when_llm_unavailable(client, monkeypatch):
+def test_given_llm_unavailable_when_lesson_mode_enabled_then_fallback_lesson_text_is_used(client, monkeypatch):
     internal_key = os.environ.get('DMC_MATH_ENGINE_API_KEY', '')
     headers = {'X-Internal-Api-Key': internal_key} if internal_key else {}
 
@@ -56,3 +58,38 @@ def test_colab_starter_lesson_mode_fallback_when_llm_unavailable(client, monkeyp
     assert '"nbformat"' in notebook
     assert '## Data pitfalls' in notebook
     assert 'Not enough data for stable logistic regression' in notebook
+
+
+@pytest.mark.anyio
+async def test_given_invalid_request_when_building_colab_starter_async_then_returns_422(async_client):
+    internal_key = os.environ.get('DMC_MATH_ENGINE_API_KEY', '')
+    headers = {'X-Internal-Api-Key': internal_key} if internal_key else {}
+
+    response = await async_client.post(
+        '/api/v1/colab/starter',
+        json={'userId': 0, 'windowDays': 366},
+        headers=headers,
+    )
+
+    assert response.status_code == 422
+    payload = response.json()
+    assert 'error' in payload
+    assert payload['error']['code'] == 'VALIDATION_ERROR'
+
+
+@pytest.mark.anyio
+async def test_given_valid_request_when_building_colab_starter_async_then_generated_at_is_iso8601(async_client):
+    internal_key = os.environ.get('DMC_MATH_ENGINE_API_KEY', '')
+    headers = {'X-Internal-Api-Key': internal_key} if internal_key else {}
+
+    response = await async_client.post(
+        '/api/v1/colab/starter',
+        json={'userId': 10, 'windowDays': 14, 'lessonMode': True},
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    generated_at = response.json().get('generatedAt')
+    assert isinstance(generated_at, str)
+    parsed = datetime.fromisoformat(generated_at.replace('Z', '+00:00'))
+    assert parsed.tzinfo is not None

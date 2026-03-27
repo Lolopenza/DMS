@@ -6,7 +6,8 @@ from typing import Any, Dict, Optional
 
 import sympy as sp
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, StrictBool, ValidationError
+from sympy.parsing.sympy_parser import parse_expr
 
 from dmc_ai.chatbot import get_chatbot_service
 
@@ -29,6 +30,36 @@ class VerifyRequest(BaseModel):
     answerExpression: Optional[str] = None
     operation: Optional[str] = None
     params: Optional[Dict[str, Any]] = None
+
+
+class JudgeResponse(BaseModel):
+    correct: StrictBool
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    feedback: str = Field(..., min_length=1, max_length=2000)
+
+
+MAX_EXPRESSION_LENGTH = 300
+MAX_OPERATOR_TOKENS = 80
+ALLOWED_EXPR_RE = re.compile(r"^[0-9A-Za-z_+\-*/().,\s<>=!&|~^%]*$")
+FORBIDDEN_EXPR_SUBSTRINGS = ('__', 'import', 'lambda', 'eval', 'exec', 'open(', 'os.', 'sys.', 'subprocess')
+ALLOWED_FUNCTIONS = {
+    'Abs': sp.Abs,
+    'sqrt': sp.sqrt,
+    'log': sp.log,
+    'exp': sp.exp,
+    'sin': sp.sin,
+    'cos': sp.cos,
+    'tan': sp.tan,
+    'Min': sp.Min,
+    'Max': sp.Max,
+}
+SAFE_EVAL_GLOBALS = {'__builtins__': {}}
+SAFE_EVAL_LOCALS_BASE = {
+    'Integer': sp.Integer,
+    'Rational': sp.Rational,
+    'Float': sp.Float,
+    'factorial': sp.factorial,
+}
 
 
 def _clean_llm_json(text: str) -> str:
@@ -69,6 +100,52 @@ def _normalize_logic_expression(expr: str) -> str:
     )
 
 
+def _validate_expression_safety(expr: str) -> None:
+    if expr is None:
+        raise ValueError('Expression is missing')
+    if len(expr) > MAX_EXPRESSION_LENGTH:
+        raise ValueError(f'Expression is too long ({len(expr)} > {MAX_EXPRESSION_LENGTH})')
+    if not ALLOWED_EXPR_RE.match(expr):
+        raise ValueError('Expression contains unsupported characters')
+    lowered = expr.lower()
+    for forbidden in FORBIDDEN_EXPR_SUBSTRINGS:
+        if forbidden in lowered:
+            raise ValueError(f'Expression contains forbidden token: {forbidden}')
+    operators = re.findall(r'(\*\*|>>|<<|[+\-*/%^&|~])', expr)
+    if len(operators) > MAX_OPERATOR_TOKENS:
+        raise ValueError('Expression is too complex')
+    if re.search(r'\*\*\s*\d{4,}', expr):
+        raise ValueError('Exponent is too large')
+
+
+def _safe_parse_expression(expr: str) -> Any:
+    normalized = _normalize_logic_expression(expr)
+    _validate_expression_safety(normalized)
+    token_candidates = set(re.findall(r'\b[A-Za-z_][A-Za-z0-9_]*\b', normalized))
+    local_dict = dict(SAFE_EVAL_LOCALS_BASE)
+    local_dict.update(ALLOWED_FUNCTIONS)
+    for token in token_candidates:
+        if token in ALLOWED_FUNCTIONS:
+            continue
+        if token in {'True', 'False'}:
+            local_dict[token] = sp.true if token == 'True' else sp.false
+            continue
+        local_dict[token] = sp.Symbol(token, real=True)
+    try:
+        return parse_expr(normalized, local_dict=local_dict, global_dict=SAFE_EVAL_GLOBALS, evaluate=True)
+    except Exception as exc:
+        raise ValueError(f'Unsafe or invalid expression: {exc}') from exc
+
+
+def _answers_equivalent(expected: Any, candidate: Any) -> bool:
+    expected_expr = _safe_parse_expression(str(expected))
+    candidate_expr = _safe_parse_expression(str(candidate))
+    try:
+        return sp.simplify(expected_expr - candidate_expr) == 0
+    except Exception:
+        return bool(expected_expr.equals(candidate_expr))
+
+
 def _difficulty_score(raw: Optional[str]) -> float:
     if not raw:
         return 0.60
@@ -87,7 +164,7 @@ def _fallback_generated(topic_slug: Optional[str], difficulty: Optional[str]) ->
         n = random.randint(4, 9)
         expr = '{{n}} * ({{n}} - 1) / 2'
         resolved = expr.replace('{{n}}', str(n))
-        expected = int(sp.N(sp.sympify(resolved)))
+        expected = int(sp.N(_safe_parse_expression(resolved)))
         return {
             'questionText': f'How many edges does the complete graph K{n} have?',
             'parameters': {'n': n},
@@ -104,7 +181,7 @@ def _fallback_generated(topic_slug: Optional[str], difficulty: Optional[str]) ->
         q = random.randint(0, 1)
         expr = '1 - ({{p}} * {{q}})'
         resolved = expr.replace('{{p}}', str(p)).replace('{{q}}', str(q))
-        expected = int(sp.N(sp.sympify(resolved)))
+        expected = int(sp.N(_safe_parse_expression(resolved)))
         return {
             'questionText': f'Evaluate NAND(p, q) for p={p}, q={q} (use 0/1).',
             'parameters': {'p': p, 'q': q},
@@ -137,7 +214,7 @@ def _fallback_generated(topic_slug: Optional[str], difficulty: Optional[str]) ->
         inter = random.randint(0, min(a, b))
         expr = '{{a}} + {{b}} - {{inter}}'
         resolved = expr.replace('{{a}}', str(a)).replace('{{b}}', str(b)).replace('{{inter}}', str(inter))
-        expected = int(sp.N(sp.sympify(resolved)))
+        expected = int(sp.N(_safe_parse_expression(resolved)))
         return {
             'questionText': f'If |A|={a}, |B|={b}, |A∩B|={inter}, find |A∪B|.',
             'parameters': {'a': a, 'b': b, 'inter': inter},
@@ -154,7 +231,7 @@ def _fallback_generated(topic_slug: Optional[str], difficulty: Optional[str]) ->
     k = random.randint(2, min(5, n - 1))
     expr = '{{n}}! / ({{k}}! * ({{n}}-{{k}})!)'
     resolved = expr.replace('{{n}}', str(n)).replace('{{k}}', str(k))
-    expected = int(sp.N(sp.sympify(resolved)))
+    expected = int(sp.N(_safe_parse_expression(resolved)))
     return {
         'questionText': f'Find C({n}, {k}).',
         'parameters': {'n': n, 'k': k},
@@ -227,11 +304,7 @@ def generate_problem(req: GenerateRequest):
         if parsed_correct_answer is not None:
             expected_value = int(parsed_correct_answer) if isinstance(parsed_correct_answer, bool) else parsed_correct_answer
         else:
-            try:
-                expected = sp.sympify(resolved)
-            except Exception:
-                resolved_logic = _normalize_logic_expression(resolved)
-                expected = sp.sympify(resolved_logic)
+            expected = _safe_parse_expression(resolved)
             expected_num = float(sp.N(expected))
             if expected_num.is_integer():
                 expected_value = int(expected_num)
@@ -258,14 +331,17 @@ def generate_problem(req: GenerateRequest):
 @router.post('/verify')
 def verify_answer(req: VerifyRequest):
     # First, deterministic symbolic verification when expression is available.
-    if req.answerExpression and req.operation and req.params:
+    if req.answerExpression:
         try:
             expr = req.answerExpression
-            for key, value in req.params.items():
+            for key, value in (req.params or {}).items():
                 expr = expr.replace('{{' + str(key) + '}}', str(value))
-            expected = sp.sympify(expr)
-            candidate = sp.sympify(str(req.candidateAnswer))
-            correct = sp.simplify(expected - candidate) == 0
+            expected = _safe_parse_expression(expr)
+            candidate = _safe_parse_expression(str(req.candidateAnswer))
+            try:
+                correct = sp.simplify(expected - candidate) == 0
+            except Exception:
+                correct = bool(expected.equals(candidate))
             return {
                 'correct': bool(correct),
                 'confidence': 0.99 if correct else 0.35,
@@ -303,7 +379,10 @@ def verify_answer(req: VerifyRequest):
     if 'error' in result:
         logger.warning('LLM judge returned error: %s', result['error'])
         if req.expectedAnswer is not None:
-            correct = str(req.expectedAnswer).strip() == str(req.candidateAnswer).strip()
+            try:
+                correct = _answers_equivalent(req.expectedAnswer, req.candidateAnswer)
+            except Exception:
+                correct = False
             return {
                 'correct': correct,
                 'confidence': 0.60 if correct else 0.30,
@@ -315,17 +394,20 @@ def verify_answer(req: VerifyRequest):
     raw_reply = str(result.get('reply', ''))
     cleaned = _clean_llm_json(raw_reply)
     try:
-        parsed = json.loads(cleaned)
+        parsed = JudgeResponse.model_validate(json.loads(cleaned))
         return {
-            'correct': bool(parsed.get('correct', False)),
-            'confidence': float(parsed.get('confidence', 0.5)),
+            'correct': parsed.correct,
+            'confidence': parsed.confidence,
             'method': 'semantic',
-            'feedback': str(parsed.get('feedback', 'Semantic verification completed')),
+            'feedback': parsed.feedback,
         }
-    except Exception as exc:
+    except (json.JSONDecodeError, ValidationError, ValueError) as exc:
         logger.warning('Failed to parse LLM judge reply: %s — raw: %s', exc, raw_reply[:300])
         if req.expectedAnswer is not None:
-            correct = str(req.expectedAnswer).strip() == str(req.candidateAnswer).strip()
+            try:
+                correct = _answers_equivalent(req.expectedAnswer, req.candidateAnswer)
+            except Exception:
+                correct = False
             return {
                 'correct': correct,
                 'confidence': 0.58 if correct else 0.28,

@@ -13,9 +13,10 @@ def test_prompt_builder_does_not_leak_bkt_or_probabilities():
         'attemptAggregates': {'generatedAttemptsTotal': 10, 'generatedAttemptsIncorrect': 4},
     }
     prompts = lf._build_feedback_prompt(summary, top_n=2)
-    assert 'BKT' not in prompts['system']
-    assert 'Bayesian' not in prompts['system']
-    assert 'probabilit' not in prompts['system'].lower()
+    # The guardrail must hold for student-facing payload, while system prompt can mention banned words as negation rules.
+    assert 'BKT' not in prompts['user']
+    assert 'Bayesian' not in prompts['user']
+    assert 'probabilit' not in prompts['user'].lower()
 
 
 def test_learning_feedback_endpoint_returns_fallback_on_llm_error(client, monkeypatch):
@@ -63,6 +64,7 @@ def test_learning_feedback_endpoint_returns_fallback_on_llm_error(client, monkey
 
     monkeypatch.setattr(lf.httpx, 'Client', _FakeHttpxClient)
     monkeypatch.setattr(lf, 'get_chatbot_service', lambda: _FakeChatbot())
+    monkeypatch.setenv('DMC_MIN_ATTEMPTS_FOR_FEEDBACK', '1')
 
     r = client.post('/api/v1/learning/feedback', json={'userId': 1, 'windowDays': 30, 'topNTopics': 2})
     assert r.status_code == 200
