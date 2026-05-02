@@ -1,44 +1,83 @@
 import React from 'react';
 import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import { calcIntegrals } from '../../api/integrals.js';
+import integralsTheory from '../../../../../data/content/calculus/integrals.content.js';
 
-const config = {
+function buildIntegralsPayload({ operation, values }) {
+  const base = {
+    module: 'integrals',
+    operation,
+    expr: String(values.expr || ''),
+    variable: String(values.variable || 'x').trim() || 'x',
+  };
+  if (operation === 'definite') {
+    return {
+      ...base,
+      a: String(values.a ?? '0'),
+      b: String(values.b ?? '1'),
+    };
+  }
+  return base;
+}
+
+const integralsConfig = {
   id: 'integrals',
   eyebrow: 'Calculus',
   title: 'Integrals',
-  subtitle: 'Coming soon: antiderivatives, definite integrals, and the Fundamental Theorem.',
-  theory: {
-    overview:
-      'This module will cover antiderivatives, definite integrals as accumulation/area, and the Fundamental Theorem of Calculus. Content is staged for the next build-out.',
-    outcomes: [
-      'Compute basic antiderivatives.',
-      'Interpret definite integrals as signed area/accumulation.',
-      'Connect differentiation and integration via the FTC.',
+  subtitle: 'Indefinite integration and definite integrals when SymPy can integrate symbolically.',
+  theory: integralsTheory,
+  practice: {
+    title: 'Integral Calculator',
+    description:
+      'Indefinite: antiderivative + constant (implicit). Definite: specify bounds a,b (numbers or simple constants like pi).',
+    operationLabel: 'Operation',
+    submitLabel: 'Integrate',
+    loadingLabel: 'Computing…',
+    calculate: calcIntegrals,
+    buildPayload: buildIntegralsPayload,
+    mapResult: (data) => data?.result ?? data,
+    operations: [
+      { value: 'indefinite', label: 'Indefinite ∫ … dx', hint: 'Antiderivative.', default: true },
+      { value: 'definite', label: 'Definite ∫ₐᵇ … dx', hint: 'Provide bounds a and b.', default: false },
     ],
-    formulas: [
-      { title: 'Fundamental Theorem (sample)', content: '$$\\frac{d}{dx}\\int_a^x f(t)\\,dt=f(x)$$' },
-    ],
-    examples: [
+    fields: [
       {
-        title: 'Worked example (stub): ∫ x dx',
-        content: 'Example content will be added when the full calculus track is authored.',
+        name: 'expr',
+        label: 'Integrand',
+        type: 'text',
+        defaultValue: 'x**2',
+        required: true,
+        span: 'full',
+      },
+      {
+        name: 'variable',
+        label: 'Variable',
+        type: 'text',
+        defaultValue: 'x',
+        required: true,
+      },
+      {
+        name: 'a',
+        label: 'Lower bound a',
+        type: 'text',
+        defaultValue: '0',
+        hint: 'Definite integral only',
+        showWhen: ['definite'],
+        required: true,
+      },
+      {
+        name: 'b',
+        label: 'Upper bound b',
+        type: 'text',
+        defaultValue: '1',
+        hint: 'Definite integral only',
+        showWhen: ['definite'],
+        required: true,
       },
     ],
-  },
-  practice: {
-    title: 'Calculator',
-    description: 'Calculus calculators are planned and will appear here once backend endpoints are added.',
-    operations: [{ value: 'coming-soon', label: 'Coming soon', default: true }],
-    fields: [],
-    submitLabel: 'Coming soon',
-    loadingLabel: 'Coming soon',
-    calculate: async () => ({ error: 'Calculus calculator is not available yet.' }),
-    buildPayload: () => ({}),
-    mapResult: (x) => x,
-    resultRenderer: ({ result }) => (result?.error ? <div className="text-sm text-slate-600">{result.error}</div> : null),
   },
 };
 
 export default function Integrals() {
-  return <ModuleExperience config={config} />;
+  return <ModuleExperience config={integralsConfig} />;
 }
-

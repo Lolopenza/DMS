@@ -12,9 +12,11 @@ function applyTheme(theme) {
   if (theme === 'dark') {
     body.classList.add('dark-theme');
     html.classList.add('dark');
+    html.setAttribute('data-theme', 'dark');
   } else {
     body.classList.remove('dark-theme');
     html.classList.remove('dark');
+    html.setAttribute('data-theme', 'light');
   }
   localStorage.setItem('theme', theme);
 }

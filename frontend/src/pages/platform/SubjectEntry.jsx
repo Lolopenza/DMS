@@ -36,7 +36,7 @@ export default function SubjectEntry() {
   ];
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+    <section className="min-h-screen bg-[var(--dmc-bg-page)] text-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <nav className="mb-6 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400" aria-label="Breadcrumb">
           <Link to="/tracks" className="hover:text-slate-900 dark:hover:text-slate-100">Tracks</Link>
@@ -59,8 +59,8 @@ export default function SubjectEntry() {
         <Card variant="elevated" padding="lg" className="mb-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm shadow-indigo-600/20">
-                <i className="fas fa-compass-drafting" />
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm shadow-indigo-600/20 dark:bg-indigo-500">
+                <i className="fas fa-compass-drafting" aria-hidden />
               </span>
               <div>
                 <CardHeader title={scopeTitle} subtitle={track.goal} />

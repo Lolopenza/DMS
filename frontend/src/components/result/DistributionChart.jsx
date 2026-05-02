@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import useIsDarkMode from '../../hooks/useIsDarkMode.js';
+import { getRechartsPalette } from '../../lib/rechartsTheme.js';
 import {
   BarChart,
   Bar,
@@ -38,11 +40,14 @@ export default function DistributionChart({
   yLabel = 'Probability',
   probability = null,
 }) {
+  const isDark = useIsDarkMode();
+  const rc = getRechartsPalette(isDark);
+
   return (
     <AnimatedResult variant="slideUp" className="space-y-4">
       {probability !== null && (
         <HighlightResult>
-          <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-indigo-950/50 dark:to-purple-950/50">
+          <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-slate-800 dark:to-slate-900">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -79,34 +84,29 @@ export default function DistributionChart({
             {chartType === 'bar' && (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={rc.gridStroke} />
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    tick={{ fontSize: 12, fill: rc.tickFill }}
                     label={{
                       value: xLabel,
                       position: 'bottom',
                       fontSize: 12,
-                      fill: '#64748b',
+                      fill: rc.axisLabelFill,
                     }}
                   />
                   <YAxis
-                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    tick={{ fontSize: 12, fill: rc.tickFill }}
                     label={{
                       value: yLabel,
                       angle: -90,
                       position: 'insideLeft',
                       fontSize: 12,
-                      fill: '#64748b',
+                      fill: rc.axisLabelFill,
                     }}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1e293b',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#f1f5f9',
-                    }}
+                    contentStyle={rc.tooltipStyle}
                     formatter={(value) => [
                       typeof value === 'number' ? value.toFixed(4) : value,
                       yLabel,
@@ -120,35 +120,28 @@ export default function DistributionChart({
             {chartType === 'line' && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={rc.gridStroke} />
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    tick={{ fontSize: 12, fill: rc.tickFill }}
                     label={{
                       value: xLabel,
                       position: 'bottom',
                       fontSize: 12,
-                      fill: '#64748b',
+                      fill: rc.axisLabelFill,
                     }}
                   />
                   <YAxis
-                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    tick={{ fontSize: 12, fill: rc.tickFill }}
                     label={{
                       value: yLabel,
                       angle: -90,
                       position: 'insideLeft',
                       fontSize: 12,
-                      fill: '#64748b',
+                      fill: rc.axisLabelFill,
                     }}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1e293b',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#f1f5f9',
-                    }}
-                  />
+                  <Tooltip contentStyle={rc.tooltipStyle} />
                   <Line
                     type="monotone"
                     dataKey="value"
@@ -185,12 +178,7 @@ export default function DistributionChart({
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1e293b',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#f1f5f9',
-                    }}
+                    contentStyle={rc.tooltipStyle}
                     formatter={(value) => [
                       typeof value === 'number' ? value.toFixed(4) : value,
                       'Probability',
@@ -263,7 +251,7 @@ export function ProbabilityResult({ favorable, total, probability }) {
       </div>
 
       <HighlightResult>
-        <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-indigo-950/50 dark:to-purple-950/50">
+        <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-slate-800 dark:to-slate-900">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">

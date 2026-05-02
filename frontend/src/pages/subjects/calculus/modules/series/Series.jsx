@@ -1,44 +1,75 @@
 import React from 'react';
 import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import { calcSeries } from '../../api/series.js';
+import seriesTheory from '../../../../../data/content/calculus/series.content.js';
 
-const config = {
+function buildSeriesPayload({ operation, values }) {
+  const n = Math.min(20, Math.max(1, parseInt(values.taylor_order, 10) || 6));
+  return {
+    module: 'series',
+    operation,
+    expr: String(values.expr || ''),
+    variable: String(values.variable || 'x').trim() || 'x',
+    about: String(values.about ?? '0'),
+    taylor_order: n,
+    order: n,
+  };
+}
+
+const seriesConfig = {
   id: 'series',
   eyebrow: 'Calculus',
   title: 'Series',
-  subtitle: 'Coming soon: convergence and Taylor expansions.',
-  theory: {
-    overview:
-      'This module will cover infinite series, convergence tests, power series, and Taylor/Maclaurin expansions. Content is staged for the next build-out.',
-    outcomes: [
-      'Recognize common convergent/divergent series forms.',
-      'Apply basic convergence tests in standard cases.',
-      'Use Taylor expansions for approximation (where applicable).',
-    ],
-    formulas: [
-      { title: 'Geometric series (sample)', content: '$$\\sum_{k=0}^{\\infty} ar^k=\\frac{a}{1-r}\\quad (|r|<1)$$' },
-    ],
-    examples: [
+  subtitle: 'Taylor / Maclaurin polynomial truncations for univariate expressions.',
+  theory: seriesTheory,
+  practice: {
+    title: 'Taylor expansion',
+    description: 'Expands near **about** (use `0` for Maclaurin). Higher term count increases local accuracy near the expansion point.',
+    operationLabel: 'Operation',
+    submitLabel: 'Expand',
+    loadingLabel: 'Computing…',
+    calculate: calcSeries,
+    buildPayload: buildSeriesPayload,
+    mapResult: (data) => data?.result ?? data,
+    operations: [{ value: 'taylor', label: 'Taylor polynomial', hint: 'Truncated Taylor series (order term removed).', default: true }],
+    fields: [
       {
-        title: 'Worked example (stub): geometric series',
-        content: 'Example content will be added when the full calculus track is authored.',
+        name: 'expr',
+        label: 'Expression',
+        type: 'text',
+        defaultValue: 'exp(x)',
+        required: true,
+        span: 'full',
+      },
+      {
+        name: 'variable',
+        label: 'Variable',
+        type: 'text',
+        defaultValue: 'x',
+        required: true,
+      },
+      {
+        name: 'about',
+        label: 'Expand about',
+        type: 'text',
+        defaultValue: '0',
+        hint: 'Point a in (x − a)^k',
+        required: true,
+      },
+      {
+        name: 'taylor_order',
+        label: 'Terms / depth',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 1,
+        max: 20,
+        defaultValue: '6',
+        required: true,
       },
     ],
-  },
-  practice: {
-    title: 'Calculator',
-    description: 'Calculus calculators are planned and will appear here once backend endpoints are added.',
-    operations: [{ value: 'coming-soon', label: 'Coming soon', default: true }],
-    fields: [],
-    submitLabel: 'Coming soon',
-    loadingLabel: 'Coming soon',
-    calculate: async () => ({ error: 'Calculus calculator is not available yet.' }),
-    buildPayload: () => ({}),
-    mapResult: (x) => x,
-    resultRenderer: ({ result }) => (result?.error ? <div className="text-sm text-slate-600">{result.error}</div> : null),
   },
 };
 
 export default function Series() {
-  return <ModuleExperience config={config} />;
+  return <ModuleExperience config={seriesConfig} />;
 }
-

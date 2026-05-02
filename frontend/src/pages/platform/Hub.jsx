@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { TRACKS_PATH } from '../../routes.js';
-import { getSubjectCatalog } from '../../routes.js';
+import { TRACKS_PATH, getSubjectCatalog, getTrackCardBlurb } from '../../routes.js';
 import { Badge, Button, Card, CardHeader } from '../../components/ui/index.js';
 
 const VALUE_PILLARS = [
@@ -58,14 +57,16 @@ export default function Hub() {
   );
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+    <section className="min-h-screen bg-[var(--dmc-bg-page)] text-[var(--dmc-text-primary)]">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--dmc-text-subtle)]">
             Math Lab Platform
           </p>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">Choose a track. Practice instantly.</h1>
-          <p className="mt-5 text-base leading-7 text-slate-600 dark:text-slate-400">
+          <h1 className="mt-4 text-4xl font-bold tracking-tight text-[var(--dmc-text-primary)] sm:text-5xl">
+            Choose a track. Practice instantly.
+          </h1>
+          <p className="mt-5 text-base leading-7 text-[var(--dmc-text-muted)]">
             Pick a subject track, then continue with calculator workspaces, theory, and video modes.
           </p>
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -90,9 +91,11 @@ export default function Hub() {
               <Card key={track.slug} variant="elevated" padding="lg" className="h-full">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{track.label}</p>
+                    <h2 className="text-base font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                      {track.label}
+                    </h2>
                     <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
-                      {track.description || 'Open the track module catalog.'}
+                      {getTrackCardBlurb(track)}
                     </p>
                   </div>
                   <Badge tone={track.status === 'active' ? 'success' : 'neutral'}>

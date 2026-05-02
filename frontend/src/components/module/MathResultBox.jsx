@@ -55,7 +55,7 @@ export default function MathResultBox({
   };
 
   return (
-    <div className={`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden ${className}`}>
       {/* Header with title and copy button */}
       <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</h3>

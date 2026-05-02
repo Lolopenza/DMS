@@ -22,7 +22,7 @@ export default function Profile() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+    <section className="min-h-screen bg-[var(--dmc-bg-page)] text-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400" aria-label="Breadcrumb">
           <Link className="hover:text-slate-900 dark:hover:text-slate-100" to={USER_DASHBOARD_PATH}>

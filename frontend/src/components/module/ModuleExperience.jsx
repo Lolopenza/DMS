@@ -1,5 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import InteractivePractice from '../../pages/user/InteractivePractice.jsx';
+import { getLearningModuleCatalog } from '../../api.js';
+import { getPracticeSkillTopicFallback } from '../../catalog/modulePracticeTopics.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { AUTH_SIGN_IN_PATH } from '../../routes.js';
 import { Button, Card, CardHeader, Input, Select, Textarea } from '../ui/index.js';
 import MathResultBox from './MathResultBox.jsx';
 import SmartCalculatorInput from './SmartCalculatorInput.jsx';
@@ -187,7 +192,7 @@ function TheoryPanel({ theory = {} }) {
           <CardHeader title="Worked Examples" />
           <div className="mt-4 space-y-3">
             {theory.examples.map((example) => (
-              <div key={example.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div key={example.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800">
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{example.title}</p>
                 {example.content ? (
                   <div className="mt-3">
@@ -272,7 +277,7 @@ function PracticePanel({
         </Button>
       </form>
 
-      <div className="border-t border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/60">
+      <div className="border-t border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-800">
         {result ? (
           ResultRenderer ? (
             <ResultRenderer result={result} operation={operation} values={values} />
@@ -296,6 +301,7 @@ function PracticePanel({
 
 export default function ModuleExperience({ config }) {
   const { subject, module: moduleSlug } = useParams();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const layout = config.layout || 'split';
   const practice = config.practice || {};
   const fields = practice.fields || [];
@@ -307,6 +313,8 @@ export default function ModuleExperience({ config }) {
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [loadedTheory, setLoadedTheory] = useState(null);
+  const [skillTopicForPractice, setSkillTopicForPractice] = useState(null);
+  const [practiceCatalogLoading, setPracticeCatalogLoading] = useState(true);
 
   const activeOperation = useMemo(
     () => operations.find((item) => item.value === operation),
@@ -353,6 +361,41 @@ export default function ModuleExperience({ config }) {
     };
   }, [config, subject, moduleSlug]);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function resolvePracticeTopic() {
+      if (!subject || !moduleSlug) {
+        setSkillTopicForPractice(null);
+        setPracticeCatalogLoading(false);
+        return;
+      }
+      setPracticeCatalogLoading(true);
+      try {
+        const list = await getLearningModuleCatalog();
+        if (cancelled) return;
+        const fallback = getPracticeSkillTopicFallback(subject, moduleSlug);
+        if (!Array.isArray(list)) {
+          setSkillTopicForPractice(fallback);
+          return;
+        }
+        const row = list.find(
+          (e) => e.subjectSlug === subject && e.moduleSlug === moduleSlug,
+        );
+        setSkillTopicForPractice(row?.skillTopicSlug ?? fallback);
+      } catch {
+        if (!cancelled) {
+          setSkillTopicForPractice(getPracticeSkillTopicFallback(subject, moduleSlug));
+        }
+      } finally {
+        if (!cancelled) setPracticeCatalogLoading(false);
+      }
+    }
+    resolvePracticeTopic();
+    return () => {
+      cancelled = true;
+    };
+  }, [subject, moduleSlug]);
+
   async function handleSubmit(event) {
     event.preventDefault();
     if (!practice.calculate) return;
@@ -382,7 +425,7 @@ export default function ModuleExperience({ config }) {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+    <section className="min-h-screen bg-[var(--dmc-bg-page)] text-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <div className="mb-6">
           <nav
@@ -419,6 +462,16 @@ export default function ModuleExperience({ config }) {
           {config.subtitle ? (
             <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-400">
               {config.subtitle}
+            </p>
+          ) : null}
+          {skillTopicForPractice && !practiceCatalogLoading ? (
+            <p className="mt-4 text-sm">
+              <a
+                href="#module-ai-practice"
+                className="font-medium text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400"
+              >
+                AI practice for this topic — below the calculator (scroll down)
+              </a>
             </p>
           ) : null}
         </header>
@@ -476,6 +529,38 @@ export default function ModuleExperience({ config }) {
             />
           </div>
         )}
+
+        {skillTopicForPractice && !practiceCatalogLoading ? (
+          <div
+            id="module-ai-practice"
+            className="scroll-mt-28 mt-12 max-w-4xl border-t border-slate-200 pt-10 dark:border-slate-800"
+          >
+            {authLoading ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Loading practice…</p>
+            ) : isAuthenticated ? (
+              <InteractivePractice
+                fixedTopicSlug={skillTopicForPractice}
+                compact
+                sectionTitle="Knowledge check"
+              />
+            ) : (
+              <Card variant="elevated" padding="lg" className="border-indigo-200/60 dark:border-indigo-900/40">
+                <CardHeader
+                  title="Knowledge check (AI)"
+                  subtitle="Sign in to generate problems for this topic and update your Bayesian skill profile (BKT)."
+                />
+                <div className="mt-4">
+                  <Link
+                    to={AUTH_SIGN_IN_PATH}
+                    className="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+                  >
+                    Sign in to practice
+                  </Link>
+                </div>
+              </Card>
+            )}
+          </div>
+        ) : null}
       </div>
     </section>
   );

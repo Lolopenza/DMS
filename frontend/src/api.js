@@ -244,6 +244,13 @@ export function getCurrentUser() {
   return request(`${BACKEND_BASE}/auth/me`);
 }
 
+export function updateUserProfile(payload) {
+  return request(`${BACKEND_BASE}/auth/profile`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
 export function logoutCurrentSession() {
   return request(`${BACKEND_BASE}/auth/logout`, { method: 'POST', skipAuthRefresh: true });
 }
@@ -280,6 +287,24 @@ export function getLearningRecommendations() {
 
 export function getAdaptivePracticeTopic() {
   return request(`${BACKEND_BASE}/learning/adaptive-practice-topic`);
+}
+
+/** Calculator catalog: route segment → BKT skillTopicSlug */
+export function getLearningModuleCatalog() {
+  return request(`${BACKEND_BASE}/learning/catalog/modules`);
+}
+
+export function getLearningProgressSubjects() {
+  return request(`${BACKEND_BASE}/learning/progress/subjects`);
+}
+
+export function getLearningJourneySnapshot() {
+  return request(`${BACKEND_BASE}/learning/progress/journey`);
+}
+
+/** Streak, daily goal, achievement badges (authenticated) */
+export function getGamificationSummary() {
+  return request(`${BACKEND_BASE}/user/gamification/summary`);
 }
 
 export function listCourses() {
@@ -354,6 +379,15 @@ export function getMyColabStarter(windowDays = 30, lessonMode = true) {
 
 export function getMyRawAnalytics(windowDays = 30) {
   return request(`${BACKEND_BASE}/v1/analytics/me/raw?windowDays=${encodeURIComponent(windowDays)}`);
+}
+
+/** Rolling accuracy timeline for one BKT topic (authenticated) */
+export function getMySkillTrajectory(topicSlug, windowDays = 30) {
+  const qs = new URLSearchParams({
+    topicSlug: String(topicSlug || ''),
+    windowDays: String(windowDays),
+  });
+  return request(`${BACKEND_BASE}/v1/analytics/me/skill-trajectory?${qs.toString()}`);
 }
 
 export function submitStudentFeedback(payload) {

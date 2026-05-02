@@ -1,44 +1,65 @@
 import React from 'react';
 import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import { calcDerivatives } from '../../api/derivatives.js';
+import derivativesTheory from '../../../../../data/content/calculus/derivatives.content.js';
 
-const config = {
+function buildDerivativesPayload({ operation, values }) {
+  const order = Math.min(12, Math.max(1, parseInt(values.order, 10) || 1));
+  return {
+    module: 'derivatives',
+    operation,
+    expr: String(values.expr || ''),
+    variable: String(values.variable || 'x').trim() || 'x',
+    order,
+  };
+}
+
+const derivativesConfig = {
   id: 'derivatives',
   eyebrow: 'Calculus',
   title: 'Derivatives',
-  subtitle: 'Coming soon: rules, interpretation, and worked examples.',
-  theory: {
-    overview:
-      'This module will cover derivative definitions, rules (product/quotient/chain), and geometric/physical interpretations. Content is staged for the next build-out.',
-    outcomes: [
-      'Compute derivatives using standard differentiation rules.',
-      'Interpret f′(x) as slope and instantaneous rate of change.',
-      'Apply chain rule in composite functions.',
-    ],
-    formulas: [
-      { title: 'Definition (difference quotient)', content: "$$f'(a)=\\lim_{h\\to 0}\\frac{f(a+h)-f(a)}{h}$$" },
-    ],
-    examples: [
+  subtitle: 'Symbolic differentiation to arbitrary small integer order (SymPy).',
+  theory: derivativesTheory,
+  practice: {
+    title: 'Derivative Calculator',
+    description: 'Enter f(x), choose the independent variable, and the derivative order (1 = first derivative).',
+    operationLabel: 'Operation',
+    submitLabel: 'Differentiate',
+    loadingLabel: 'Computing…',
+    calculate: calcDerivatives,
+    buildPayload: buildDerivativesPayload,
+    mapResult: (data) => data?.result ?? data,
+    operations: [{ value: 'derivative', label: 'Derivative', hint: 'd^n/dx^n of the expression.', default: true }],
+    fields: [
       {
-        title: 'Worked example (stub): derivative of x²',
-        content: 'Example content will be added when the full calculus track is authored.',
+        name: 'expr',
+        label: 'f(x)',
+        type: 'text',
+        defaultValue: 'x**3 + sin(x)',
+        required: true,
+        span: 'full',
+      },
+      {
+        name: 'variable',
+        label: 'Variable',
+        type: 'text',
+        defaultValue: 'x',
+        required: true,
+      },
+      {
+        name: 'order',
+        label: 'Order n',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 1,
+        max: 12,
+        defaultValue: '1',
+        required: true,
       },
     ],
-  },
-  practice: {
-    title: 'Calculator',
-    description: 'Calculus calculators are planned and will appear here once backend endpoints are added.',
-    operations: [{ value: 'coming-soon', label: 'Coming soon', default: true }],
-    fields: [],
-    submitLabel: 'Coming soon',
-    loadingLabel: 'Coming soon',
-    calculate: async () => ({ error: 'Calculus calculator is not available yet.' }),
-    buildPayload: () => ({}),
-    mapResult: (x) => x,
-    resultRenderer: ({ result }) => (result?.error ? <div className="text-sm text-slate-600">{result.error}</div> : null),
   },
 };
 
 export default function Derivatives() {
-  return <ModuleExperience config={config} />;
+  return <ModuleExperience config={derivativesConfig} />;
 }
-

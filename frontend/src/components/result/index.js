@@ -23,3 +23,4 @@ export { default as StepSolutionViewer, CompactSteps } from './StepSolutionViewe
 export { default as MatrixViewer, MatrixComparison, DeterminantResult } from './MatrixViewer.jsx';
 export { default as NumberTheoryViewer } from './NumberTheoryViewer.jsx';
 export { default as AutomataViewer } from './AutomataViewer.jsx';
+export { default as CalculusSymPyViewer } from './CalculusSymPyViewer.jsx';

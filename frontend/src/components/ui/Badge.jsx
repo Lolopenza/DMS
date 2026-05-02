@@ -1,6 +1,15 @@
 import React from 'react';
 
-export default function Badge({ variant = 'slate', size = 'md', className = '', children }) {
+/** Maps legacy `tone` prop (pages) to palette `variant`. */
+const TONE_TO_VARIANT = {
+  success: 'emerald',
+  neutral: 'slate',
+  warning: 'amber',
+  danger: 'red',
+};
+
+export default function Badge({ variant = 'slate', tone, size = 'md', className = '', children }) {
+  const resolvedVariant = tone ? (TONE_TO_VARIANT[tone] ?? 'slate') : variant;
   const base = 'inline-flex items-center rounded-full border font-semibold';
   const sizes = {
     sm: 'px-2.5 py-1 text-[11px] tracking-wide',
@@ -16,7 +25,7 @@ export default function Badge({ variant = 'slate', size = 'md', className = '', 
   };
 
   return (
-    <span className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}>
+    <span className={`${base} ${sizes[size]} ${variants[resolvedVariant]} ${className}`}>
       {children}
     </span>
   );

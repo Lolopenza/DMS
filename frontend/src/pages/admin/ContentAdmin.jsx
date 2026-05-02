@@ -26,9 +26,13 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { AnalyticsChartTooltip, errorTypeHint, errorTypeLabel } from '../../components/analytics/analyticsShared.jsx';
 import { Button, Card, CardHeader } from '../../components/ui/index.js';
 import { Select, Textarea } from '../../components/ui/Input.jsx';
+import useIsDarkMode from '../../hooks/useIsDarkMode.js';
+import { getRechartsPalette } from '../../lib/rechartsTheme.js';
 
 export default function ContentAdmin() {
   const { user } = useAuth();
+  const isDark = useIsDarkMode();
+  const rc = getRechartsPalette(isDark);
   const [stats, setStats] = useState({ totalStudents: 0, activeToday: 0 });
   const [users, setUsers] = useState([]);
   const [pageMeta, setPageMeta] = useState({ page: 0, size: 20, totalPages: 0, totalElements: 0 });
@@ -178,8 +182,8 @@ export default function ContentAdmin() {
     { name: 'Inactive today', value: Math.max(0, (stats.totalStudents || 0) - (stats.activeToday || 0)) },
   ];
   const pieColors = ['#2563eb', '#f59e0b'];
-  const axisTick = { fill: '#cbd5e1', fontSize: 12 };
-  const legendStyle = { color: '#cbd5e1' };
+  const axisTick = { fill: rc.tickFill, fontSize: 12 };
+  const legendStyle = { color: rc.tickFill };
   const studentUsers = users.filter((u) => u.role === 'STUDENT');
   const attempts = Array.isArray(analyticsData?.attempts) ? analyticsData.attempts : [];
   const filteredAttempts = onlyIncorrect ? attempts.filter((a) => a && a.correct === false) : attempts;
@@ -275,7 +279,7 @@ export default function ContentAdmin() {
             <div className="h-[260px] w-full">
             <ResponsiveContainer>
               <BarChart data={activityData}>
-                <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
+                <CartesianGrid stroke={rc.gridStroke} strokeDasharray="3 3" />
                 <XAxis dataKey="name" tick={axisTick} />
                 <YAxis allowDecimals={false} tick={axisTick} />
                 <Tooltip content={<AnalyticsChartTooltip />} />
@@ -300,7 +304,7 @@ export default function ContentAdmin() {
             <div className="h-[260px] w-full">
             <ResponsiveContainer>
               <BarChart data={statusData}>
-                <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
+                <CartesianGrid stroke={rc.gridStroke} strokeDasharray="3 3" />
                 <XAxis dataKey="name" tick={axisTick} />
                 <YAxis allowDecimals={false} tick={axisTick} />
                 <Tooltip content={<AnalyticsChartTooltip />} />
@@ -483,7 +487,7 @@ export default function ContentAdmin() {
                   <div className="mt-3 h-[240px] w-full">
                     <ResponsiveContainer>
                       <BarChart data={errorChartData}>
-                        <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
+                        <CartesianGrid stroke={rc.gridStroke} strokeDasharray="3 3" />
                         <XAxis dataKey="name" tick={axisTick} />
                         <YAxis allowDecimals={false} tick={axisTick} />
                         <Tooltip content={<AnalyticsChartTooltip />} />

@@ -32,6 +32,24 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
+  <!-- Apply saved theme before React (matches ThemeToggle + Tailwind dark on <html>) -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('theme');
+        var dark =
+          stored === 'dark' ||
+          (stored !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.body.classList.add('dark-theme');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

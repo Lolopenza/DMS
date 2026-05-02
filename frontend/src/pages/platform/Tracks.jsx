@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSubjectCatalog } from '../../routes.js';
+import { getSubjectCatalog, getTrackCardBlurb } from '../../routes.js';
 import { Link } from 'react-router-dom';
 import { Badge, Button, Card } from '../../components/ui/index.js';
 import { validateCatalog } from '../../catalog/subjectCatalog.js';
@@ -77,7 +77,11 @@ export default function Tracks() {
               </div>
 
               <p className="mt-5 text-sm leading-6 text-slate-600 dark:text-slate-400">
-                {track.goal || (isActive ? 'Open the track workspace and pick a module.' : 'This track is planned and will unlock in future waves.')}
+                {isActive
+                  ? getTrackCardBlurb(track)
+                  : track.goal?.trim() ||
+                    track.description?.trim() ||
+                    'This track is planned and will unlock in future waves.'}
               </p>
 
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3">

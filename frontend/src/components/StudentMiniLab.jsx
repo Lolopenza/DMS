@@ -8,9 +8,14 @@ import {
   buildTimeVsErrorsData,
   buildTopicAccuracyData,
 } from './analytics/analyticsShared.jsx';
+import SkillTrajectoryChart from './analytics/SkillTrajectoryChart.jsx';
 import { Bar, BarChart } from 'recharts';
+import useIsDarkMode from '../hooks/useIsDarkMode.js';
+import { getRechartsPalette } from '../lib/rechartsTheme.js';
 
 export default function StudentMiniLab({ defaultCollapsed = true }) {
+  const isDark = useIsDarkMode();
+  const rc = getRechartsPalette(isDark);
   const [windowDays, setWindowDays] = React.useState(30);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
@@ -84,9 +89,9 @@ export default function StudentMiniLab({ defaultCollapsed = true }) {
             <div style={{ width: '100%', height: 240 }}>
               <ResponsiveContainer>
                 <LineChart data={weeklyData}>
-                  <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
-                  <XAxis dataKey="label" tick={{ fill: '#cbd5e1', fontSize: 11 }} />
-                  <YAxis allowDecimals={false} tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                  <CartesianGrid stroke={rc.gridStroke} strokeDasharray="3 3" />
+                  <XAxis dataKey="label" tick={{ fill: rc.tickFill, fontSize: 11 }} />
+                  <YAxis allowDecimals={false} tick={{ fill: rc.tickFill, fontSize: 12 }} />
                   <Tooltip content={<AnalyticsChartTooltip />} />
                   <Line type="monotone" dataKey="attempts" name="Attempts" stroke="#6366f1" strokeWidth={2} dot />
                 </LineChart>
@@ -95,6 +100,8 @@ export default function StudentMiniLab({ defaultCollapsed = true }) {
           </div>
         ) : null}
 
+        {!error && attempts.length > 0 ? <SkillTrajectoryChart windowDays={windowDays} /> : null}
+
         {expanded && !error && attempts.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
             <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
@@ -102,9 +109,9 @@ export default function StudentMiniLab({ defaultCollapsed = true }) {
               <div style={{ width: '100%', height: 220 }}>
                 <ResponsiveContainer>
                   <BarChart data={topicAccuracyData}>
-                    <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
-                    <XAxis dataKey="topic" tick={{ fill: '#cbd5e1', fontSize: 12 }} />
-                    <YAxis tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                    <CartesianGrid stroke={rc.gridStroke} strokeDasharray="3 3" />
+                    <XAxis dataKey="topic" tick={{ fill: rc.tickFill, fontSize: 12 }} />
+                    <YAxis tick={{ fill: rc.tickFill, fontSize: 12 }} />
                     <Tooltip content={<AnalyticsChartTooltip />} />
                     <Bar dataKey="accuracy" name="Accuracy %" fill="#2563eb" />
                   </BarChart>
@@ -116,9 +123,9 @@ export default function StudentMiniLab({ defaultCollapsed = true }) {
               <div style={{ width: '100%', height: 220 }}>
                 <ResponsiveContainer>
                   <LineChart data={timeVsErrorsData}>
-                    <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
-                    <XAxis dataKey="bucketLabel" tick={{ fill: '#cbd5e1', fontSize: 11 }} />
-                    <YAxis tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                    <CartesianGrid stroke={rc.gridStroke} strokeDasharray="3 3" />
+                    <XAxis dataKey="bucketLabel" tick={{ fill: rc.tickFill, fontSize: 11 }} />
+                    <YAxis tick={{ fill: rc.tickFill, fontSize: 12 }} />
                     <Tooltip content={<AnalyticsChartTooltip />} />
                     <Line type="monotone" dataKey="wrongRate" name="Wrong %" stroke="#ef4444" strokeWidth={2} dot={false} />
                   </LineChart>
@@ -130,9 +137,9 @@ export default function StudentMiniLab({ defaultCollapsed = true }) {
               <div style={{ width: '100%', height: 220 }}>
                 <ResponsiveContainer>
                   <BarChart data={errorTypeData}>
-                    <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
-                    <XAxis dataKey="name" tick={{ fill: '#cbd5e1', fontSize: 11 }} />
-                    <YAxis tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                    <CartesianGrid stroke={rc.gridStroke} strokeDasharray="3 3" />
+                    <XAxis dataKey="name" tick={{ fill: rc.tickFill, fontSize: 11 }} />
+                    <YAxis tick={{ fill: rc.tickFill, fontSize: 12 }} />
                     <Tooltip content={<AnalyticsChartTooltip />} />
                     <Bar dataKey="value" name="Attempts" fill="#7c3aed" />
                   </BarChart>

@@ -25,7 +25,7 @@ export default function ResetPassword() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+    <section className="min-h-screen bg-[var(--dmc-bg-page)] text-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Account</p>

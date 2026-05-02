@@ -1,4 +1,4 @@
-import { calcLinearAlgebra } from '../../../../../api.js';
+import { calcMatrices } from '../../api/matrices.js';
 import { parseMatrix } from '../../../../../utils/parsers.js';
 import { LinearAlgebraResultRenderer } from '../../../../../components/module/ResultRenderers.jsx';
 import matricesTheory from '../../../../../data/content/linear-algebra/matrices.content.js';
@@ -33,18 +33,18 @@ function buildMatricesPayload({ operation, values }) {
   const aShape = assertMatrixShape(a, 'Matrix A');
 
   if (operation === 'transpose') {
-    return { module: 'matrices', operation, a };
+    return { operation, a };
   }
 
   if (operation === 'determinant') {
     if (aShape.rows !== aShape.cols) throw new Error('Determinant requires a square matrix.');
-    return { module: 'matrices', operation, a };
+    return { operation, a };
   }
 
   if (operation === 'inverse') {
     if (aShape.rows !== aShape.cols) throw new Error('Inverse requires a square matrix.');
     if (aShape.rows !== 2) throw new Error('Inverse is supported for 2×2 matrices only in this module.');
-    return { module: 'matrices', operation, a };
+    return { operation, a };
   }
 
   if (operation === 'add') {
@@ -53,7 +53,7 @@ function buildMatricesPayload({ operation, values }) {
     if (aShape.rows !== bShape.rows || aShape.cols !== bShape.cols) {
       throw new Error('Addition requires matrices of the same shape.');
     }
-    return { module: 'matrices', operation, a, b };
+    return { operation, a, b };
   }
 
   // multiply (default)
@@ -62,7 +62,7 @@ function buildMatricesPayload({ operation, values }) {
   if (aShape.cols !== bShape.rows) {
     throw new Error(`Multiplication requires cols(A) = rows(B). Got ${aShape.cols} and ${bShape.rows}.`);
   }
-  return { module: 'matrices', operation, a, b };
+  return { operation, a, b };
 }
 
 const matricesConfig = {
@@ -78,7 +78,7 @@ const matricesConfig = {
     operationLabel: 'Operation',
     submitLabel: 'Calculate',
     loadingLabel: 'Calculating...',
-    calculate: calcLinearAlgebra,
+    calculate: calcMatrices,
     buildPayload: buildMatricesPayload,
     mapResult: (data) => normalizeMatricesResult(data),
     resultRenderer: LinearAlgebraResultRenderer,

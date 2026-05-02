@@ -1,44 +1,63 @@
 import React from 'react';
 import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import { calcMultivariable } from '../../api/multivariable.js';
+import multivariableTheory from '../../../../../data/content/calculus/multivariable.content.js';
 
-const config = {
+function buildMultivariablePayload({ operation, values }) {
+  return {
+    module: 'multivariable',
+    operation,
+    expr: String(values.expr || ''),
+    variables: String(values.variables || 'x,y').replace(/\s+/g, ''),
+    wrt: String(values.wrt || 'x').trim() || 'x',
+  };
+}
+
+const multivariableConfig = {
   id: 'multivariable',
   eyebrow: 'Calculus',
   title: 'Multivariable Calculus',
-  subtitle: 'Coming soon: partial derivatives, gradients, and multiple integrals.',
-  theory: {
-    overview:
-      'This module will cover partial derivatives, gradients, directional derivatives, and multiple integrals. Content is staged for the next build-out.',
-    outcomes: [
-      'Compute partial derivatives of multivariable functions.',
-      'Interpret the gradient as the direction of steepest ascent.',
-      'Work with basic multivariable integrals (setup and meaning).',
-    ],
-    formulas: [
-      { title: 'Gradient (sample)', content: '$$\\nabla f=\\left(\\frac{\\partial f}{\\partial x},\\frac{\\partial f}{\\partial y}\\right)$$' },
-    ],
-    examples: [
+  subtitle: 'First partial derivatives with respect to one variable.',
+  theory: multivariableTheory,
+  practice: {
+    title: 'Partial derivative',
+    description:
+      'List every symbol that appears in the expression (comma-separated), then choose **Differentiate with respect to**.',
+    operationLabel: 'Operation',
+    submitLabel: 'Differentiate',
+    loadingLabel: 'Computing…',
+    calculate: calcMultivariable,
+    buildPayload: buildMultivariablePayload,
+    mapResult: (data) => data?.result ?? data,
+    operations: [{ value: 'partial', label: '∂/∂xᵢ', hint: 'Partial derivative holding other variables fixed.', default: true }],
+    fields: [
       {
-        title: 'Worked example (stub): partial derivative',
-        content: 'Example content will be added when the full calculus track is authored.',
+        name: 'expr',
+        label: 'Expression',
+        type: 'text',
+        defaultValue: 'x**2 * y + y**3',
+        required: true,
+        span: 'full',
+      },
+      {
+        name: 'variables',
+        label: 'Variables',
+        type: 'text',
+        defaultValue: 'x,y',
+        hint: 'Comma-separated: x,y,z',
+        required: true,
+      },
+      {
+        name: 'wrt',
+        label: 'Differentiate with respect to',
+        type: 'text',
+        defaultValue: 'x',
+        required: true,
       },
     ],
-  },
-  practice: {
-    title: 'Calculator',
-    description: 'Calculus calculators are planned and will appear here once backend endpoints are added.',
-    operations: [{ value: 'coming-soon', label: 'Coming soon', default: true }],
-    fields: [],
-    submitLabel: 'Coming soon',
-    loadingLabel: 'Coming soon',
-    calculate: async () => ({ error: 'Calculus calculator is not available yet.' }),
-    buildPayload: () => ({}),
-    mapResult: (x) => x,
-    resultRenderer: ({ result }) => (result?.error ? <div className="text-sm text-slate-600">{result.error}</div> : null),
   },
 };
 
 export default function Multivariable() {
-  return <ModuleExperience config={config} />;
+  return <ModuleExperience config={multivariableConfig} />;
 }
-

@@ -1,5 +1,13 @@
 import React, { useMemo } from 'react';
 import { clampPercent, computeOverallPercent } from '../utils/skillMetrics.js';
+import { getPracticeTopicLabel } from '../catalog/practiceTopicRegistry.js';
+
+function prettifySlug(slug) {
+  if (!slug) return '';
+  return String(slug)
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 function masteryMeta(percent) {
   if (percent < 40) {
@@ -28,9 +36,9 @@ function masteryMeta(percent) {
 
 function confidenceMeta(totalAttempts) {
   const n = Number.isFinite(totalAttempts) ? totalAttempts : 0;
-  if (n < 3) return { label: 'Low confidence', cls: 'text-amber-700 bg-amber-50 border-amber-200' };
-  if (n < 8) return { label: 'Medium confidence', cls: 'text-indigo-700 bg-indigo-50 border-indigo-200' };
-  return { label: 'High confidence', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
+  if (n < 3) return { label: 'Low confidence', cls: 'text-amber-700 bg-amber-50 border-amber-200', title: 'Few attempts so far — the estimate is still noisy.' };
+  if (n < 8) return { label: 'Medium confidence', cls: 'text-indigo-700 bg-indigo-50 border-indigo-200', title: 'Some evidence — the estimate is stabilizing.' };
+  return { label: 'High confidence', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200', title: 'Many attempts — the estimate is relatively stable.' };
 }
 
 export default function SkillMasteryDashboard({ skills = [], loading = false, error = '' }) {
@@ -43,12 +51,12 @@ export default function SkillMasteryDashboard({ skills = [], loading = false, er
       <div className="dmc-card">
         <div className="dmc-card-header flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h2 className="dmc-title text-xl font-semibold">Skill Mastery Overview</h2>
+            <h2 className="dmc-title text-xl font-semibold">Skill mastery (BKT)</h2>
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="dmc-subtitle text-sm">Bayesian Knowledge Tracing across your math topics</p>
+              <p className="dmc-subtitle text-sm">A Bayesian model estimates what you likely know, topic by topic.</p>
               <span
                 className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-slate-300 text-slate-500 text-xs font-semibold cursor-help"
-                title="Adjusted mastery is reliability-aware: with few attempts, the score stays closer to the BKT prior (0.25). As attempts grow, it approaches raw pKnow."
+                title="Adjusted mastery is reliability-aware: with few attempts, it stays closer to a prior baseline; as attempts grow, it converges to the model’s raw pKnow."
                 aria-label="How adjusted mastery is calculated"
               >
                 i
@@ -57,7 +65,7 @@ export default function SkillMasteryDashboard({ skills = [], loading = false, er
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 dmc-surface-soft">
             <span className="text-sm">{overall.emoji}</span>
-            <span className="dmc-subtitle text-xs font-medium">Overall Avg Mastery</span>
+            <span className="dmc-subtitle text-xs font-medium">Overall average</span>
             <span className="dmc-title text-sm font-bold">{overallPercent}%</span>
           </div>
         </div>
@@ -99,7 +107,11 @@ export default function SkillMasteryDashboard({ skills = [], loading = false, er
                 const percent = clampPercent(adjustedPknow);
                 const meta = masteryMeta(percent);
                 const confidence = confidenceMeta(attempts);
-                const label = skill?.topicName || skill?.topicSlug || 'Unknown topic';
+                const slug = skill?.topicSlug || '';
+                const label =
+                  skill?.topicName
+                  || getPracticeTopicLabel(slug)
+                  || (slug ? prettifySlug(slug) : 'Unknown topic');
                 const rawPercent = clampPercent(pKnow);
                 const accuracy = attempts > 0 ? Math.round((correctAttempts / attempts) * 100) : 0;
                 return (
@@ -115,6 +127,7 @@ export default function SkillMasteryDashboard({ skills = [], loading = false, er
                         </span>
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-full border text-xs font-medium ${confidence.cls}`}
+                          title={confidence.title}
                         >
                           {confidence.label}
                         </span>
@@ -134,12 +147,14 @@ export default function SkillMasteryDashboard({ skills = [], loading = false, er
                     </div>
 
                     <div className="mt-2 flex items-center justify-between text-xs dmc-subtitle">
-                      <span>Mastery (adjusted)</span>
+                      <span title="A reliability-adjusted estimate: it becomes more stable as you solve more problems.">
+                        Mastery (adjusted)
+                      </span>
                       <span className="dmc-title font-semibold">{percent}%</span>
                     </div>
                     <div className="mt-1 flex items-center justify-between text-xs dmc-subtitle">
-                      <span title="Model-only estimate of how stable your knowledge is, before reliability adjustment.">
-                        Base knowledge estimate
+                      <span title="Model’s raw probability of knowing (pKnow), before reliability adjustment.">
+                        Model estimate (pKnow)
                       </span>
                       <span className="dmc-title font-semibold">{rawPercent}%</span>
                     </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import AlgorithmsModuleShell from '../../_shared/AlgorithmsModuleShell';
+import AlgorithmsModuleShell from '../../_shared/AlgorithmsModuleShell.jsx';
 import { calcGreedy } from '../../api/greedy';
 
 const Greedy = () => {

@@ -22,8 +22,8 @@ export default function ColabExportCard({
           error categories, and simple ML baselines.
         </p>
         <div className="rounded-lg border border-slate-200 dmc-surface-soft px-3 py-2 text-xs dmc-subtitle">
-          <strong className="dmc-title">What Colab Starter does:</strong> it gives you a ready notebook with
-          pre-built cells for loading CSV, quick charts, and starter ML examples, so you do not start from an empty file.
+          <strong className="dmc-title">What the Colab Starter is:</strong> a ready notebook with
+          pre-built cells for loading your CSV, quick charts, and small ML baselines — so you don’t start from a blank page.
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <label htmlFor="export-window" className="text-sm dmc-subtitle">Window</label>
@@ -49,8 +49,8 @@ export default function ColabExportCard({
           <span className="min-w-0">
             <span className="block text-sm font-medium dmc-title">Generate with AI Lesson Mode</span>
             <span className="mt-0.5 block text-xs dmc-subtitle">
-              When on, the notebook includes an extra tutor section (metrics, pitfalls, discrete math → ML) generated from your summary.
-              Turn off for a slimmer starter without calling the AI.
+              When enabled, we add a short tutor section (metrics, pitfalls, discrete math → ML) generated from your stats.
+              Turn it off for a slimmer starter without an extra AI call.
             </span>
           </span>
         </label>
@@ -63,7 +63,7 @@ export default function ColabExportCard({
           </button>
         </div>
         <div className="rounded-lg border border-slate-200 dmc-surface-soft px-3 py-2 text-xs dmc-subtitle">
-          Privacy contract: this flow is CSV-first. We do not include internal API keys or your auth token in notebook files.
+          Privacy note: this flow is CSV-first. Notebook files never include internal API keys or your auth tokens.
         </div>
         {exportError ? (
           <div className="rounded-lg bg-red-50 border border-red-200 text-red-700 px-3 py-2 text-sm">{exportError}</div>

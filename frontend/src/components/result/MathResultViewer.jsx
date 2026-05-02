@@ -15,6 +15,7 @@ import MatrixViewer, { DeterminantResult } from './MatrixViewer.jsx';
 import NumberTheoryViewer from './NumberTheoryViewer.jsx';
 import AutomataViewer from './AutomataViewer.jsx';
 import GraphStatsViewer from './GraphStatsViewer.jsx';
+import CalculusSymPyViewer from './CalculusSymPyViewer.jsx';
 import 'katex/dist/katex.min.css';
 
 function KaTeX({ children }) {
@@ -160,15 +161,33 @@ export default function MathResultViewer({ data, module, operation, params = {} 
         />
       );
 
+    case 'calculus-sympy':
+      return <CalculusSymPyViewer data={data} operation={operation} />;
+
     case 'simple':
     default:
       return <SimpleResult data={data} operation={operation} params={params} />;
   }
 }
 
+function isCalculusSymPyPayload(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  const calculusKeys = ['derivative', 'value', 'antiderivative', 'series', 'partial', 'solution'];
+  const sympyNode = (v) =>
+    v &&
+    typeof v === 'object' &&
+    !Array.isArray(v) &&
+    (typeof v.repr === 'string' || typeof v.latex === 'string');
+  return calculusKeys.some((k) => data[k] != null && sympyNode(data[k]));
+}
+
 function detectResultType(data, module, operation) {
   if (data.headers || data.table || (data.rows && data.variables)) {
     return 'truth-table';
+  }
+
+  if (isCalculusSymPyPayload(data)) {
+    return 'calculus-sympy';
   }
 
   if (
@@ -258,7 +277,7 @@ function SimpleResult({ data, operation, params }) {
   return (
     <AnimatedResult variant="slideUp" className="space-y-4">
       <HighlightResult>
-        <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-indigo-950/50 dark:to-purple-950/50">
+        <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-slate-800 dark:to-slate-900">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Info className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
@@ -268,7 +287,7 @@ function SimpleResult({ data, operation, params }) {
             </div>
             <button
               onClick={copyResult}
-              className="flex items-center gap-1 rounded-lg bg-white/50 px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-white dark:bg-slate-900/50 dark:text-slate-400 dark:hover:bg-slate-900"
+              className="flex items-center gap-1 rounded-lg bg-white/50 px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               {copied ? (
                 <>

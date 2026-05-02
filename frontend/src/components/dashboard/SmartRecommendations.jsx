@@ -58,7 +58,7 @@ export default function SmartRecommendations() {
               AI recommendations
             </span>
           }
-          subtitle="Ranked from your Bayesian mastery estimates and prerequisite graph — open a module to practice with calculators."
+          subtitle="Ranked with transparent signals: BKT mastery, prerequisites, streak, and recency. Each card explains “why this next”."
         />
       </div>
 
@@ -82,7 +82,7 @@ export default function SmartRecommendations() {
 
       {!loading && !error && items.length === 0 ? (
         <p className="mt-6 text-sm text-slate-600 dark:text-slate-400">
-          Keep practicing with calculators or AI exercises — personalized picks appear once the engine finds strong next steps.
+          Keep practicing — recommendations appear once the system has enough signal to pick strong next steps.
         </p>
       ) : null}
 

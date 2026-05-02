@@ -1,44 +1,54 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardHeader, Button } from '../ui/index.js';
-
-/** Mock journey — replace with API when backend tracking lands */
-const MOCK_JOURNEY = {
-  currentGoal: 'Master Linear Algebra fundamentals',
-  completedModules: 5,
-  totalModules: 8,
-  nextModule: {
-    name: 'Eigenvalues & Eigenvectors',
-    slug: 'eigenvalues',
-    subject: 'linear-algebra',
-  },
-};
+import { getLearningJourneySnapshot } from '../../api.js';
 
 export default function LearningJourneyCard() {
-  const pct =
-    MOCK_JOURNEY.totalModules > 0
-      ? Math.round((MOCK_JOURNEY.completedModules / MOCK_JOURNEY.totalModules) * 100)
-      : 0;
-  const href = `/${MOCK_JOURNEY.nextModule.subject}/${MOCK_JOURNEY.nextModule.slug}`;
+  const [data, setData] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const j = await getLearningJourneySnapshot();
+        if (!cancelled) setData(j);
+      } catch (e) {
+        if (!cancelled) setError(e?.message || 'Failed to load journey');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const completed = data?.completedModules ?? 0;
+  const total = data?.totalModules ?? 0;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const next = data?.nextModule;
+  const href = next ? `/${next.subjectSlug}/${next.moduleSlug}` : '/tracks';
 
   return (
     <Card variant="elevated" padding="lg" className="mb-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <CardHeader
           title="Your learning journey"
-          subtitle="Demo roadmap card — shows milestone pacing for defense UI (hardcoded)."
+          subtitle="Your progress through the catalog — next step suggested from your BKT profile."
         />
-        <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-800 dark:border-violet-800 dark:bg-violet-950/50 dark:text-violet-100">
-          Mock data
-        </span>
       </div>
 
-      <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">{MOCK_JOURNEY.currentGoal}</p>
+      {error ? (
+        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+      ) : null}
+
+      <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+        {data?.currentGoal ?? (error ? 'Journey summary unavailable' : 'Loading your journey…')}
+      </p>
 
       <div className="mt-4">
         <div className="flex justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
           <span>
-            Progress {MOCK_JOURNEY.completedModules}/{MOCK_JOURNEY.totalModules} modules
+            Progress {completed}/{total} modules
           </span>
           <span>{pct}%</span>
         </div>
@@ -53,10 +63,12 @@ export default function LearningJourneyCard() {
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Next up</p>
-          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{MOCK_JOURNEY.nextModule.name}</p>
+          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+            {next ? next.displayName : 'Pick a track, or open the Practice Lab'}
+          </p>
         </div>
         <Link to={href}>
-          <Button>Continue learning</Button>
+          <Button>{next ? 'Continue learning' : 'Browse tracks'}</Button>
         </Link>
       </div>
     </Card>

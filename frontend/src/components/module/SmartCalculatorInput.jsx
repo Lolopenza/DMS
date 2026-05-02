@@ -182,7 +182,7 @@ export default function SmartCalculatorInput({ field, value, values = {}, setVal
     const draft = values[draftKey] ?? '';
 
     return (
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800">
         <Input
           id={fieldId(field)}
           label={field.label}
@@ -197,7 +197,7 @@ export default function SmartCalculatorInput({ field, value, values = {}, setVal
           {items.map((item, idx) => (
             <span
               key={`${item}-${idx}`}
-              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
             >
               {item}
               <button
@@ -266,7 +266,7 @@ export default function SmartCalculatorInput({ field, value, values = {}, setVal
     }
 
     return (
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800">
         <Input
           id={fieldId(field)}
           label={field.label}
@@ -338,7 +338,7 @@ export default function SmartCalculatorInput({ field, value, values = {}, setVal
     const draft = values[draftKey] ?? '';
 
     return (
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800">
         <Input
           id={fieldId(field)}
           label={field.label}
@@ -353,7 +353,7 @@ export default function SmartCalculatorInput({ field, value, values = {}, setVal
           {items.map((item, idx) => (
             <span
               key={`${item}-${idx}`}
-              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
             >
               {item}
               <button
@@ -417,7 +417,7 @@ export default function SmartCalculatorInput({ field, value, values = {}, setVal
     }
 
     return (
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800">
         <Textarea
           id={fieldId(field)}
           label={field.label}
@@ -554,7 +554,7 @@ export default function SmartCalculatorInput({ field, value, values = {}, setVal
 
     return (
       <div className="space-y-3">
-        <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+        <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800">
           <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{opts.builderTitle || 'Quick add edge'}</p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Input
@@ -723,7 +723,7 @@ export default function SmartCalculatorInput({ field, value, values = {}, setVal
     const showBinary = opts.binaryActions !== false && valueFormat !== 'linear_algebra';
 
     return (
-      <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+      <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800">
         {field.label ? (
           <div>
             <span className="block text-sm font-medium text-slate-800 dark:text-slate-200">

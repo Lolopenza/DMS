@@ -21,6 +21,7 @@ import SmartRecommendations from '../../components/dashboard/SmartRecommendation
 import SubjectProgressOverview from '../../components/dashboard/SubjectProgressOverview.jsx';
 import { Button, Card, CardHeader } from '../../components/ui/index.js';
 import useUserSkills from '../../hooks/useUserSkills.js';
+import useGamification from '../../hooks/useGamification.js';
 import {
   getLearningFeedback,
   getMyAnalyticsCsvUrl,
@@ -33,6 +34,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const displayName = user?.name || user?.username || 'Student';
   const { skills, loading: skillsLoading, error: skillsError, overallPercent, totalAttempts, tier } = useUserSkills();
+  const gamification = useGamification();
 
   const [feedback, setFeedback] = React.useState(null);
   const [loadingFeedback, setLoadingFeedback] = React.useState(false);
@@ -152,13 +154,13 @@ export default function Dashboard() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+    <section className="min-h-screen bg-[var(--dmc-bg-page)] text-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <header className="sr-only">
           <h1>Learner dashboard</h1>
         </header>
 
-        <HeroSection displayName={displayName} tier={tier} />
+        <HeroSection displayName={displayName} tier={tier} gamification={gamification} />
 
         <SkillMasteryDashboard skills={skills} loading={skillsLoading} error={skillsError} />
 

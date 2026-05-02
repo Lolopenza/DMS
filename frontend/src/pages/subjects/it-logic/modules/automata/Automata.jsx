@@ -1,5 +1,6 @@
 import { calcAutomata } from '../../../discrete-math/api/automata.js';
 import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import automataTheory from '../../../../../data/content/it-logic/automata.content.js';
 
 const AUTOMATA_TYPES = [
   { value: 'DFA', label: 'DFA (Deterministic Finite Automaton)', hint: 'Each state has exactly one transition per symbol' },
@@ -43,21 +44,7 @@ const automataConfig = {
   eyebrow: 'Logic & Computation',
   title: 'Finite Automata',
   subtitle: 'Simulate DFA/NFA and inspect acceptance traces.',
-  theory: {
-    overview:
-      'Finite automata recognize regular languages. Define states, alphabet, transitions, and test an input string.',
-    videoTitle: 'Automata intro (placeholder)',
-    videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    outcomes: [
-      'Model a DFA/NFA from a transition description.',
-      'Simulate acceptance on a given input string.',
-      'Interpret execution traces and final states.',
-    ],
-    formulas: [
-      { title: 'Transition function', content: '$$\\delta: Q \\times \\Sigma \\to Q \\;\\text{(DFA)}$$' },
-      { title: 'NFA transition', content: '$$\\delta: Q \\times \\Sigma \\to \\mathcal{P}(Q)$$' },
-    ],
-  },
+  theory: automataTheory,
   practice: {
     title: 'Automaton Simulator',
     description: 'Enter automaton definition and test input strings.',

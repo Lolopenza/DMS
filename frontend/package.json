@@ -10,6 +10,7 @@
     "smoke:routes": "node scripts/smoke-routes.mjs"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "cytoscape": "^3.33.3",
     "framer-motion": "^12.38.0",
     "katex": "^0.16.40",

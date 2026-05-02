@@ -38,6 +38,14 @@ export const PRACTICE_TOPIC_GROUPS = [
     ],
   },
   {
+    subjectSlug: 'code-to-math',
+    groupLabel: 'Code to Math (Math Bug Hunter)',
+    topics: [
+      { value: 'code_complexity', label: 'Complexity from code' },
+      { value: 'code_recurrence', label: 'Recurrence from code' },
+    ],
+  },
+  {
     subjectSlug: 'probability-statistics',
     groupLabel: 'Probability & Statistics',
     topics: [

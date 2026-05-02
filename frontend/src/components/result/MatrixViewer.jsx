@@ -62,7 +62,7 @@ export default function MatrixViewer({
           </div>
           <button
             onClick={copyMatrix}
-            className="flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+            className="flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             {copied ? (
               <>
@@ -250,7 +250,7 @@ export function DeterminantResult({ matrix, determinant, steps }) {
       </div>
 
       <HighlightResult>
-        <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-indigo-950/50 dark:to-purple-950/50">
+        <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-slate-800 dark:to-slate-900">
           <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
             Result
           </span>

@@ -34,8 +34,19 @@
 }
 
 /* Global base typography for new UI layer */
-html, body {
+html {
+  color-scheme: light dark;
+}
+
+html,
+body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--dmc-bg-page);
+  color: var(--dmc-text-primary);
 }
 
 code, pre, kbd, samp {

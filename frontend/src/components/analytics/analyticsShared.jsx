@@ -1,4 +1,7 @@
 import React from 'react';
+import { getPracticeTopicLabel } from '../../catalog/practiceTopicRegistry.js';
+import useIsDarkMode from '../../hooks/useIsDarkMode.js';
+import { getRechartsPalette } from '../../lib/rechartsTheme.js';
 
 export const ERROR_TYPE_META = {
   NONE: { label: 'No category', description: 'No explicit error category was detected or saved.' },
@@ -18,21 +21,22 @@ export function errorTypeHint(code) {
 }
 
 export function AnalyticsChartTooltip({ active, label, payload }) {
+  const isDark = useIsDarkMode();
+  const rc = getRechartsPalette(isDark);
   if (!active || !payload || payload.length === 0) return null;
   return (
     <div
       style={{
-        background: '#0f172a',
-        color: '#f8fafc',
-        border: '1px solid #334155',
-        borderRadius: 8,
+        ...rc.tooltipStyle,
         padding: '8px 10px',
-        boxShadow: '0 8px 24px rgba(2, 6, 23, 0.35)',
+        boxShadow: isDark ? '0 8px 24px rgba(2, 6, 23, 0.35)' : '0 4px 14px rgba(15, 23, 42, 0.12)',
       }}
     >
-      {label != null && <div style={{ color: '#cbd5e1', fontWeight: 600, marginBottom: 4 }}>{String(label)}</div>}
+      {label != null && (
+        <div style={{ color: rc.tickFill, fontWeight: 600, marginBottom: 4 }}>{String(label)}</div>
+      )}
       {payload.map((entry) => (
-        <div key={`${entry.name}-${entry.dataKey}`} style={{ color: '#f8fafc', fontSize: 13 }}>
+        <div key={`${entry.name}-${entry.dataKey}`} style={{ fontSize: 13 }}>
           {entry.name}: {entry.value}
         </div>
       ))}
@@ -63,7 +67,7 @@ export function buildTopicAccuracyData(attempts) {
   }, {});
   return Object.entries(topicStats)
     .map(([topic, v]) => ({
-      topic,
+      topic: getPracticeTopicLabel(topic) || topic,
       attempts: v.total,
       accuracy: v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0,
     }))

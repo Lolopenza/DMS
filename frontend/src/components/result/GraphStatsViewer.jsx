@@ -10,7 +10,7 @@ export default function GraphStatsViewer({ data }) {
   return (
     <AnimatedResult variant="slideUp">
       <HighlightResult>
-        <div className="rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-indigo-950/50 dark:to-purple-950/50">
+        <div className="rounded-xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-slate-800 dark:to-slate-900">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Graph statistics</h3>
           <dl className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>

@@ -98,7 +98,7 @@ export default function TruthTableViewer({
                       key={idx}
                       className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${
                         isResult
-                          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
+                          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/80 dark:text-indigo-300'
                           : 'text-slate-600 dark:text-slate-400'
                       }`}
                     >
@@ -115,7 +115,7 @@ export default function TruthTableViewer({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: rowIdx * 0.02 }}
-                  className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50"
+                  className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   {row.map((cell, cellIdx) => {
                     const isResult = cellIdx === row.length - 1;

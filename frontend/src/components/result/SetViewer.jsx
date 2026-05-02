@@ -41,7 +41,7 @@ export default function SetViewer({ operation, inputs = {}, result }) {
         </div>
 
         {getFormula(operation, inputs) && (
-          <div className="mb-4 rounded-lg bg-slate-50 p-4 dark:bg-slate-900/50">
+          <div className="mb-4 rounded-lg bg-slate-50 p-4 dark:bg-slate-800">
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Operation
             </p>
@@ -55,7 +55,7 @@ export default function SetViewer({ operation, inputs = {}, result }) {
       </div>
 
       <HighlightResult>
-        <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-indigo-950/50 dark:to-purple-950/50">
+        <div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 dark:border-indigo-800 dark:from-slate-800 dark:to-slate-900">
           <div className="flex items-center gap-2">
             <Equal className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">

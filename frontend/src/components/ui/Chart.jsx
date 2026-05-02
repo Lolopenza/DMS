@@ -13,6 +13,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import useIsDarkMode from '../../hooks/useIsDarkMode.js';
+import { getRechartsPalette } from '../../lib/rechartsTheme.js';
 
 /**
  * Chart — универсальный компонент для графиков.
@@ -44,6 +46,9 @@ export default function Chart({
   showLegend = false,
   className = '',
 }) {
+  const isDark = useIsDarkMode();
+  const rc = getRechartsPalette(isDark);
+
   const ChartComponent = {
     line: LineChart,
     bar: BarChart,
@@ -68,32 +73,21 @@ export default function Chart({
         <ResponsiveContainer width="100%" height={height}>
           <ChartComponent data={data}>
             {showGrid && (
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#e2e8f0"
-                className="dark:stroke-slate-700"
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke={rc.gridStroke} />
             )}
             <XAxis
               dataKey={xKey}
               label={xLabel ? { value: xLabel, position: 'insideBottom', offset: -5 } : undefined}
-              stroke="#64748b"
-              className="dark:stroke-slate-400"
+              stroke={rc.axisLabelFill}
+              tick={{ fill: rc.tickFill }}
             />
             <YAxis
               dataKey={yKey}
               label={yLabel ? { value: yLabel, angle: -90, position: 'insideLeft' } : undefined}
-              stroke="#64748b"
-              className="dark:stroke-slate-400"
+              stroke={rc.axisLabelFill}
+              tick={{ fill: rc.tickFill }}
             />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                border: '1px solid #334155',
-                borderRadius: '0.5rem',
-                color: '#f1f5f9',
-              }}
-            />
+            <Tooltip contentStyle={rc.tooltipStyle} />
             {showLegend && <Legend />}
             <DataComponent
               type={type === 'line' ? 'monotone' : undefined}
@@ -245,6 +239,8 @@ export function ComparisonChart({
   height = 400,
   className = '',
 }) {
+  const isDark = useIsDarkMode();
+  const rc = getRechartsPalette(isDark);
   const colors = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6'];
 
   return (
@@ -258,25 +254,20 @@ export function ComparisonChart({
       <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
         <ResponsiveContainer width="100%" height={height}>
           <LineChart>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" stroke={rc.gridStroke} />
             <XAxis
               dataKey={xKey}
               type="number"
               label={xLabel ? { value: xLabel, position: 'insideBottom', offset: -5 } : undefined}
-              stroke="#64748b"
+              stroke={rc.axisLabelFill}
+              tick={{ fill: rc.tickFill }}
             />
             <YAxis
               label={yLabel ? { value: yLabel, angle: -90, position: 'insideLeft' } : undefined}
-              stroke="#64748b"
+              stroke={rc.axisLabelFill}
+              tick={{ fill: rc.tickFill }}
             />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                border: '1px solid #334155',
-                borderRadius: '0.5rem',
-                color: '#f1f5f9',
-              }}
-            />
+            <Tooltip contentStyle={rc.tooltipStyle} />
             <Legend />
             {datasets.map((dataset, idx) => (
               <Line

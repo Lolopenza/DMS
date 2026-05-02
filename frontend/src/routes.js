@@ -251,6 +251,18 @@ export function getSectionSeedForSubject(subjectSlug = DEFAULT_SUBJECT) {
   return getCatalogModules(subjectSlug) || [];
 }
 
+/** Public blurb for track cards: API may use `description`, static catalog uses `goal`. */
+export function getTrackCardBlurb(track) {
+  const text = [track?.description, track?.goal].find((s) => typeof s === 'string' && s.trim());
+  if (text) return text.trim();
+  const n = track?.sectionsCount ?? 0;
+  if (n > 0) {
+    return `${n} module${n === 1 ? '' : 's'} — open the track to practice and browse the catalog.`;
+  }
+  const label = track?.label || 'This';
+  return `${label} track will list modules here when the workspace is ready.`;
+}
+
 export function getSubjectCatalog() {
   const catalog = getCatalogSubjects();
   return catalog.map((subject) => {

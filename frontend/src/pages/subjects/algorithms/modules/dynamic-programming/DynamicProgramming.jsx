@@ -1,5 +1,5 @@
 import React from 'react';
-import AlgorithmsModuleShell from '../../_shared/AlgorithmsModuleShell';
+import AlgorithmsModuleShell from '../../_shared/AlgorithmsModuleShell.jsx';
 import { calcDynamicProgramming } from '../../api/dynamic-programming';
 
 const DynamicProgramming = () => {

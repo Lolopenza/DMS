@@ -15,7 +15,7 @@ export default function Card({
   children, 
   className = '' 
 }) {
-  const baseClasses = 'rounded-2xl bg-white text-slate-950 transition-colors dark:bg-slate-950 dark:text-slate-100';
+  const baseClasses = 'rounded-2xl bg-white text-slate-950 transition-colors dark:bg-slate-900 dark:text-slate-100';
   
   const variantClasses = {
     default: 'border border-slate-200 dark:border-slate-800',

@@ -119,8 +119,8 @@ export default function AutomataViewer({
           <div
             className={`rounded-xl border-2 p-5 ${
               accepted
-                ? 'border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 dark:border-emerald-800 dark:from-emerald-950/50 dark:to-green-950/50'
-                : 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50 dark:border-red-800 dark:from-red-950/50 dark:to-rose-950/50'
+                ? 'border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 dark:border-emerald-800 dark:from-emerald-900/90 dark:to-green-900/90'
+                : 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50 dark:border-red-800 dark:from-red-900/90 dark:to-rose-900/90'
             }`}
           >
             <div className="flex items-center justify-between">

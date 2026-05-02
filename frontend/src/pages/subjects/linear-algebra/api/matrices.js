@@ -1,5 +1,6 @@
 import { runLinearAlgebra } from './client.js';
 
-export async function calcMatrices(payload) {
+/** Matrix operations via POST /api/calculator/linear_algebra (module=matrices). */
+export function calcMatrices(payload) {
   return runLinearAlgebra('matrices', payload);
 }

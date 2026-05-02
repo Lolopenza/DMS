@@ -336,8 +336,8 @@ export const SUBJECT_CATALOG = [
     label: 'Calculus',
     classification: 'specialized',
     goal: 'Limits, derivatives, integrals, and series for engineering, ML, and science.',
-    status: 'planned',
-    features: { calculator: false, roadmap: false, videos: false },
+    status: 'active',
+    features: { calculator: true, roadmap: false, videos: false },
     modules: [
       {
         slug: 'limits-continuity',

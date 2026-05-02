@@ -97,10 +97,10 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
     <ToastProvider>
       <ThemeToggle />
 
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+      <header className="site-header sticky top-0 z-50 border-b border-[var(--dmc-border)] bg-[color:color-mix(in_srgb,var(--dmc-bg-card)_92%,transparent)] backdrop-blur-md supports-[backdrop-filter]:bg-[color:color-mix(in_srgb,var(--dmc-bg-card)_88%,transparent)]">
         <div className="flex h-16 w-full items-center gap-3 px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-3 font-semibold tracking-tight text-slate-900 dark:text-slate-100" aria-label="Math Lab Platform home">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm shadow-indigo-600/20 dark:bg-indigo-500">
+          <Link to="/" className="flex items-center gap-3 font-semibold tracking-tight text-[var(--dmc-text-primary)]" aria-label="Math Lab Platform home">
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm shadow-indigo-600/20 dark:bg-indigo-500">
               <i className="fas fa-calculator" />
             </span>
             <span className="hidden sm:inline">Math Lab Platform</span>
