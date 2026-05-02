@@ -1,151 +1,192 @@
 import React, { useState } from 'react';
-import { useToast } from '../../../../components/Toast.jsx';
-import { ModuleCard, ModulePage } from '../../../../components/module/ModuleLayout.jsx';
-import ResultPanel from '../../../../components/module/ResultPanel.jsx';
+import { useCalculator } from '../../../../hooks/useCalculator.js';
+import { parseVector, parseMatrix, parseNumber } from '../../../../utils/parsers.js';
+import CalculatorCard from '../../../../components/module/CalculatorCard.jsx';
+import { LinearAlgebraResultRenderer } from '../../../../components/module/ResultRenderers.jsx';
+import { FormGroup, FormSelect, CalculateButton } from '../../../../components/module/FormInputs.jsx';
+import SmartCalculatorInput from '../../../../components/module/SmartCalculatorInput.jsx';
 
-function parseVector(value) {
-  const parts = String(value)
-    .split(',')
-    .map((v) => v.trim())
-    .filter(Boolean)
-    .map(Number);
-  if (!parts.length || parts.some((v) => !Number.isFinite(v))) {
-    throw new Error('Vector must contain comma-separated numeric values');
-  }
-  return parts;
+function resolveSmartType(field) {
+  if (field.smartType) return field.smartType;
+  if (field.type === 'matrix') return 'matrix-grid';
+  if (field.type === 'vector') return 'vector-list';
+  if (field.type === 'number') return 'validated-number';
+  return null;
 }
 
-function parseMatrix(value) {
-  const rows = String(value)
-    .split(';')
-    .map((row) => row.trim())
-    .filter(Boolean)
-    .map((row) => row.split(',').map((v) => Number(v.trim())));
-
-  if (!rows.length || rows.some((row) => row.some((v) => !Number.isFinite(v)))) {
-    throw new Error('Matrix must use format: 1,2;3,4');
-  }
-  const width = rows[0].length;
-  if (!width || rows.some((row) => row.length !== width)) {
-    throw new Error('All matrix rows must have the same number of columns');
-  }
-  return rows;
+function defaultMatrixSmartOptions() {
+  return {
+    valueFormat: 'linear_algebra',
+    square: false,
+    minSize: 2,
+    maxSize: 12,
+    binaryActions: false,
+  };
 }
 
-function parseNumber(value) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) {
-    throw new Error('Numeric field contains invalid value');
+function validateLaFields(fields, operation, fieldValues) {
+  const errors = {};
+  for (const field of fields) {
+    if (field.showWhen && !field.showWhen.includes(operation)) continue;
+    if (!field.required) continue;
+    const raw = fieldValues[field.key];
+    const empty = raw === '' || raw === undefined || raw === null;
+    if (empty) errors[field.key] = 'This field is required.';
   }
-  return numeric;
+  return errors;
 }
 
-function parseFieldValue(type, value) {
-  if (type === 'vector') return parseVector(value);
-  if (type === 'matrix') return parseMatrix(value);
-  if (type === 'number') return parseNumber(value);
-  return value;
-}
-
+/**
+ * Premium Linear Algebra Module Shell.
+ * Uses SmartCalculatorInput for matrices (grid), vectors (chip list), and validated numbers.
+ */
 export default function LinearAlgebraModuleShell({
   title,
   subtitle,
-  intro,
+  description,
+  module,
   operationOptions,
   defaultOperation,
   fields,
   calculate,
 }) {
-  const [operation, setOperation] = useState(defaultOperation || operationOptions?.[0]?.value || '');
-  const [formValues, setFormValues] = useState(
-    Object.fromEntries((fields || []).map((field) => [field.key, field.defaultValue ?? '']))
-  );
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const { showError, showSuccess } = useToast();
+  const [operation, setOperation] = useState(defaultOperation);
+  const [fieldValues, setFieldValues] = useState(() => {
+    const initial = {};
+    fields.forEach((field) => {
+      const dv = field.defaultValue;
+      initial[field.key] = dv !== undefined && dv !== null ? String(dv) : '';
+    });
+    return initial;
+  });
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  function updateField(key, value) {
-    setFormValues((prev) => ({ ...prev, [key]: value }));
+  const { result, loading, calculate: executeCalculation } = useCalculator(calculate, {
+    successMessage: 'Calculation complete',
+  });
+
+  const selectedOp = operationOptions.find((op) => op.value === operation);
+
+  function setFieldValue(name, value) {
+    setFieldValues((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => {
+      if (!prev[name]) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
   }
 
   async function handleCalculate() {
+    const validation = validateLaFields(fields, operation, fieldValues);
+    if (Object.keys(validation).length) {
+      setFieldErrors(validation);
+      return;
+    }
+    setFieldErrors({});
+
     try {
-      const payload = { operation };
-      for (const field of fields || []) {
-        if (field.showWhen && !field.showWhen.includes(operation)) continue;
-        const rawValue = formValues[field.key];
-        payload[field.key] = parseFieldValue(field.type || 'text', rawValue);
+      const payload = { module, operation };
+
+      for (const field of fields) {
+        if (field.showWhen && !field.showWhen.includes(operation)) {
+          continue;
+        }
+
+        const rawValue = fieldValues[field.key];
+
+        let parsedValue;
+        if (field.type === 'vector') {
+          parsedValue = parseVector(rawValue, field.label);
+        } else if (field.type === 'matrix') {
+          parsedValue = parseMatrix(rawValue, field.label);
+        } else if (field.type === 'number') {
+          parsedValue = parseNumber(rawValue, field.label);
+        } else {
+          parsedValue = rawValue;
+        }
+
+        payload[field.key] = parsedValue;
       }
 
-      setLoading(true);
-      const data = await calculate(payload);
-      setResult(data?.result ?? data);
-      showSuccess('Calculation complete');
-    } catch (err) {
-      showError(err.message || 'Failed to run calculation');
-    } finally {
-      setLoading(false);
+      await executeCalculation(payload);
+    } catch {
+      // Error already handled by useCalculator
     }
   }
 
+  const visibleFields = fields.filter((field) => {
+    if (!field.showWhen) return true;
+    return field.showWhen.includes(operation);
+  });
+
   return (
-    <ModulePage title={title} subtitle={subtitle}>
-      <ModuleCard title="Concept" icon="fa-book-open">
-        <div className="theory-intro">
-          <p>{intro}</p>
-        </div>
-      </ModuleCard>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">{title}</h1>
+        <p className="mt-2 text-slate-600 dark:text-slate-400">{subtitle}</p>
+      </div>
 
-      <ModuleCard title="Calculator" icon="fa-calculator">
-        <div className="form-group">
-          <label htmlFor={`${title}-operation`}>Operation</label>
-          <select
-            id={`${title}-operation`}
-            value={operation}
-            onChange={(e) => setOperation(e.target.value)}
-          >
-            {(operationOptions || []).map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </div>
+      <CalculatorCard
+        title="Linear Algebra Calculator"
+        description={description || 'Perform matrix and vector operations with LaTeX-rendered results'}
+        resultComponent={
+          result ? (
+            <LinearAlgebraResultRenderer result={result} operation={operation} />
+          ) : null
+        }
+      >
+        <FormSelect
+          label="Operation"
+          value={operation}
+          onChange={(e) => setOperation(e.target.value)}
+          options={operationOptions}
+          hint={selectedOp?.hint}
+        />
 
-        {(fields || []).map((field) => {
-          if (field.showWhen && !field.showWhen.includes(operation)) return null;
-          const fieldId = `${title}-${field.key}`;
-          const isMultiline = field.type === 'matrix';
+        {visibleFields.map((field) => {
+          const st = resolveSmartType(field);
+          if (st) {
+            const augmented = {
+              ...field,
+              name: field.key,
+              smartType: st,
+              smartOptions:
+                field.type === 'matrix'
+                  ? { ...defaultMatrixSmartOptions(), ...field.smartOptions }
+                  : field.smartOptions,
+            };
+            return (
+              <SmartCalculatorInput
+                key={field.key}
+                field={augmented}
+                value={fieldValues[field.key] ?? ''}
+                values={fieldValues}
+                setValue={setFieldValue}
+                operation={operation}
+                error={fieldErrors[field.key]}
+              />
+            );
+          }
 
           return (
-            <div className="form-group" key={field.key}>
-              <label htmlFor={fieldId}>{field.label}</label>
-              {isMultiline ? (
-                <textarea
-                  id={fieldId}
-                  rows={4}
-                  value={formValues[field.key]}
-                  onChange={(e) => updateField(field.key, e.target.value)}
-                  placeholder={field.placeholder}
-                />
-              ) : (
-                <input
-                  id={fieldId}
-                  type={field.type === 'number' ? 'number' : 'text'}
-                  value={formValues[field.key]}
-                  onChange={(e) => updateField(field.key, e.target.value)}
-                  placeholder={field.placeholder}
-                />
-              )}
-              {field.help ? <div className="form-hint">{field.help}</div> : null}
-            </div>
+            <FormGroup
+              key={field.key}
+              label={field.label}
+              value={fieldValues[field.key]}
+              onChange={(e) => setFieldValue(field.key, e.target.value)}
+              type="text"
+              placeholder={field.defaultValue}
+              hint={field.help}
+              required
+            />
           );
         })}
 
-        <button type="button" className="btn btn-primary" onClick={handleCalculate} disabled={loading}>
-          <i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-play'}`}></i> {loading ? 'Calculating...' : 'Calculate'}
-        </button>
-
-        {result ? <ResultPanel title="Result" value={result} /> : null}
-      </ModuleCard>
-    </ModulePage>
+        <CalculateButton loading={loading} onClick={handleCalculate}>
+          Calculate
+        </CalculateButton>
+      </CalculatorCard>
+    </div>
   );
 }

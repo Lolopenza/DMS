@@ -2,18 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   generateInteractiveProblem,
+  getAdaptivePracticeTopic,
   listMyGeneratedProblems,
   submitGeneratedProblemAttempt,
 } from '../../api.js';
+import {
+  ADAPTIVE_TOPIC_VALUE,
+  PRACTICE_TOPIC_GROUPS,
+  getPracticeTopicLabel,
+} from '../../catalog/practiceTopicRegistry.js';
 import { TRACKS_PATH, USER_DASHBOARD_PATH } from '../../routes.js';
-
-const TOPIC_OPTIONS = [
-  { value: 'combinatorics', label: 'Combinatorics' },
-  { value: 'graph_theory', label: 'Graph Theory' },
-  { value: 'logic', label: 'Logic' },
-  { value: 'set_theory', label: 'Set Theory' },
-  { value: 'number_theory', label: 'Number Theory' },
-];
 
 const DIFFICULTY_OPTIONS = [
   { value: 'EASY', label: 'Easy' },
@@ -155,6 +153,8 @@ function FeedbackPanel({ result }) {
 export default function InteractivePractice() {
   const telemetryEnabled = String(import.meta.env.VITE_ENABLE_ATTEMPT_TELEMETRY || 'true').toLowerCase() !== 'false';
   const [topicSlug, setTopicSlug] = useState('combinatorics');
+  /** Latest adaptive resolution when Topic = Smart Selection (refetched each Generate). */
+  const [adaptiveSnapshot, setAdaptiveSnapshot] = useState(null);
   const [difficulty, setDifficulty] = useState('MEDIUM');
   const [mode, setMode] = useState('AI');
   const [skillLevel, setSkillLevel] = useState('intermediate');
@@ -186,8 +186,17 @@ export default function InteractivePractice() {
     setError('');
     setResult(null);
     try {
+      let effectiveTopicSlug = topicSlug;
+      if (topicSlug === ADAPTIVE_TOPIC_VALUE) {
+        const snap = await getAdaptivePracticeTopic();
+        setAdaptiveSnapshot(snap);
+        effectiveTopicSlug = snap?.topicSlug || 'combinatorics';
+      } else {
+        setAdaptiveSnapshot(null);
+      }
+
       const generated = await generateInteractiveProblem({
-        topicSlug,
+        topicSlug: effectiveTopicSlug,
         difficulty,
         skillLevel,
         mode,
@@ -304,13 +313,38 @@ export default function InteractivePractice() {
               <label className="block text-sm font-medium dmc-title mb-1.5">Topic</label>
               <select
                 value={topicSlug}
-                onChange={(e) => setTopicSlug(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setTopicSlug(v);
+                  if (v !== ADAPTIVE_TOPIC_VALUE) {
+                    setAdaptiveSnapshot(null);
+                  }
+                }}
                 className="dmc-select"
               >
-                {TOPIC_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
+                <option value={ADAPTIVE_TOPIC_VALUE}>Smart Selection (AI Choice)</option>
+                {PRACTICE_TOPIC_GROUPS.map((group) => (
+                  <optgroup key={group.subjectSlug} label={group.groupLabel}>
+                    {group.topics.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
+              {topicSlug === ADAPTIVE_TOPIC_VALUE ? (
+                <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                  Uses your weakest catalog topic by reliability-adjusted mastery (same math as the dashboard). Refreshes on
+                  each Generate.
+                </p>
+              ) : null}
+              {adaptiveSnapshot && topicSlug === ADAPTIVE_TOPIC_VALUE ? (
+                <p className="mt-1 text-xs font-medium text-indigo-700 dark:text-indigo-300">
+                  Last pick: {getPracticeTopicLabel(adaptiveSnapshot.topicSlug)} (~
+                  {Math.round((adaptiveSnapshot.adjustedPknow ?? 0) * 100)}% adjusted)
+                </p>
+              ) : null}
             </div>
 
             <div>
@@ -386,16 +420,51 @@ export default function InteractivePractice() {
         </div>
       </div>
 
-      {/* Loading state */}
+      {/* Loading skeleton */}
       {loading && (
-        <div className="practice-card dmc-card p-10 flex flex-col items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center">
-            <svg className="animate-spin w-7 h-7 text-indigo-600" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+        <div className="practice-card dmc-card p-8 space-y-6">
+          {/* Title skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-2 w-2/3">
+              <div className="h-4 bg-slate-200 rounded animate-pulse w-40" />
+              <div className="h-3 bg-slate-100 rounded animate-pulse w-56" />
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse" />
+              <div className="h-6 w-14 bg-slate-200 rounded-full animate-pulse" />
+            </div>
           </div>
-          <p className="text-base font-medium dmc-title">
-            {mode === 'AI' ? 'AI is generating your problem…' : 'Generating problem from template…'}
-          </p>
-          <p className="text-sm dmc-subtitle">This may take a few seconds</p>
+
+          {/* Question text skeleton */}
+          <div className="rounded-xl bg-slate-50 p-5 space-y-3">
+            <div className="h-4 bg-slate-200 rounded animate-pulse w-full" />
+            <div className="h-4 bg-slate-200 rounded animate-pulse w-5/6" />
+            <div className="h-4 bg-slate-200 rounded animate-pulse w-2/3" />
+          </div>
+
+          {/* Answer input skeleton */}
+          <div className="space-y-2">
+            <div className="h-3.5 bg-slate-100 rounded animate-pulse w-24" />
+            <div className="h-11 bg-slate-200 rounded-lg animate-pulse w-full" />
+          </div>
+
+          {/* Button skeleton */}
+          <div className="h-10 bg-slate-200 rounded-lg animate-pulse w-40" />
+
+          {/* Info tip skeleton */}
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 bg-slate-100 rounded animate-pulse flex-shrink-0" />
+            <div className="h-3 bg-slate-100 rounded animate-pulse w-64" />
+          </div>
+
+          {/* Generating indicator */}
+          <div className="flex items-center gap-3 text-sm text-indigo-600 font-medium">
+            <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            {mode === 'AI' ? 'AI is crafting your problem...' : 'Generating from template...'}
+          </div>
         </div>
       )}
 

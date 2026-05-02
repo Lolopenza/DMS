@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AUTH_SIGN_IN_PATH } from '../../routes.js';
 import StateNotice from '../../components/ui/StateNotice.jsx';
 import { requestPasswordReset } from '../../api.js';
+import { Button, Card, CardHeader, Input } from '../../components/ui/index.js';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
@@ -24,43 +25,50 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h2>Reset password</h2>
-        <p className="subtitle">Recover access to your account securely</p>
-      </div>
+    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <header className="mx-auto max-w-xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Account</p>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Reset password</h1>
+          <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-400">
+            Recover access to your account securely.
+          </p>
+        </header>
 
-      <div className="card" style={{ maxWidth: '520px', margin: '0 auto' }}>
-        <div className="card-header">
-          <h3><i className="fas fa-key"></i> Recovery</h3>
-        </div>
-        <div className="card-body">
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="resetEmail">Email</label>
-              <input
+        <div className="mx-auto mt-10 max-w-xl">
+          <Card variant="elevated" padding="lg">
+            <CardHeader title="Recovery" subtitle="We will email you a reset link if an account exists." />
+
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+              <Input
                 id="resetEmail"
-                className="form-control"
+                label="Email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+
+              <Button type="submit" loading={status.type === 'loading'} loadingLabel="Sending..." className="w-full">
+                <i className="fas fa-paper-plane mr-2" /> Send reset link
+              </Button>
+            </form>
+
+            <div className="mt-6">
+              <StateNotice type={status.type} title="Reset status" message={status.message} />
             </div>
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.75rem' }}>
-              <i className="fas fa-paper-plane"></i> Send reset link
-            </button>
-          </form>
 
-          <StateNotice type={status.type} title="Reset status" message={status.message} />
-
-          <div style={{ marginTop: '1rem' }}>
-            <Link to={AUTH_SIGN_IN_PATH} className="btn btn-outline">
-              <i className="fas fa-arrow-left"></i> Back to sign in
-            </Link>
-          </div>
+            <div className="mt-6">
+              <Link to={AUTH_SIGN_IN_PATH}>
+                <Button variant="secondary" className="w-full">
+                  <i className="fas fa-arrow-left mr-2" /> Back to sign in
+                </Button>
+              </Link>
+            </div>
+          </Card>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

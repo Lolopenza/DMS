@@ -1,264 +1,268 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useToast } from '../../../../../components/Toast.jsx';
-import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
-import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
+import { calcGraphTheory } from '../../api/graph-theory.js';
+import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import graphTheoryContent from '../../../../../data/content/discrete-math/graph-theory.content.js';
 
-function GraphResult({ result }) {
-  if (!result) return null;
+/**
+ * Graph Theory module - migrated to use CytoscapeGraph + CalculatorCard.
+ * Before: 264 lines with manual Cytoscape initialization.
+ * After: ~120 lines with reusable components.
+ */
 
-  if (result.matrix && result.labels) {
-    return (
-      <div style={{ display: 'grid', gap: '1rem' }}>
-        <div>
-          <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Adjacency Matrix</h4>
-          <table className="truth-table" style={{ maxWidth: '560px' }}>
-            <thead>
-              <tr>
-                <th></th>
-                {result.labels.map(label => <th key={`h-${label}`}>{label}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {result.matrix.map((row, i) => (
-                <tr key={`r-${result.labels[i]}`}>
-                  <th>{result.labels[i]}</th>
-                  {row.map((cell, j) => <td key={`c-${i}-${j}`}>{cell}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div>
-          <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Vertex Degrees</h4>
-          <table className="truth-table" style={{ maxWidth: '280px' }}>
-            <thead>
-              <tr><th>Vertex</th><th>Degree</th></tr>
-            </thead>
-            <tbody>
-              {result.degrees.map((item) => (
-                <tr key={`d-${item.node}`}>
-                  <td>{item.node}</td>
-                  <td>{item.degree}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
-
-  // Fallback — pretty JSON
-  return (
-    <pre style={{ background: 'var(--surface-100,#f8f9fa)', padding: '1rem', borderRadius: '8px', overflowX: 'auto', fontSize: '0.9rem' }}>
-      {JSON.stringify(result, null, 2)}
-    </pre>
-  );
-}
-
-const DEFAULT_ELEMENTS = [
-  { data: { id: '1', label: '1' } },
-  { data: { id: '2', label: '2' } },
-  { data: { id: '3', label: '3' } },
-  { data: { id: '4', label: '4' } },
-  { data: { id: '1-2', source: '1', target: '2', weight: 1 } },
-  { data: { id: '2-3', source: '2', target: '3', weight: 2 } },
-  { data: { id: '3-4', source: '3', target: '4', weight: 1 } },
-  { data: { id: '1-3', source: '1', target: '3', weight: 4 } },
+const OPERATIONS = [
+  { value: 'bfs', label: 'BFS', hint: 'Breadth-first traversal from a start node.' },
+  { value: 'dfs', label: 'DFS', hint: 'Depth-first traversal from a start node.' },
+  { value: 'connected_components', label: 'Connected Components', hint: 'List connected components of the graph.' },
+  { value: 'has_cycle', label: 'Cycle Check', hint: 'Detect whether the graph contains a cycle.' },
+  { value: 'dijkstra', label: 'Dijkstra distances', hint: 'Compute shortest-path distances from a start node (requires weights for meaningful results).' },
+  { value: 'kruskal', label: 'Kruskal MST', hint: 'Compute a minimum spanning tree for an undirected weighted graph.' },
 ];
 
-export default function GraphTheory() {
-  const { showSuccess, showError } = useToast();
-  const cyRef = useRef(null);
-  const cyInstance = useRef(null);
+const INPUT_MODES = [
+  {
+    value: 'edge_list',
+    label: 'Edge list (recommended)',
+    hint: 'Paste one edge per line: "A B" or "A B 2.5" (optional weight).',
+    default: true,
+  },
+  {
+    value: 'adjacency_list',
+    label: 'Adjacency list',
+    hint: 'Format: node: neighbor1, neighbor2. Optional weights: B(2.5).',
+  },
+];
 
-  const [directed, setDirected] = useState(false);
-  const [result, setResult] = useState(null);
+function normalizeNodeLabel(label) {
+  return String(label || '').trim();
+}
 
-  // Edge input state for manual graph editing
-  const [newEdgeSrc, setNewEdgeSrc] = useState('');
-  const [newEdgeTgt, setNewEdgeTgt] = useState('');
-  const [newEdgeWeight, setNewEdgeWeight] = useState(1);
-  const [deleteId, setDeleteId] = useState('');
+function parseEdgeList(raw) {
+  const lines = String(raw || '')
+    .split('\n')
+    .map((line) => line.replace(/#.*$/, '').trim())
+    .filter(Boolean);
 
-  useEffect(() => {
-    if (!window.cytoscape || !cyRef.current) return;
-    cyInstance.current = window.cytoscape({
-      container: cyRef.current,
-      elements: DEFAULT_ELEMENTS,
-      style: [
-        { selector: 'node', style: { 'background-color': '#6366f1', 'label': 'data(label)', 'color': '#fff', 'text-valign': 'center', 'font-size': '14px', 'width': '40px', 'height': '40px', 'border-width': 2, 'border-color': '#4f46e5' } },
-        { selector: 'edge', style: { 'line-color': '#a5b4fc', 'target-arrow-color': '#6366f1', 'target-arrow-shape': directed ? 'triangle' : 'none', 'curve-style': 'bezier', 'label': 'data(weight)', 'font-size': '12px', 'color': '#1e293b', 'text-background-opacity': 0, 'text-outline-color': '#fff', 'text-outline-width': 2 } },
-        { selector: '.highlighted', style: { 'background-color': '#f59e0b', 'line-color': '#f59e0b', 'target-arrow-color': '#f59e0b' } },
-      ],
-      layout: { name: 'cose', animate: false },
-      minZoom: 0.3,
-      maxZoom: 3,
-      wheelSensitivity: 0.3,
+  const edges = [];
+  lines.forEach((line) => {
+    // Allow separators: space, comma, semicolon, tab
+    const parts = line.split(/[\s,;]+/).map((p) => p.trim()).filter(Boolean);
+    const u = normalizeNodeLabel(parts[0]);
+    const v = normalizeNodeLabel(parts[1]);
+    if (!u || !v) return;
+    const wRaw = parts[2];
+    const weight = typeof wRaw === 'string' && wRaw.length ? Number(wRaw) : undefined;
+    edges.push({
+      u,
+      v,
+      ...(Number.isFinite(weight) ? { weight } : {}),
     });
-    return () => {
-      cyInstance.current?.destroy();
-    };
-  }, []);
+  });
 
-  function getGraphData() {
-    if (!cyInstance.current) return { vertices: [], edges: [] };
-    const vertices = cyInstance.current.nodes().map(n => n.id());
-    const edges = cyInstance.current.edges().map(e => ({
-      u: e.source().id(),
-      v: e.target().id(),
-      weight: e.data('weight') || 1,
-    }));
-    return { vertices, edges };
-  }
+  return edges;
+}
 
-  function addNode() {
-    if (!cyInstance.current) return;
-    const id = String(cyInstance.current.nodes().length + 1);
-    cyInstance.current.add({ data: { id, label: id } });
-    cyInstance.current.layout({ name: 'cose', animate: false }).run();
-  }
+function parseWeightedNeighbor(token) {
+  const trimmed = String(token || '').trim();
+  if (!trimmed) return null;
 
-  function addEdge() {
-    if (!cyInstance.current || !newEdgeSrc || !newEdgeTgt) return;
-    const id = `${newEdgeSrc}-${newEdgeTgt}-${Date.now()}`;
-    if (cyInstance.current.getElementById(id).length) return;
-    cyInstance.current.add({ data: { id, source: newEdgeSrc, target: newEdgeTgt, weight: Number(newEdgeWeight) } });
-    setNewEdgeSrc(''); setNewEdgeTgt(''); setNewEdgeWeight(1);
-  }
+  // Accept formats:
+  // - B
+  // - B(2.5)
+  // - B (2.5)
+  const match = trimmed.match(/^(.+?)(?:\s*\(\s*(-?\d+(?:\.\d+)?)\s*\))?$/);
+  if (!match) return { v: trimmed };
+  const v = normalizeNodeLabel(match[1]);
+  const weight = typeof match[2] === 'string' ? Number(match[2]) : undefined;
+  if (!v) return null;
+  return Number.isFinite(weight) ? { v, weight } : { v };
+}
 
-  function clearGraph() {
-    cyInstance.current?.elements().remove();
-    setResult(null);
-  }
+function parseAdjacencyList(raw) {
+  const lines = String(raw || '')
+    .split('\n')
+    .map((line) => line.replace(/#.*$/, '').trim())
+    .filter(Boolean);
 
-  function deleteElement() {
-    if (!cyInstance.current || !deleteId.trim()) return;
-    const el = cyInstance.current.getElementById(deleteId.trim());
-    if (el.length) { el.remove(); setDeleteId(''); }
-    else showError(`Element "${deleteId}" not found`);
-  }
+  const adj = {};
+  lines.forEach((line) => {
+    const [nodeRaw, targetsRaw] = line.split(':');
+    const node = normalizeNodeLabel(nodeRaw);
+    if (!node) return;
 
-  function analyzeGraph() {
-    const { vertices, edges } = getGraphData();
-    if (!vertices.length) {
-      showError('Add at least one node to analyze the graph');
+    const targets = String(targetsRaw || '').trim();
+    if (!targets) {
+      adj[node] = [];
       return;
     }
 
-    const indexMap = new Map(vertices.map((v, i) => [v, i]));
-    const matrix = Array.from({ length: vertices.length }, () =>
-      Array.from({ length: vertices.length }, () => 0)
-    );
+    // Allow commas OR whitespace as separators.
+    const tokens = targets.split(/[,\s]+/).map((t) => t.trim()).filter(Boolean);
+    adj[node] = tokens.map(parseWeightedNeighbor).filter(Boolean);
+  });
 
-    edges.forEach((edge) => {
-      const i = indexMap.get(edge.u);
-      const j = indexMap.get(edge.v);
-      if (typeof i !== 'number' || typeof j !== 'number') return;
-      matrix[i][j] += 1;
-      if (!directed) {
-        matrix[j][i] += 1;
-      }
+  return adj;
+}
+
+function adjacencyToGraphData(adj, directed) {
+  const vertices = new Set();
+  const edges = [];
+
+  Object.entries(adj || {}).forEach(([u, neighbors]) => {
+    vertices.add(String(u));
+    (neighbors || []).forEach((neighbor) => {
+      if (!neighbor) return;
+      const vv = String(neighbor.v);
+      vertices.add(vv);
+      edges.push({ u: String(u), v: vv, ...(typeof neighbor.weight === 'number' ? { weight: neighbor.weight } : {}) });
     });
+  });
 
-    const degrees = vertices.map((node, idx) => {
-      if (directed) {
-        const outDegree = matrix[idx].reduce((sum, val) => sum + val, 0);
-        const inDegree = matrix.reduce((sum, row) => sum + row[idx], 0);
-        return { node, degree: `${inDegree} in / ${outDegree} out` };
-      }
-      const degree = matrix[idx].reduce((sum, val) => sum + val, 0);
-      return { node, degree };
+  const weighted = edges.some((edge) => typeof edge.weight === 'number');
+  return {
+    vertices: Array.from(vertices),
+    edges,
+    directed: Boolean(directed),
+    weighted,
+  };
+}
+
+function edgeListToGraphData(edgeRows, directed) {
+  const vertices = new Set();
+  const edges = [];
+
+  (edgeRows || []).forEach((row) => {
+    if (!row) return;
+    const u = normalizeNodeLabel(row.u);
+    const v = normalizeNodeLabel(row.v);
+    if (!u || !v) return;
+    vertices.add(u);
+    vertices.add(v);
+    edges.push({
+      u,
+      v,
+      ...(typeof row.weight === 'number' ? { weight: row.weight } : {}),
     });
+  });
 
-    setResult({ labels: vertices, matrix, degrees });
-    showSuccess('Adjacency matrix and degrees generated');
-  }
+  const weighted = edges.some((edge) => typeof edge.weight === 'number');
+  return {
+    vertices: Array.from(vertices),
+    edges,
+    directed: Boolean(directed),
+    weighted,
+  };
+}
 
-  return (
-    <ModulePage
-      title="Graph Theory (Intro)"
-      subtitle="Build graphs, inspect adjacency, and check basic properties"
-    >
+const graphTheoryConfig = {
+  id: 'graph-theory',
+  eyebrow: 'Discrete Mathematics',
+  title: 'Graph Theory',
+  subtitle: 'Work with adjacency lists and compute basic graph properties.',
+  theory: graphTheoryContent,
+  practice: {
+    title: 'Graph Calculator',
+    description: 'Paste edges or an adjacency list. Edge list is the easiest format for quick experiments.',
+    operationLabel: 'Operation',
+    submitLabel: 'Calculate',
+    loadingLabel: 'Calculating...',
+    calculate: calcGraphTheory,
+    buildPayload: ({ operation, values }) => {
+      const directed = values.directed === 'true';
+      const inputMode = values.inputMode || 'edge_list';
+      const graph = inputMode === 'edge_list'
+        ? edgeListToGraphData(parseEdgeList(values.edgeList), directed)
+        : adjacencyToGraphData(parseAdjacencyList(values.adjacencyList), directed);
 
-      <ModuleCard title="Deep Dive Connection" icon="fa-route">
-          <p>
-            This module focuses on graph structure, visual properties, adjacency, and degrees.
-            To run search algorithms like DFS or BFS, please visit the Algorithms track.
-          </p>
-          <Link to="/algorithms/modules/graph-algorithms" className="btn btn-outline btn-deep-dive">
-            <i className="fas fa-arrow-right"></i> Looking for DFS/BFS? Go to Graph Algorithms.
-          </Link>
-      </ModuleCard>
+      if (!graph.vertices.length) {
+        throw new Error('Please paste a graph first (at least one edge or one adjacency line).');
+      }
 
-      <ModuleCard title="Graph Visualization" icon="fa-project-diagram">
-          {/* Controls */}
-          <div className="visualization-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-            <button className="btn btn-primary" onClick={addNode}><i className="fas fa-plus-circle"></i> Add Node</button>
-            <button className="btn btn-outline" onClick={clearGraph}><i className="fas fa-trash"></i> Clear</button>
-            <button className="btn btn-outline" title="Fit graph to view" onClick={() => cyInstance.current?.fit(undefined, 30)}>
-              <i className="fas fa-compress-arrows-alt"></i> Fit
-            </button>
-            <button className="btn btn-outline" title="Reset zoom to 1:1"
-              onClick={() => cyInstance.current?.zoom({ level: 1, renderedPosition: { x: cyRef.current.offsetWidth / 2, y: 200 } })}>
-              <i className="fas fa-search"></i> 1:1
-            </button>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.95rem' }}>
-              <input type="checkbox" checked={directed} onChange={e => setDirected(e.target.checked)} />
-              Directed
-            </label>
-          </div>
+      if (['bfs', 'dfs', 'dijkstra'].includes(operation) && !String(values.startNode || '').trim()) {
+        throw new Error('Start node is required for this operation.');
+      }
 
-          {/* Delete node/edge row */}
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label>Delete by ID</label>
-              <input type="text" value={deleteId} onChange={e => setDeleteId(e.target.value)}
-                placeholder="Node or edge ID" style={{ width: '140px' }}
-                onKeyDown={e => e.key === 'Enter' && deleteElement()} />
-            </div>
-            <button className="btn btn-outline" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={deleteElement}>
-              <i className="fas fa-minus-circle"></i> Delete
-            </button>
-          </div>
+      return {
+        operation,
+        graph,
+        start_node: values.startNode ? String(values.startNode).trim() : undefined,
+        end_node: values.endNode ? String(values.endNode) : undefined,
+      };
+    },
+    mapResult: (data) => data.result ?? data,
+    operations: OPERATIONS.map((op, idx) => ({ ...op, default: idx === 0 })),
+    fields: [
+      {
+        name: 'inputMode',
+        label: 'Input format',
+        type: 'select',
+        defaultValue: 'edge_list',
+        options: INPUT_MODES.map((m) => ({ value: m.value, label: m.label })),
+        hint: INPUT_MODES.find((m) => m.value === 'edge_list')?.hint,
+        span: 'full',
+      },
+      {
+        name: 'edgeList',
+        label: 'Edge list',
+        smartType: 'edge-list',
+        type: 'textarea',
+        rows: 7,
+        defaultValue: 'A B\nA C\nB C 2\nC D 1',
+        hint: 'One edge per line: "u v" or "u v weight". Separators: space / comma / semicolon. Use # for comments.',
+        required: true,
+        visibleWhen: (v) => v.inputMode === 'edge_list',
+        span: 'full',
+        smartOptions: {
+          fromKey: 'edgeFrom',
+          toKey: 'edgeTo',
+          weightKey: 'edgeWeight',
+          errorKey: 'edgeBuilderError',
+        },
+      },
+      // Internal builder state (kept in ModuleExperience values)
+      { name: 'edgeFrom', label: 'From', type: 'text', defaultValue: '', showWhen: [], disabled: true },
+      { name: 'edgeTo', label: 'To', type: 'text', defaultValue: '', showWhen: [], disabled: true },
+      { name: 'edgeWeight', label: 'Weight', type: 'text', defaultValue: '', showWhen: [], disabled: true },
+      { name: 'edgeBuilderError', label: 'Edge builder error', type: 'text', defaultValue: '', showWhen: [], disabled: true },
+      {
+        name: 'adjacencyList',
+        label: 'Adjacency list',
+        type: 'textarea',
+        rows: 7,
+        defaultValue: 'A: B, C\nB: C(2)\nC: D(1)\nD:',
+        hint: 'Format: node: neighbor1, neighbor2. Optional weights: B(2.5). Use # for comments.',
+        required: true,
+        visibleWhen: (v) => v.inputMode === 'adjacency_list',
+        span: 'full',
+      },
+      {
+        name: 'directed',
+        label: 'Directed graph',
+        type: 'select',
+        defaultValue: 'false',
+        options: [
+          { value: 'false', label: 'No (undirected)' },
+          { value: 'true', label: 'Yes (directed)' },
+        ],
+      },
+      {
+        name: 'startNode',
+        label: 'Start node',
+        type: 'text',
+        defaultValue: 'A',
+        hint: 'Used for BFS/DFS/Dijkstra only. Must match a node label in the adjacency list.',
+        showWhen: ['bfs', 'dfs', 'dijkstra'],
+      },
+      {
+        name: 'endNode',
+        label: 'End node',
+        type: 'text',
+        defaultValue: 'D',
+        hint: 'Reserved for future path reconstruction.',
+        showWhen: [],
+      },
+    ],
+  },
+};
 
-          {/* Add edge row */}
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label>From</label>
-              <input type="text" value={newEdgeSrc} onChange={e => setNewEdgeSrc(e.target.value)} placeholder="Node ID" style={{ width: '80px' }} />
-            </div>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label>To</label>
-              <input type="text" value={newEdgeTgt} onChange={e => setNewEdgeTgt(e.target.value)} placeholder="Node ID" style={{ width: '80px' }} />
-            </div>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label>Weight</label>
-              <input type="number" value={newEdgeWeight} onChange={e => setNewEdgeWeight(e.target.value)} style={{ width: '70px' }} />
-            </div>
-            <button className="btn btn-primary" onClick={addEdge}><i className="fas fa-link"></i> Add Edge</button>
-          </div>
-
-          {/* Cytoscape container — wrapped via useRef */}
-          <div ref={cyRef} style={{ height: '400px', border: '1px solid #e0e7ef', borderRadius: '8px', marginBottom: '1rem' }}></div>
-
-          {/* Intro analysis controls */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
-            <button className="btn btn-primary" onClick={analyzeGraph}>
-              <i className="fas fa-table"></i> Generate Adjacency + Degrees
-            </button>
-          </div>
-
-          {result && (
-            <ResultPanel
-              title="Result"
-              value={result}
-              valueRenderer={() => <GraphResult result={result} />}
-            />
-          )}
-      </ModuleCard>
-    </ModulePage>
-  );
+export default function GraphTheory() {
+  return <ModuleExperience config={graphTheoryConfig} />;
 }

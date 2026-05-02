@@ -24,6 +24,8 @@ import {
 } from '../../api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { AnalyticsChartTooltip, errorTypeHint, errorTypeLabel } from '../../components/analytics/analyticsShared.jsx';
+import { Button, Card, CardHeader } from '../../components/ui/index.js';
+import { Select, Textarea } from '../../components/ui/Input.jsx';
 
 export default function ContentAdmin() {
   const { user } = useAuth();
@@ -239,32 +241,38 @@ export default function ContentAdmin() {
   }
 
   return (
-    <section className="container mx-auto px-4 py-8" style={{ maxWidth: '1200px' }}>
-      <h1 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '1rem' }}>Admin Panel</h1>
-      <p className="subtitle" style={{ marginBottom: '1rem' }}>
+    <section className="mx-auto w-full max-w-6xl px-4 py-10">
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Admin Panel</h1>
+      <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
         Manage users, view platform stats, and edit landing page texts.
       </p>
-      {error && <p style={{ color: '#b91c1c', marginBottom: '0.75rem' }}>{error}</p>}
-      {success && <p style={{ color: '#166534', marginBottom: '0.75rem' }}>{success}</p>}
+      {error && (
+        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-200">
+          {success}
+        </div>
+      )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '1rem', marginBottom: '1rem' }}>
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem' }}>
-          <div style={{ fontSize: '.85rem', color: '#64748b' }}>Total Students</div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>{stats.totalStudents}</div>
-        </div>
-        <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem' }}>
-          <div style={{ fontSize: '.85rem', color: '#64748b' }}>Active Today</div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700 }}>{stats.activeToday}</div>
-        </div>
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Card variant="elevated" padding="lg">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total students</p>
+          <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">{stats.totalStudents}</p>
+        </Card>
+        <Card variant="elevated" padding="lg">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Active today</p>
+          <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-slate-100">{stats.activeToday}</p>
+        </Card>
       </div>
 
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem', marginBottom: '1rem' }}>
-        <h3 style={{ fontWeight: 600, marginBottom: '0.75rem' }}>User Activity Charts</h3>
-        <div style={{ color: '#64748b', fontSize: '.9rem', marginBottom: '.75rem' }}>
-          Charts use current admin stats and loaded users page.
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '1rem' }}>
-          <div style={{ width: '100%', height: 260 }}>
+      <div className="mt-6">
+        <Card variant="elevated" padding="lg">
+          <CardHeader title="User activity charts" subtitle="Charts use current admin stats and loaded users page." />
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="h-[260px] w-full">
             <ResponsiveContainer>
               <BarChart data={activityData}>
                 <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
@@ -275,8 +283,8 @@ export default function ContentAdmin() {
                 <Bar dataKey="value" fill="#2563eb" name="Students" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-          <div style={{ width: '100%', height: 260 }}>
+            </div>
+            <div className="h-[260px] w-full">
             <ResponsiveContainer>
               <PieChart>
                 <Pie data={roleData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={84} label>
@@ -288,8 +296,8 @@ export default function ContentAdmin() {
                 <Legend wrapperStyle={legendStyle} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
-          <div style={{ width: '100%', height: 260 }}>
+            </div>
+            <div className="h-[260px] w-full">
             <ResponsiveContainer>
               <BarChart data={statusData}>
                 <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
@@ -299,242 +307,261 @@ export default function ContentAdmin() {
                 <Bar dataKey="value" fill="#16a34a" name="Users" />
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem', marginBottom: '1rem' }}>
-        <h3 style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Users</h3>
-        {loading ? (
-          <p>Loading users...</p>
-        ) : (
-          <>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ textAlign: 'left', borderBottom: '1px solid #e5e7eb' }}>
-                    <th style={{ padding: '8px' }}>ID</th>
-                    <th style={{ padding: '8px' }}>Email</th>
-                    <th style={{ padding: '8px' }}>Username</th>
-                    <th style={{ padding: '8px' }}>Role</th>
-                    <th style={{ padding: '8px' }}>Active</th>
-                    <th style={{ padding: '8px' }}>Created</th>
-                    <th style={{ padding: '8px' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((item) => {
-                    const isSelf = String(item.id) === String(user?.id);
-                    return (
-                      <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '8px' }}>{item.id}</td>
-                        <td style={{ padding: '8px' }}>{item.email}</td>
-                        <td style={{ padding: '8px' }}>{item.username}</td>
-                        <td style={{ padding: '8px' }}>{item.role}</td>
-                        <td style={{ padding: '8px' }}>{item.enabled ? 'Yes' : 'No'}</td>
-                        <td style={{ padding: '8px' }}>{item.createdAt ? new Date(item.createdAt).toLocaleString() : '—'}</td>
-                        <td style={{ padding: '8px' }}>
-                          <button
-                            type="button"
-                            onClick={() => onToggleUser(item)}
-                            disabled={isSelf}
-                            style={{ opacity: isSelf ? 0.6 : 1 }}
-                          >
-                            {item.enabled ? 'Deactivate' : 'Activate'}
-                          </button>
-                          {isSelf && <span style={{ marginLeft: '8px', color: '#64748b', fontSize: '.8rem' }}>(you)</span>}
-                        </td>
+      <div className="mt-6">
+        <Card variant="elevated" padding="lg">
+          <CardHeader title="Users" subtitle="Browse and toggle user activity." />
+          <div className="mt-6">
+            {loading ? (
+              <div className="text-sm text-slate-600 dark:text-slate-400">Loading users…</div>
+            ) : (
+              <>
+                <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+                  <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
+                    <thead className="bg-slate-50 dark:bg-slate-900/40">
+                      <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                        <th className="px-4 py-3">ID</th>
+                        <th className="px-4 py-3">Email</th>
+                        <th className="px-4 py-3">Username</th>
+                        <th className="px-4 py-3">Role</th>
+                        <th className="px-4 py-3">Active</th>
+                        <th className="px-4 py-3">Created</th>
+                        <th className="px-4 py-3">Actions</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', alignItems: 'center' }}>
-              <div style={{ color: '#64748b', fontSize: '.9rem' }}>
-                Total: {pageMeta.totalElements} · Page {pageMeta.page + 1} / {Math.max(1, pageMeta.totalPages)}
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button type="button" disabled={!canPrev} onClick={() => loadAdminData(pageMeta.page - 1, pageMeta.size)}>
-                  Prev
-                </button>
-                <button type="button" disabled={!canNext} onClick={() => loadAdminData(pageMeta.page + 1, pageMeta.size)}>
-                  Next
-                </button>
-              </div>
-            </div>
-          </>
-        )}
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-900 dark:bg-slate-950">
+                      {users.map((item) => {
+                        const isSelf = String(item.id) === String(user?.id);
+                        return (
+                          <tr key={item.id} className="align-top">
+                            <td className="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">{item.id}</td>
+                            <td className="px-4 py-3 text-slate-800 dark:text-slate-200">{item.email}</td>
+                            <td className="px-4 py-3 text-slate-800 dark:text-slate-200">{item.username}</td>
+                            <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{item.role}</td>
+                            <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{item.enabled ? 'Yes' : 'No'}</td>
+                            <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
+                              {item.createdAt ? new Date(item.createdAt).toLocaleString() : '—'}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant={item.enabled ? 'secondary' : 'primary'}
+                                  onClick={() => onToggleUser(item)}
+                                  disabled={isSelf}
+                                >
+                                  {item.enabled ? 'Deactivate' : 'Activate'}
+                                </Button>
+                                {isSelf ? <span className="text-xs text-slate-500 dark:text-slate-400">(you)</span> : null}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Total: {pageMeta.totalElements} · Page {pageMeta.page + 1} / {Math.max(1, pageMeta.totalPages)}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" disabled={!canPrev} onClick={() => loadAdminData(pageMeta.page - 1, pageMeta.size)}>
+                      Prev
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={!canNext} onClick={() => loadAdminData(pageMeta.page + 1, pageMeta.size)}>
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </Card>
       </div>
 
-      <div style={{ border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem', marginBottom: '1rem' }}>
-        <h3 style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Learning Analytics (Raw Preview)</h3>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-          <div>
-            <label style={{ display: 'block', color: '#64748b', fontSize: '.85rem', marginBottom: '.25rem' }}>Student</label>
-            <select
-              value={analyticsUserId}
-              onChange={(e) => setAnalyticsUserId(e.target.value)}
-              style={{ minWidth: 220 }}
-            >
-              {!users.length && <option value="">No users</option>}
-              {!studentUsers.length && <option value="">No students found</option>}
-              {studentUsers.map((u) => (
-                <option key={u.id} value={u.id}>{u.username} ({u.role})</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label style={{ display: 'block', color: '#64748b', fontSize: '.85rem', marginBottom: '.25rem' }}>Window</label>
-            <select
-              value={analyticsWindowDays}
-              onChange={(e) => setAnalyticsWindowDays(Number(e.target.value))}
-            >
-              <option value={7}>7 days</option>
-              <option value={30}>30 days</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'end' }}>
-            <button type="button" onClick={() => loadRawAnalytics(analyticsUserId, analyticsWindowDays)} disabled={!analyticsUserId || analyticsLoading}>
-              {analyticsLoading ? 'Loading…' : 'Refresh'}
-            </button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'end', gap: '.5rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '.4rem', color: '#334155' }}>
+      <div className="mt-6">
+        <Card variant="elevated" padding="lg">
+          <CardHeader title="Learning analytics (raw preview)" subtitle="Inspect attempts and export CSV." />
+          <div className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              <Select
+                label="Student"
+                value={analyticsUserId}
+                onChange={(e) => setAnalyticsUserId(e.target.value)}
+                options={[
+                  ...(!users.length ? [{ value: '', label: 'No users', disabled: true }] : []),
+                  ...(!studentUsers.length ? [{ value: '', label: 'No students found', disabled: true }] : []),
+                  ...studentUsers.map((u) => ({ value: String(u.id), label: `${u.username} (${u.role})` })),
+                ]}
+              />
+              <Select
+                label="Window"
+                value={String(analyticsWindowDays)}
+                onChange={(e) => setAnalyticsWindowDays(Number(e.target.value))}
+                options={[
+                  { value: '7', label: '7 days' },
+                  { value: '30', label: '30 days' },
+                ]}
+              />
+              <div className="flex items-end">
+                <Button
+                  className="w-full"
+                  onClick={() => loadRawAnalytics(analyticsUserId, analyticsWindowDays)}
+                  disabled={!analyticsUserId || analyticsLoading}
+                >
+                  {analyticsLoading ? 'Loading…' : 'Refresh'}
+                </Button>
+              </div>
+              <div className="flex items-end">
+                <Button className="w-full" variant="outline" onClick={exportAnalyticsCsv} disabled={!filteredAttempts.length}>
+                  Export CSV
+                </Button>
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
+                className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-700"
                 checked={onlyIncorrect}
                 onChange={(e) => setOnlyIncorrect(e.target.checked)}
               />
               Only incorrect attempts
             </label>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'end' }}>
-            <button type="button" onClick={exportAnalyticsCsv} disabled={!filteredAttempts.length}>
-              Export CSV
-            </button>
-          </div>
-        </div>
-        {analyticsError && <p style={{ color: '#b91c1c', marginBottom: '0.75rem' }}>{analyticsError}</p>}
-        {!analyticsError && (
-          <div style={{ color: '#64748b', fontSize: '.9rem', marginBottom: '.75rem' }}>
-            Attempts loaded: {attempts.length}
-          </div>
-        )}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: '.75rem', marginBottom: '.75rem' }}>
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '.65rem .75rem' }}>
-            <div style={{ color: '#64748b', fontSize: '.8rem' }}>Accuracy</div>
-            <div style={{ fontWeight: 700, fontSize: '1.15rem' }}>{accuracyPercent}%</div>
-          </div>
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '.65rem .75rem' }}>
-            <div style={{ color: '#64748b', fontSize: '.8rem' }}>Avg Time</div>
-            <div style={{ fontWeight: 700, fontSize: '1.15rem' }}>{avgTimeSeconds == null ? '—' : `${avgTimeSeconds}s`}</div>
-          </div>
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '.65rem .75rem' }}>
-            <div style={{ color: '#64748b', fontSize: '.8rem' }}>Top Weak Topic</div>
-            <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>
-              {topWeakTopic ? `${topWeakTopic.topic} (${Math.round(topWeakTopic.accuracy * 100)}%)` : '—'}
-            </div>
-          </div>
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '.65rem .75rem' }}>
-            <div style={{ color: '#64748b', fontSize: '.8rem' }}>Unclassified Errors</div>
-            <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{unclassifiedPercent}%</div>
-          </div>
-        </div>
 
-        <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))' }}>
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem' }}>
-            <div style={{ fontWeight: 600, marginBottom: '.5rem' }}>ErrorType Breakdown</div>
-            {!orderedErrorBreakdown.length ? (
-              <p style={{ color: '#64748b', margin: 0 }}>No attempts yet.</p>
+            {analyticsError ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+                {analyticsError}
+              </div>
             ) : (
-              <ul style={{ margin: 0, paddingLeft: '1rem' }}>
-                {orderedErrorBreakdown.map(([key, count]) => (
-                  <li key={key} title={errorTypeHint(key)}>
-                    {errorTypeLabel(key)}: {count}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem' }}>
-            <div style={{ fontWeight: 600, marginBottom: '.5rem' }}>ErrorType Chart</div>
-            {!errorChartData.length ? (
-              <p style={{ color: '#64748b', margin: 0 }}>No attempts yet.</p>
-            ) : (
-              <div style={{ width: '100%', height: 240 }}>
-                <ResponsiveContainer>
-                  <BarChart data={errorChartData}>
-                    <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
-                    <XAxis dataKey="name" tick={axisTick} />
-                    <YAxis allowDecimals={false} tick={axisTick} />
-                    <Tooltip content={<AnalyticsChartTooltip />} />
-                    <Bar dataKey="value" name="Attempts" fill="#7c3aed" />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                Attempts loaded: {attempts.length}
               </div>
             )}
-          </div>
 
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem', overflowX: 'auto' }}>
-            <div style={{ fontWeight: 600, marginBottom: '.5rem' }}>Latest Attempts</div>
-            {!latestAttempts.length ? (
-              <p style={{ color: '#64748b', margin: 0 }}>No attempts yet.</p>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.9rem' }}>
-                <thead>
-                  <tr style={{ textAlign: 'left', borderBottom: '1px solid #e5e7eb' }}>
-                    <th style={{ padding: '6px' }}>Time</th>
-                    <th style={{ padding: '6px' }}>Topic</th>
-                    <th style={{ padding: '6px' }}>Diff</th>
-                    <th style={{ padding: '6px' }}>Result</th>
-                    <th style={{ padding: '6px' }}>Spent(s)</th>
-                    <th style={{ padding: '6px' }}>FirstAction(s)</th>
-                    <th style={{ padding: '6px' }}>ErrorType</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {latestAttempts.map((a, idx) => (
-                    <tr key={`${a.createdAt || idx}-${idx}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '6px' }}>{a.createdAt ? new Date(a.createdAt).toLocaleString() : '—'}</td>
-                      <td style={{ padding: '6px' }}>{a.topicSlug || '—'}</td>
-                      <td style={{ padding: '6px' }}>{a.difficultyAtAttempt || '—'}</td>
-                      <td style={{ padding: '6px' }}>{a.correct ? 'Correct' : 'Wrong'}</td>
-                      <td style={{ padding: '6px' }}>{a.timeSpentSeconds ?? '—'}</td>
-                      <td style={{ padding: '6px' }}>{a.timeToFirstActionSeconds ?? '—'}</td>
-                      <td style={{ padding: '6px' }} title={errorTypeHint(a.errorType || 'NONE')}>
-                        {errorTypeLabel(a.errorType || 'NONE')}
-                      </td>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { label: 'Accuracy', value: `${accuracyPercent}%` },
+                { label: 'Avg time', value: avgTimeSeconds == null ? '—' : `${avgTimeSeconds}s` },
+                { label: 'Top weak topic', value: topWeakTopic ? `${topWeakTopic.topic} (${Math.round(topWeakTopic.accuracy * 100)}%)` : '—' },
+                { label: 'Unclassified errors', value: `${unclassifiedPercent}%` },
+              ].map((item) => (
+                <div key={item.label} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{item.label}</div>
+                  <div className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">{item.value}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">ErrorType breakdown</div>
+                {!orderedErrorBreakdown.length ? (
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No attempts yet.</p>
+                ) : (
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700 dark:text-slate-300">
+                    {orderedErrorBreakdown.map(([key, count]) => (
+                      <li key={key} title={errorTypeHint(key)}>
+                        {errorTypeLabel(key)}: {count}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">ErrorType chart</div>
+                {!errorChartData.length ? (
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No attempts yet.</p>
+                ) : (
+                  <div className="mt-3 h-[240px] w-full">
+                    <ResponsiveContainer>
+                      <BarChart data={errorChartData}>
+                        <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
+                        <XAxis dataKey="name" tick={axisTick} />
+                        <YAxis allowDecimals={false} tick={axisTick} />
+                        <Tooltip content={<AnalyticsChartTooltip />} />
+                        <Bar dataKey="value" name="Attempts" fill="#7c3aed" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Latest attempts</div>
+              {!latestAttempts.length ? (
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">No attempts yet.</p>
+              ) : (
+                <table className="mt-4 min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
+                  <thead className="bg-slate-50 dark:bg-slate-900/40">
+                    <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                      <th className="px-3 py-2">Time</th>
+                      <th className="px-3 py-2">Topic</th>
+                      <th className="px-3 py-2">Diff</th>
+                      <th className="px-3 py-2">Result</th>
+                      <th className="px-3 py-2">Spent(s)</th>
+                      <th className="px-3 py-2">FirstAction(s)</th>
+                      <th className="px-3 py-2">ErrorType</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-900 dark:bg-slate-950">
+                    {latestAttempts.map((a, idx) => (
+                      <tr key={`${a.createdAt || idx}-${idx}`}>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-300">
+                          {a.createdAt ? new Date(a.createdAt).toLocaleString() : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{a.topicSlug || '—'}</td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{a.difficultyAtAttempt || '—'}</td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{a.correct ? 'Correct' : 'Wrong'}</td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{a.timeSpentSeconds ?? '—'}</td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{a.timeToFirstActionSeconds ?? '—'}</td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-300" title={errorTypeHint(a.errorType || 'NONE')}>
+                          {errorTypeLabel(a.errorType || 'NONE')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <form onSubmit={onSaveSettings} style={{ border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem' }}>
-        <h3 style={{ fontWeight: 600, marginBottom: '0.75rem' }}>Landing Page Texts</h3>
-        <label style={{ display: 'block', marginBottom: '.5rem' }}>Welcome Text</label>
-        <textarea
-          value={settings['landing.welcomeText']}
-          onChange={(e) => setSettings((prev) => ({ ...prev, 'landing.welcomeText': e.target.value }))}
-          rows={3}
-          style={{ width: '100%', marginBottom: '0.75rem' }}
-        />
-        <label style={{ display: 'block', marginBottom: '.5rem' }}>Subtitle Text</label>
-        <textarea
-          value={settings['landing.subtitleText']}
-          onChange={(e) => setSettings((prev) => ({ ...prev, 'landing.subtitleText': e.target.value }))}
-          rows={3}
-          style={{ width: '100%', marginBottom: '0.75rem' }}
-        />
-        <button type="submit" disabled={savingSettings}>
-          {savingSettings ? 'Saving...' : 'Save texts'}
-        </button>
-      </form>
+      <div className="mt-6">
+        <Card variant="elevated" padding="lg">
+          <CardHeader title="Landing page texts" subtitle="Edit public landing copy (stored in backend settings)." />
+          <form className="mt-6 space-y-4" onSubmit={onSaveSettings}>
+            <Textarea
+              label="Welcome text"
+              value={settings['landing.welcomeText']}
+              onChange={(e) => setSettings((prev) => ({ ...prev, 'landing.welcomeText': e.target.value }))}
+              rows={3}
+              placeholder="Welcome headline shown on landing."
+            />
+            <Textarea
+              label="Subtitle text"
+              value={settings['landing.subtitleText']}
+              onChange={(e) => setSettings((prev) => ({ ...prev, 'landing.subtitleText': e.target.value }))}
+              rows={3}
+              placeholder="Subtitle shown under the landing headline."
+            />
+            <div className="flex items-center justify-end">
+              <Button type="submit" disabled={savingSettings}>
+                {savingSettings ? 'Saving…' : 'Save texts'}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
     </section>
   );
 }

@@ -1,86 +1,84 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { calcLogic } from '../../../../../api.js';
-import { useToast } from '../../../../../components/Toast.jsx';
-import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
+import { parseVars } from '../../../../../utils/parsers.js';
+import MathResultBox from '../../../../../components/module/MathResultBox.jsx';
+import { TruthTableRenderer, ClassificationRenderer } from '../../_shared/ITLogicModuleShell.jsx';
+import truthTablesTheory from '../../../../../data/content/it-logic/truth-tables.content.js';
 
-function parseVars(value) {
-	const out = String(value).split(',').map((v) => v.trim()).filter(Boolean);
-	if (!out.length) throw new Error('Enter at least one variable');
-	return out;
+function buildPayload({ operation, values }) {
+  return {
+    operation,
+    formula: String(values.formula || ''),
+    variables: parseVars(values.variables),
+  };
 }
 
-function LogicTable({ headers = [], rows = [] }) {
-	if (!headers.length || !rows.length) return null;
-	return (
-		<table className="truth-table">
-			<thead>
-				<tr>{headers.map((h) => <th key={h}>{h}</th>)}</tr>
-			</thead>
-			<tbody>
-				{rows.map((row, i) => (
-					<tr key={i}>
-						{row.map((cell, j) => (
-							<td key={`${i}-${j}`}>{cell === true ? 'T' : cell === false ? 'F' : String(cell)}</td>
-						))}
-					</tr>
-				))}
-			</tbody>
-		</table>
-	);
+function TruthTablesResult({ result }) {
+  if (!result) return null;
+
+  const data = result?.result ?? result;
+
+  return (
+    <div className="space-y-4">
+      {data.classification ? (
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Classification:</span>
+          <ClassificationRenderer classification={data.classification} />
+        </div>
+      ) : null}
+
+      {data.headers && data.table ? (
+        <div>
+          <h4 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Truth Table</h4>
+          <TruthTableRenderer headers={data.headers} rows={data.table} />
+        </div>
+      ) : (
+        <MathResultBox title="Result" content={JSON.stringify(data, null, 2)} />
+      )}
+    </div>
+  );
 }
 
-export default function TruthTables() {
-	const { showSuccess, showError } = useToast();
-	const [formula, setFormula] = useState('(P | Q) & ~R');
-	const [variables, setVariables] = useState('P,Q,R');
-	const [result, setResult] = useState(null);
-	const [loading, setLoading] = useState(false);
+const truthTablesConfig = {
+  id: 'truth-tables',
+  eyebrow: 'Logic & Computation',
+  title: 'Truth Tables',
+  subtitle: 'Generate complete truth tables for compound formulas.',
+  theory: truthTablesTheory,
+  practice: {
+    title: 'Truth Table Generator',
+    description: 'Enter variables and a formula to generate a full truth table and classification.',
+    operationLabel: 'Operation',
+    submitLabel: 'Generate',
+    loadingLabel: 'Generating...',
+    calculate: calcLogic,
+    buildPayload,
+    mapResult: (data) => data?.result ?? data,
+    resultRenderer: TruthTablesResult,
+    operations: [
+      { value: 'truth_table', label: 'Truth Table', hint: 'Generate a complete truth table.', default: true },
+    ],
+    fields: [
+      {
+        name: 'variables',
+        label: 'Variables',
+        smartType: 'set-list',
+        defaultValue: 'P,Q,R',
+        hint: 'Comma-separated, e.g. P,Q,R — or use chips.',
+        required: true,
+      },
+      {
+        name: 'formula',
+        label: 'Formula',
+        smartType: 'formula',
+        defaultValue: '(P | Q) & ~R',
+        hint: 'Supported operators: & | ~ -> <-> ^ (and unicode variants)',
+        required: true,
+        span: 'full',
+        smartOptions: { multiline: true, useMathQuill: false },
+      },
+    ],
+  },
+};
 
-	async function handleBuild() {
-		setLoading(true);
-		try {
-			const data = await calcLogic({
-				operation: 'truth_table',
-				formula,
-				variables: parseVars(variables),
-			});
-			setResult(data.result ?? data);
-			showSuccess('Truth table generated');
-		} catch (err) {
-			showError('Error: ' + err.message);
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	return (
-		<ModulePage
-			title="Truth Tables"
-			subtitle="Generate complete truth tables for compound formulas"
-		>
-			<ModuleCard title="Truth Table Builder" icon="fa-table">
-				<div className="form-container">
-					<div className="form-group">
-						<label>Variables</label>
-						<input type="text" value={variables} onChange={(e) => setVariables(e.target.value)} placeholder="P,Q,R" />
-					</div>
-					<div className="form-group">
-						<label>Formula</label>
-						<input type="text" value={formula} onChange={(e) => setFormula(e.target.value)} placeholder="(P | Q) & ~R" />
-					</div>
-					<button type="button" className="btn btn-primary" onClick={handleBuild} disabled={loading}>
-						<i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-table'}`}></i> {loading ? 'Generating...' : 'Generate'}
-					</button>
-				</div>
-
-				{result && (
-					<div className="result-container" tabIndex={0} aria-live="polite">
-						<h3><i className="fas fa-check-circle"></i> Result</h3>
-						<p><strong>Class:</strong> {result.classification}</p>
-						<LogicTable headers={result.headers} rows={result.table} />
-					</div>
-				)}
-			</ModuleCard>
-		</ModulePage>
-	);
-}
+export default truthTablesConfig;

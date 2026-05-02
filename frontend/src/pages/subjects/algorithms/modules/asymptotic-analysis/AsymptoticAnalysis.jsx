@@ -5,6 +5,7 @@ import { calcAsymptoticAnalysis } from '../../api/asymptotic-analysis';
 const AsymptoticAnalysis = () => {
   return (
     <AlgorithmsModuleShell
+      module="asymptotic-analysis"
       title="Asymptotic Analysis"
       subtitle="Big O Notation and Complexity Classes"
       intro="Analyze time complexity and compare asymptotic growth rates of different complexity classes."
@@ -28,6 +29,8 @@ const AsymptoticAnalysis = () => {
             { value: 'cubic', label: 'cubic - O(n^3)' },
             { value: 'exponential', label: 'exponential - O(2^n)' },
           ],
+          hint:
+            'Pick the growth model, then the result explains a typical code pattern that leads to it (loops, halving, nested loops, recursion).',
         },
         { key: 'n', label: 'Input Size (n)', type: 'number', defaultValue: '100', showWhen: ['time-complexity'] },
       ]}

@@ -135,60 +135,24 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
       {/* Toggle button */}
       {!open && (
         <button
-          className="chatbot-open-btn"
+          className="fixed bottom-6 left-6 z-[10000] inline-flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 via-indigo-600 to-indigo-400 text-white shadow-[0_4px_32px_rgba(99,102,241,0.18)] transition-transform hover:-translate-y-0.5 hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-indigo-500 dark:focus:ring-offset-slate-950"
           aria-label="Open AI Chatbot"
           title="Ask AI"
           onClick={() => { setOpen(true); setMinimized(false); }}
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            left: '24px',
-            zIndex: 9999,
-            width: '68px',
-            height: '68px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg,#6366f1 60%,#818cf8 100%)',
-            color: '#fff',
-            border: 'none',
-            fontSize: '1.7rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 32px rgba(99,102,241,0.18)',
-          }}
         >
-          <i className="fas fa-brain"></i>
+          <i className="fas fa-brain text-[1.7rem]" />
         </button>
       )}
 
       {/* Restore button when minimized */}
       {open && minimized && (
         <button
-          className="chatbot-restore-btn"
+          className="fixed bottom-6 left-6 z-[10000] inline-flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-[0_4px_24px_rgba(99,102,241,0.18)] transition-transform hover:-translate-y-0.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-white dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus:ring-indigo-500 dark:focus:ring-offset-slate-950"
           aria-label="Restore chatbot"
           title="Restore chatbot"
           onClick={() => setMinimized(false)}
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            left: '24px',
-            zIndex: 9999,
-            width: '3.5rem',
-            height: '3.5rem',
-            borderRadius: '50%',
-            background: 'var(--primary,#6366f1)',
-            color: '#fff',
-            border: 'none',
-            fontSize: '1.7rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 24px rgba(99,102,241,0.18)',
-          }}
         >
-          <i className="fas fa-brain"></i>
+          <i className="fas fa-brain text-[1.4rem]" />
         </button>
       )}
 
@@ -196,79 +160,39 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
       {open && !minimized && (
         <div
           ref={widgetRef}
-          id="chatbot-widget"
-          style={{
-            position: 'fixed',
-            bottom: '90px',
-            left: '24px',
-            width: '370px',
-            maxWidth: '98vw',
-            height: '520px',
-            background: 'var(--chatbot-bg, #fff)',
-            border: '1.5px solid #e0e7ef',
-            borderRadius: '16px',
-            boxShadow: '0 8px 32px rgba(99,102,241,0.18)',
-            zIndex: 10000,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            minWidth: '320px',
-            minHeight: '280px',
-          }}
+          className="fixed bottom-[90px] left-6 z-[10001] flex h-[520px] w-[370px] min-w-[320px] min-h-[280px] max-w-[98vw] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_32px_rgba(99,102,241,0.18)] dark:border-slate-800 dark:bg-slate-950"
         >
           {/* Header */}
           <div
-            id="chatbot-header"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              background: 'linear-gradient(135deg,#6366f1,#4f46e5)',
-              color: '#fff',
-              padding: '0.7rem 1.1rem',
-              fontSize: '1.1rem',
-              fontWeight: 600,
-              borderTopLeftRadius: '16px',
-              borderTopRightRadius: '16px',
-              userSelect: 'none',
-            }}
+            className="flex select-none items-center justify-between bg-gradient-to-br from-indigo-600 to-indigo-700 px-4 py-3 text-white"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.7em' }}>
-              <span style={{ fontSize: '1.5em' }}><i className="fas fa-robot"></i></span>
+            <div className="flex items-center gap-3">
+              <span className="text-xl"><i className="fas fa-robot" /></span>
               <span>Math Lab AI</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4em' }}>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setMinimized(true)}
                 title="Minimize"
                 aria-label="Minimize chatbot"
-                style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.1em', cursor: 'pointer' }}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-white/90 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/40"
               >
-                <i className="fas fa-minus"></i>
+                <i className="fas fa-minus" />
               </button>
               <button
                 onClick={() => setOpen(false)}
                 title="Close"
                 aria-label="Close chatbot"
-                style={{ background: 'none', border: 'none', color: '#fff', fontSize: '1.5em', cursor: 'pointer' }}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-white/90 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/40"
               >
-                &times;
+                <span className="text-2xl leading-none">&times;</span>
               </button>
             </div>
           </div>
 
           {/* Messages */}
           <div
-            id="chatbot-messages"
-            style={{
-              flex: 1,
-              overflowY: 'auto',
-              padding: '1.1rem 1rem 0.7rem',
-              background: 'var(--chatbot-msg-bg, #f8f8ff)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.7em',
-            }}
+            className="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-4 py-4 dark:bg-slate-900/40"
           >
             {chatHistory.map((msg, i) => (
               <ChatMessage key={i} msg={msg} onCopy={copyText} />
@@ -279,16 +203,11 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
 
           {/* Image preview */}
           {pendingImage && (
-            <div style={{ padding: '8px', background: '#f3f4f6', position: 'relative' }}>
-              <img src={pendingImage} alt="Preview" style={{ maxHeight: '100px', maxWidth: '100%', borderRadius: '6px', display: 'block' }} />
+            <div className="relative border-t border-slate-200 bg-slate-100 px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
+              <img src={pendingImage} alt="Preview" className="block max-h-[100px] max-w-full rounded-lg" />
               <button
                 onClick={() => { setPendingImage(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                style={{
-                  position: 'absolute', top: '2px', right: '2px',
-                  background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%',
-                  width: '28px', height: '28px', cursor: 'pointer', fontSize: '18px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
+                className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
               >
                 &times;
               </button>
@@ -297,66 +216,45 @@ export default function Chatbot({ chatHistory, setChatHistory }) {
 
           {/* Form */}
           <form
-            id="chatbot-form"
             onSubmit={handleSubmit}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0.7rem 1rem',
-              background: '#f3f4f6',
-              borderTop: '1px solid #eee',
-              gap: '0.7em',
-            }}
+            className="flex items-center gap-3 border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950"
           >
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              style={{ display: 'none' }}
+              className="hidden"
               onChange={handleImageAttach}
             />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               title="Attach image"
-              style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '1.3rem', cursor: 'pointer', padding: '0 4px' }}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:text-indigo-300 dark:hover:bg-indigo-500/10"
             >
-              <i className="fas fa-image"></i>
+              <i className="fas fa-image text-lg" />
             </button>
             <input
               ref={inputRef}
-              id="chatbot-input"
               type="text"
               placeholder="Ask a math question..."
               maxLength={500}
               value={input}
               onChange={e => setInput(e.target.value)}
-              style={{
-                flex: 1, padding: '0.7em 1em',
-                border: '1.5px solid #e0e7ef', borderRadius: '1.2em',
-                fontSize: '1.05em', outline: 'none', background: '#fff', color: '#222',
-              }}
+              className="h-10 flex-1 rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20"
             />
             <button
               type="submit"
               title="Send"
-              style={{
-                background: 'linear-gradient(135deg,#6366f1,#4f46e5)',
-                color: '#fff', border: 'none', borderRadius: '50%',
-                width: '44px', height: '44px', fontSize: '1.25em',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-indigo-700 text-white shadow-sm shadow-indigo-600/20 transition-transform hover:-translate-y-0.5 hover:shadow-indigo-600/30 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:from-indigo-500 dark:to-indigo-600 dark:hover:shadow-indigo-500/30"
             >
-              <i className="fas fa-paper-plane"></i>
+              <i className="fas fa-paper-plane text-base" />
             </button>
           </form>
 
           {/* Footer */}
-          <div style={{
-            textAlign: 'center', fontSize: '0.95em', color: '#a1a1aa',
-            padding: '0.5em 0 0.7em', background: '#f8f8ff',
-          }}>
-            Powered by <span style={{ color: '#6366f1', fontWeight: 600 }}>OpenRouter AI</span>
+          <div className="border-t border-slate-200 bg-slate-50 px-4 py-2 text-center text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-400">
+            Powered by <span className="font-semibold text-indigo-600 dark:text-indigo-300">OpenRouter AI</span>
           </div>
 
           {/* Resize handle - disabled */}
@@ -378,45 +276,37 @@ function ChatMessage({ msg, onCopy }) {
 
   return (
     <div
-      className={`chatbot-msg-bubble chatbot-msg-${msg.role}`}
+      className={[
+        'flex items-end gap-3',
+        msg.role === 'user' ? 'flex-row-reverse' : 'flex-row',
+      ].join(' ')}
       tabIndex={0}
       role="article"
-      style={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: '0.7em',
-        flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-        animation: 'chatbot-msg-in 0.22s',
-      }}
     >
       <span
-        className="chatbot-avatar"
-        style={{
-          width: '36px', height: '36px', borderRadius: '50%',
-          background: msg.role === 'user' ? '#6366f1' : '#e0e7ff',
-          color: msg.role === 'user' ? '#fff' : '#6366f1',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3em',
-          flexShrink: 0,
-        }}
+        className={[
+          'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg',
+          msg.role === 'user'
+            ? 'bg-indigo-600 text-white'
+            : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200',
+        ].join(' ')}
       >
-        <i className={`fas ${msg.role === 'user' ? 'fa-user' : 'fa-robot'}`}></i>
+        <i className={`fas ${msg.role === 'user' ? 'fa-user' : 'fa-robot'}`} />
       </span>
       <span
         ref={bubbleRef}
-        className="chatbot-bubble-inner"
-        style={{
-          maxWidth: '70%', padding: '0.7em 1.1em', borderRadius: '1.2em',
-          fontSize: '1.05em', lineHeight: 1.5,
-          background: msg.role === 'user' ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : '#f1f5f9',
-          color: msg.role === 'user' ? '#fff' : '#222',
-          wordBreak: 'break-word',
-        }}
+        className={[
+          'max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm',
+          msg.role === 'user'
+            ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white'
+            : 'bg-white text-slate-900 border border-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:border-slate-800',
+        ].join(' ')}
       >
         {msg.image && (
           <img
             src={msg.image}
             alt="Attached"
-            style={{ maxWidth: '150px', maxHeight: '100px', borderRadius: '6px', marginBottom: '6px', display: 'block' }}
+            className="mb-2 block max-h-[100px] max-w-[150px] rounded-lg"
           />
         )}
         {isAssistant
@@ -426,16 +316,11 @@ function ChatMessage({ msg, onCopy }) {
       </span>
       {isAssistant && (
         <button
-          className="chatbot-copy-btn"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-200 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           title="Copy to clipboard"
           onClick={() => onCopy(bubbleRef.current?.textContent || msg.content)}
-          style={{
-            background: 'none', border: 'none', color: '#a1a1aa',
-            cursor: 'pointer', fontSize: '0.9rem', padding: '2px',
-            alignSelf: 'flex-end', flexShrink: 0,
-          }}
         >
-          <i className="fas fa-copy"></i>
+          <i className="fas fa-copy" />
         </button>
       )}
     </div>
@@ -444,24 +329,18 @@ function ChatMessage({ msg, onCopy }) {
 
 function TypingIndicator() {
   return (
-    <div
-      className="chatbot-msg-bubble chatbot-msg-assistant chatbot-typing"
-      style={{ display: 'flex', alignItems: 'flex-end', gap: '0.7em' }}
-    >
-      <span style={{
-        width: '36px', height: '36px', borderRadius: '50%',
-        background: '#e0e7ff', color: '#6366f1',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3em',
-      }}>
-        <i className="fas fa-robot"></i>
+    <div className="flex items-end gap-3">
+      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 text-lg dark:bg-indigo-500/15 dark:text-indigo-200">
+        <i className="fas fa-robot" />
       </span>
-      <span style={{
-        padding: '0.7em 1.1em', borderRadius: '1.2em',
-        background: '#f1f5f9', display: 'flex', gap: '4px', alignItems: 'center',
-      }}>
-        <span className="typing-dots">
-          <span></span><span></span><span></span>
-        </span>
+      <span className="flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="h-2 w-2 animate-bounce rounded-full bg-indigo-400 dark:bg-indigo-300"
+            style={{ animationDelay: `${i * 120}ms` }}
+          />
+        ))}
       </span>
     </div>
   );

@@ -2,6 +2,8 @@
 // Used by: Layout, Calculator, Hub, Roadmap, App route definitions and redirects.
 
 export const DEFAULT_SUBJECT = 'discrete-math';
+import { getCatalogSubjects, getCatalogModules } from './catalog/subjectCatalog.js';
+
 export const SUBJECTS = [
   {
     slug: 'discrete-math',
@@ -84,6 +86,7 @@ export const AUTH_SIGN_IN_PATH = '/auth/sign-in';
 export const AUTH_SIGN_UP_PATH = '/auth/sign-up';
 export const AUTH_RESET_PATH = '/auth/reset';
 export const USER_DASHBOARD_PATH = '/user/dashboard';
+export const USER_ACHIEVEMENTS_PATH = '/user/achievements';
 export const USER_PRACTICE_PATH = '/user/practice';
 export const USER_GENERATED_PRACTICE_PATH = '/user/practice/generated';
 export const USER_PROFILE_PATH = '/user/profile';
@@ -244,290 +247,13 @@ export const CORE_ROUTES = [
   },
 ];
 
-const sectionSeed = [
-  {
-    slug: 'combinatorics',
-    icon: 'fa-cube',
-    label: 'Combinatorics',
-    desc: 'Count finite choices: factorials, permutations, and combinations.',
-    videoId: 'VJkvPTY6kZw',
-    scope: 'intro',
-    requiresAuth: false,
-  },
-  {
-    slug: 'probability',
-    icon: 'fa-dice',
-    label: 'Probability (Intro)',
-    desc: 'Core probability fundamentals. Open the full Probability & Statistics track for the complete toolkit.',
-    videoId: 'igXt9cX_nQs',
-    scope: 'intro',
-    requiresAuth: false,
-  },
-  {
-    slug: 'graph-theory',
-    icon: 'fa-project-diagram',
-    label: 'Graph Theory (Intro)',
-    desc: 'Graph structure basics: vertices, edges, adjacency, and degree.',
-    videoId: 'ZQY4IfEcGvM',
-    scope: 'intro',
-    requiresAuth: false,
-  },
-  {
-    slug: 'adjacency-matrix',
-    icon: 'fa-th',
-    label: 'Adjacency Matrix (Intro)',
-    desc: 'Edit matrix representations and inspect graph properties.',
-    videoId: '7AhHGp7EzZ8',
-    scope: 'intro',
-    requiresAuth: false,
-  },
-  {
-    slug: 'set-theory',
-    icon: 'fa-object-group',
-    label: 'Set Theory',
-    desc: 'Set operations, properties, and relation fundamentals.',
-    videoId: '5ZhNmKb-dqk',
-    scope: 'intro',
-    requiresAuth: false,
-  },
-  {
-    slug: 'number-theory',
-    icon: 'fa-hashtag',
-    label: 'Number Theory',
-    desc: 'Integer fundamentals: GCD, primes, and modular arithmetic.',
-    videoId: '-Qtl4nn7R4A',
-    scope: 'intro',
-    requiresAuth: false,
-  },
-  {
-    slug: 'logic',
-    icon: 'fa-brain',
-    label: 'Logic (Intro)',
-    desc: 'Intro concepts only. Open Logic & Computation for full truth-table and equivalence toolset.',
-    videoId: 'itrXYg41-V0',
-    scope: 'intro',
-    requiresAuth: false,
-  },
-];
-
-const sectionCatalogBySubject = {
-  'discrete-math': sectionSeed,
-  'linear-algebra': [
-    {
-      slug: 'vectors',
-      icon: 'fa-arrows-alt',
-      label: 'Vectors',
-      desc: 'Vector arithmetic and geometric operations.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'matrices',
-      icon: 'fa-border-all',
-      label: 'Matrices',
-      desc: 'Matrix operations, rank, and inverse.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'linear-systems',
-      icon: 'fa-equals',
-      label: 'Linear Systems',
-      desc: 'Solve systems of linear equations.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'determinants',
-      icon: 'fa-table-cells-large',
-      label: 'Determinants',
-      desc: 'Determinant properties and computation.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'eigenvalues',
-      icon: 'fa-wave-square',
-      label: 'Eigenvalues',
-      desc: 'Eigenvalues and eigenvectors basics.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'linear-transformations',
-      icon: 'fa-shuffle',
-      label: 'Linear Transformations',
-      desc: 'Mappings, kernels, and image spaces.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'vector-spaces',
-      icon: 'fa-vector-square',
-      label: 'Vector Spaces',
-      desc: 'Subspaces, basis, and dimension.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'orthogonality',
-      icon: 'fa-draw-polygon',
-      label: 'Orthogonality',
-      desc: 'Inner products, projections, orthonormality.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-  ],
-  'algorithms': [
-    {
-      slug: 'asymptotic-analysis',
-      icon: 'fa-chart-line',
-      label: 'Asymptotic Analysis',
-      desc: 'Big O notation and complexity analysis.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'sorting',
-      icon: 'fa-arrow-down-a-z',
-      label: 'Sorting Algorithms',
-      desc: 'Bubble, merge, and quick sort algorithms.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'searching',
-      icon: 'fa-magnifying-glass',
-      label: 'Searching Algorithms',
-      desc: 'Linear and binary search with step-by-step execution.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'graph-algorithms',
-      icon: 'fa-share-nodes',
-      label: 'Graph Algorithms',
-      desc: 'Algorithmic traversal and search (DFS/BFS), focused on step-by-step execution.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'dynamic-programming',
-      icon: 'fa-puzzle-piece',
-      label: 'Dynamic Programming',
-      desc: 'Fibonacci, coin change, and optimization.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'greedy',
-      icon: 'fa-bullseye',
-      label: 'Greedy Algorithms',
-      desc: 'Optimal substructure and greedy choice.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'divide-conquer',
-      icon: 'fa-code-branch',
-      label: 'Divide and Conquer',
-      desc: 'Subdividing problems and combining solutions.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'string-algorithms',
-      icon: 'fa-spell-check',
-      label: 'String Algorithms',
-      desc: 'Pattern matching and string processing.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-  ],
-  'probability-statistics': [
-    {
-      slug: 'probability-basics',
-      icon: 'fa-dice',
-      label: 'Probability Basics',
-      desc: 'Fundamental probability calculations and rules.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'conditional-probability',
-      icon: 'fa-diagram-project',
-      label: 'Conditional Probability',
-      desc: 'Compute conditional and joint probabilities.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'bayes-theorem',
-      icon: 'fa-scale-balanced',
-      label: "Bayes' Theorem",
-      desc: 'Posterior inference with priors and evidence.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'distributions',
-      icon: 'fa-chart-area',
-      label: 'Distributions',
-      desc: 'Discrete distributions: Binomial, Poisson, and Geometric.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-  ],
-  'it-logic': [
-    {
-      slug: 'automata',
-      icon: 'fa-cogs',
-      label: 'Automata (FSM)',
-      desc: 'DFA and NFA simulation with state transitions.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'propositional-logic',
-      icon: 'fa-brain',
-      label: 'Advanced Propositional Logic',
-      desc: 'Formal operators, formula analysis, and logical classification.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'truth-tables',
-      icon: 'fa-table',
-      label: 'Truth Tables',
-      desc: 'Generate full truth tables for formulas.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'equivalence-laws',
-      icon: 'fa-equals',
-      label: 'Equivalence Laws',
-      desc: 'Check equivalence across logical formulas.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-    {
-      slug: 'boolean-algebra',
-      icon: 'fa-code-branch',
-      label: 'Boolean Algebra',
-      desc: 'Boolean simplification and operator identities.',
-      scope: 'deep-dive',
-      requiresAuth: false,
-    },
-  ],
-};
-
 export function getSectionSeedForSubject(subjectSlug = DEFAULT_SUBJECT) {
-  return sectionCatalogBySubject[subjectSlug] || [];
+  return getCatalogModules(subjectSlug) || [];
 }
 
 export function getSubjectCatalog() {
-  return SUBJECTS.map((subject) => {
+  const catalog = getCatalogSubjects();
+  return catalog.map((subject) => {
     const sections = getSectionSeedForSubject(subject.slug);
     const featureFlags = subject.features || {};
     return {
@@ -550,9 +276,9 @@ export function buildSectionsForSubject(subjectSlug = DEFAULT_SUBJECT) {
   const subjectBasePath = getSubjectBasePath(subjectSlug);
   return getSectionSeedForSubject(subjectSlug).map((s) => ({
     ...s,
-    // Phase 2+: Using new canonical URL format with /modules/ prefix
-    path: `${subjectBasePath}/modules/${s.slug}`,
-    legacyPath: `/${s.slug}`,
+    // Canonical module URL: /{subject}/{moduleSlug}
+    path: `${subjectBasePath}/${s.slug}`,
+    legacyPath: `${subjectBasePath}/modules/${s.slug}`,
     requiresAuth: Boolean(s.requiresAuth),
     showInTopNav: true,
     showInFooter: true,

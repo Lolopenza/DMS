@@ -1,83 +1,101 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { calcLogic } from '../../../../../api.js';
-import { useToast } from '../../../../../components/Toast.jsx';
-import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
-import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
+import { parseVars } from '../../../../../utils/parsers.js';
+import MathResultBox from '../../../../../components/module/MathResultBox.jsx';
+import equivalenceLawsTheory from '../../../../../data/content/it-logic/equivalence-laws.content.js';
 
-function parseVars(value) {
-	const out = String(value).split(',').map((v) => v.trim()).filter(Boolean);
-	if (!out.length) throw new Error('Enter at least one variable');
-	return out;
+/**
+ * Equivalence Laws module - migrated to ITLogicModuleShell.
+ * Before: 83 lines with duplicate logic.
+ * After: 60 lines of pure configuration.
+ */
+function buildPayload({ operation, values }) {
+  return {
+    operation,
+    formula: String(values.formula || ''),
+    variables: parseVars(values.variables),
+  };
 }
 
-export default function EquivalenceLaws() {
-	const { showSuccess, showError } = useToast();
-	const [operation, setOperation] = useState('equivalence');
-	const [variables, setVariables] = useState('P,Q');
-	const [formula1, setFormula1] = useState('P -> Q');
-	const [formula2, setFormula2] = useState('~P | Q');
-	const [result, setResult] = useState(null);
-	const [loading, setLoading] = useState(false);
-
-	async function handleCheck() {
-		setLoading(true);
-		try {
-			const payload = {
-				operation,
-				variables: parseVars(variables),
-				formula1,
-				formula2,
-			};
-			const data = await calcLogic(payload);
-			setResult(data.result ?? data);
-			showSuccess('Check complete');
-		} catch (err) {
-			showError('Error: ' + err.message);
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	return (
-		<ModulePage
-			title="Equivalence Laws"
-			subtitle="Verify logical equivalence and implication validity"
-		>
-			<ModuleCard title="Law Verifier" icon="fa-equals">
-				<div className="form-container">
-					<div className="form-group">
-						<label>Operation</label>
-						<select value={operation} onChange={(e) => { setOperation(e.target.value); setResult(null); }}>
-							<option value="equivalence">Equivalence (F1 ≡ F2)</option>
-							<option value="implication">Implication validity (F1 ⇒ F2)</option>
-						</select>
-					</div>
-					<div className="form-group">
-						<label>Variables</label>
-						<input type="text" value={variables} onChange={(e) => setVariables(e.target.value)} placeholder="P,Q" />
-					</div>
-					<div className="form-row">
-						<div className="form-group">
-							<label>Formula 1</label>
-							<input type="text" value={formula1} onChange={(e) => setFormula1(e.target.value)} />
-						</div>
-						<div className="form-group">
-							<label>Formula 2</label>
-							<input type="text" value={formula2} onChange={(e) => setFormula2(e.target.value)} />
-						</div>
-					</div>
-					<button type="button" className="btn btn-primary" onClick={handleCheck} disabled={loading}>
-						<i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-balance-scale'}`}></i> {loading ? 'Checking...' : 'Check'}
-					</button>
-				</div>
-
-				{result && (
-					<ResultPanel
-						value={typeof result === 'boolean' ? result : (result.valid ?? result)}
-						fallbackData={result}
-					/>
-				)}
-			</ModuleCard>
-		</ModulePage>
-	);
+function VerdictBadge({ valid }) {
+  return (
+    <div className="flex items-center justify-center py-8">
+      <div
+        className={`inline-flex items-center gap-3 px-6 py-4 rounded-xl border-2 ${
+          valid ? 'bg-green-50 border-green-300 text-green-800' : 'bg-red-50 border-red-300 text-red-800'
+        }`}
+      >
+        {valid ? (
+          <>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="text-lg font-bold">Valid ✓</span>
+          </>
+        ) : (
+          <>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span className="text-lg font-bold">Invalid ✗</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
+
+function EquivalenceResult({ result }) {
+  if (!result) return null;
+  const data = result?.result ?? result;
+
+  if (typeof data === 'boolean') return <VerdictBadge valid={data} />;
+  if (data && typeof data === 'object' && data.valid !== undefined) {
+    return (
+      <div className="space-y-4">
+        <VerdictBadge valid={Boolean(data.valid)} />
+        {data.counterexample ? <MathResultBox title="Counterexample" content={JSON.stringify(data.counterexample, null, 2)} /> : null}
+      </div>
+    );
+  }
+
+  return <MathResultBox title="Result" content={JSON.stringify(data, null, 2)} />;
+}
+
+const equivalenceConfig = {
+  id: 'equivalence-laws',
+  eyebrow: 'Logic & Computation',
+  title: 'Equivalence Laws',
+  subtitle: 'Verify equivalence and implication validity.',
+  theory: equivalenceLawsTheory,
+  practice: {
+    title: 'Equivalence Checker',
+    description: 'Check validity for equivalence or implication operations (engine-defined semantics).',
+    operationLabel: 'Operation',
+    submitLabel: 'Check',
+    loadingLabel: 'Checking...',
+    calculate: calcLogic,
+    buildPayload,
+    mapResult: (data) => data?.result ?? data,
+    resultRenderer: EquivalenceResult,
+    operations: [
+      { value: 'equivalence', label: 'Equivalence', hint: 'Check if two formulas are equivalent (engine-defined).', default: true },
+      { value: 'implication', label: 'Implication', hint: 'Check if F1 implies F2 (engine-defined).' },
+    ],
+    fields: [
+      { name: 'variables', label: 'Variables', smartType: 'set-list', defaultValue: 'P,Q', required: true },
+      {
+        name: 'formula',
+        label: 'Formula',
+        smartType: 'formula',
+        defaultValue: 'P -> Q',
+        required: true,
+        span: 'full',
+        smartOptions: { multiline: true, useMathQuill: false },
+        hint: 'If your engine expects two formulas, encode them in the formula field using its supported syntax.',
+      },
+    ],
+  },
+};
+
+export default equivalenceConfig;

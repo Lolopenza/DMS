@@ -5,6 +5,7 @@ import { calcDynamicProgramming } from '../../api/dynamic-programming';
 const DynamicProgramming = () => {
   return (
     <AlgorithmsModuleShell
+      module="dynamic-programming"
       title="Dynamic Programming"
       subtitle="Fibonacci and Coin Change"
       intro="Solve optimization problems using dynamic programming with memoization."
@@ -14,8 +15,17 @@ const DynamicProgramming = () => {
       ]}
       defaultOperation="fibonacci"
       fields={[
-        { key: 'n', label: 'Input (n)', type: 'text', defaultValue: '10' },
-        { key: 'steps', label: 'Coin Denominations', type: 'text', defaultValue: '1,5,10', showWhen: ['coin-change'], hint: 'e.g., 1,5,10' },
+        { key: 'n', label: 'Input (n)', type: 'text', defaultValue: '10', required: true },
+        {
+          key: 'steps',
+          label: 'Coin Denominations',
+          type: 'text',
+          smartType: 'number-list',
+          defaultValue: '1,5,10',
+          showWhen: ['coin-change'],
+          hint: 'e.g., 1,5,10 — or build with Add below.',
+          required: true,
+        },
       ]}
       calculate={calcDynamicProgramming}
     />

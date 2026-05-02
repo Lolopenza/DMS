@@ -5,6 +5,7 @@ import { calcDivideConquer } from '../../api/divide-conquer';
 const DivideConquer = () => {
   return (
     <AlgorithmsModuleShell
+      module="divide-conquer"
       title="Divide and Conquer"
       subtitle="Binary Exponentiation"
       intro="Solve problems by dividing into subproblems, solving independently, then combining."

@@ -90,3 +90,32 @@ export function buildTimeVsErrorsData(attempts) {
     }))
     .sort((a, b) => Number(a.bucketLabel.split('-')[0]) - Number(b.bucketLabel.split('-')[0]));
 }
+
+/**
+ * Last N calendar days (including today), attempt counts per day for Mini Lab sparkline.
+ */
+export function buildWeeklyProgressData(attempts, windowDays = 7) {
+  const days = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let i = windowDays - 1; i >= 0; i -= 1) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateKey = d.toISOString().slice(0, 10);
+    const label = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    days.push({ dateKey, label, attempts: 0 });
+  }
+
+  const idx = new Map(days.map((x, i) => [x.dateKey, i]));
+  (attempts || []).forEach((a) => {
+    const raw = a?.createdAt;
+    if (!raw) return;
+    const key = String(raw).slice(0, 10);
+    const i = idx.get(key);
+    if (i !== undefined) {
+      days[i].attempts += 1;
+    }
+  });
+
+  return days.map(({ label, attempts: n }) => ({ label, attempts: n }));
+}

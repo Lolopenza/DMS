@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TRACKS_PATH } from '../../routes.js';
 import { getSubjectCatalog } from '../../routes.js';
-import PlatformHero from '../../components/platform/PlatformHero.jsx';
-import PlatformSection from '../../components/platform/PlatformSection.jsx';
-import TrackCard from '../../components/platform/TrackCard.jsx';
+import { Badge, Button, Card, CardHeader } from '../../components/ui/index.js';
 
 const VALUE_PILLARS = [
   {
@@ -50,111 +48,137 @@ export default function Hub() {
   const activeTrack = tracks.find((track) => track.status === 'active' && track.subjectPath);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
-  useEffect(() => {
-    document.body.classList.add('hub-page');
-    return () => document.body.classList.remove('hub-page');
-  }, []);
+  const trackCards = useMemo(
+    () =>
+      tracks.map((track) => ({
+        ...track,
+        href: track.subjectPath || `/${track.slug}`,
+      })),
+    [tracks],
+  );
 
   return (
-    <main className="hub-main">
-      <PlatformHero
-        title="Math Lab Platform"
-        subtitle="Choose a subject track first, then continue with calculator sections and roadmap milestones"
-      />
+    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <header className="mx-auto max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Math Lab Platform
+          </p>
+          <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">Choose a track. Practice instantly.</h1>
+          <p className="mt-5 text-base leading-7 text-slate-600 dark:text-slate-400">
+            Pick a subject track, then continue with calculator workspaces, theory, and video modes.
+          </p>
+          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link to={TRACKS_PATH}>
+              <Button size="lg">
+                <i className="fas fa-layer-group" /> Explore tracks
+              </Button>
+            </Link>
+            {activeTrack ? (
+              <Link to={activeTrack.subjectPath}>
+                <Button size="lg" variant="outline">
+                  <i className="fas fa-compass" /> Open active track
+                </Button>
+              </Link>
+            ) : null}
+          </div>
+        </header>
 
-      <div className="hub-cards">
-        {tracks.map((track) => (
-          <TrackCard key={track.slug} track={track} />
-        ))}
-      </div>
-
-      <PlatformSection
-        title="Why this platform"
-        subtitle="Commercial-grade IA for learning workflows: discover topic, enter format, continue with personalized steps"
-      >
-        <div className="platform-why-layout">
-          <div className="platform-why-list">
-            {VALUE_PILLARS.map((item, idx) => (
-              <article key={item.title} className={`platform-why-item platform-why-item-${idx + 1}`}>
-                <div className="platform-info-icon"><i className={`fas ${item.icon}`}></i></div>
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
+        <section className="mt-10">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {trackCards.map((track) => (
+              <Card key={track.slug} variant="elevated" padding="lg" className="h-full">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{track.label}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                      {track.description || 'Open the track module catalog.'}
+                    </p>
+                  </div>
+                  <Badge tone={track.status === 'active' ? 'success' : 'neutral'}>
+                    {track.status || 'available'}
+                  </Badge>
                 </div>
-              </article>
+                <div className="mt-6">
+                  <Link to={track.href}>
+                    <Button variant={track.status === 'active' ? 'primary' : 'secondary'} className="w-full">
+                      Open track
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
             ))}
           </div>
+        </section>
 
-          <aside className="platform-why-spotlight" aria-label="Learning flow">
-            <h3>Learning flow at a glance</h3>
-            <p>One clear path from orientation to execution, without page clutter.</p>
-            <ul>
-              <li><i className="fas fa-layer-group"></i> Pick a subject track</li>
-              <li><i className="fas fa-compass"></i> Choose learning format</li>
-              <li><i className="fas fa-flag-checkered"></i> Continue from your last milestone</li>
-            </ul>
-          </aside>
-        </div>
-      </PlatformSection>
-
-      <PlatformSection
-        title="Platform snapshot"
-        subtitle="Current baseline and expansion readiness"
-      >
-        <div className="platform-metric-band">
-          {TRUST_METRICS.map((metric) => (
-            <article key={metric.label} className="platform-metric-pill">
-              <strong>{metric.value}</strong>
-              <span>{metric.label}</span>
-            </article>
-          ))}
-        </div>
-        <p className="platform-snapshot-note">
-          Infrastructure is prepared for incremental subject rollout with shared routing and reusable module shells.
-        </p>
-      </PlatformSection>
-
-      <PlatformSection
-        title="FAQ"
-        subtitle="Short answers on scope, rollout and current capabilities"
-      >
-        <div className="platform-faq-stack">
-          {FAQ_ITEMS.map((item, idx) => (
-            <article key={item.question} className={`platform-faq-card ${openFaqIndex === idx ? 'is-open' : ''}`}>
-              <div className="platform-faq-index">0{idx + 1}</div>
-              <button
-                type="button"
-                className="platform-faq-trigger"
-                aria-expanded={openFaqIndex === idx}
-                onClick={() => setOpenFaqIndex((prev) => (prev === idx ? -1 : idx))}
-              >
-                <h3>{item.question}</h3>
-                <i className="fas fa-chevron-down"></i>
-              </button>
-              <div className={`platform-faq-answer ${openFaqIndex === idx ? 'is-open' : ''}`}>
-                <p>{item.answer}</p>
+        <section className="mt-14">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <Card variant="elevated" padding="lg" className="lg:col-span-2">
+              <CardHeader
+                title="Why this platform"
+                subtitle="Commercial-grade information architecture for learning workflows."
+              />
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {VALUE_PILLARS.map((item) => (
+                  <div key={item.title} className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      <i className={`fas ${item.icon} mr-2 text-indigo-600 dark:text-indigo-400`} />
+                      {item.title}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{item.text}</p>
+                  </div>
+                ))}
               </div>
-            </article>
-          ))}
-        </div>
-      </PlatformSection>
+            </Card>
 
-      <section className="platform-cta-strip" aria-label="Quick actions">
-        <div>
-          <h2>Ready to continue learning?</h2>
-          <p>Start by choosing a subject track, then continue with practical modules and milestone planning.</p>
-        </div>
-        <div className="platform-cta-actions">
-          <Link className="btn btn-primary" to={TRACKS_PATH}>
-            <i className="fas fa-layer-group"></i> Explore tracks
-          </Link>
-          {activeTrack ? (
-            <Link className="btn btn-outline" to={activeTrack.subjectPath}>
-              <i className="fas fa-compass"></i> Open active track
-            </Link>
-          ) : null}
-        </div>
-      </section>
-    </main>
+            <Card variant="elevated" padding="lg">
+              <CardHeader title="Platform snapshot" subtitle="Current baseline and readiness." />
+              <div className="mt-6 space-y-3">
+                {TRUST_METRICS.map((metric) => (
+                  <div key={metric.label} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                    <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{metric.value}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{metric.label}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        <section className="mt-14">
+          <Card variant="elevated" padding="lg">
+            <CardHeader title="FAQ" subtitle="Short answers on scope and current capabilities." />
+            <div className="mt-6 space-y-3">
+              {FAQ_ITEMS.map((item, idx) => {
+                const isOpen = openFaqIndex === idx;
+                return (
+                  <div key={item.question} className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+                    <button
+                      type="button"
+                      className="flex w-full items-start justify-between gap-4 px-5 py-4 text-left"
+                      aria-expanded={isOpen}
+                      onClick={() => setOpenFaqIndex((prev) => (prev === idx ? -1 : idx))}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-100 text-sm font-bold text-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                          {String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.question}</span>
+                      </div>
+                      <i className={`fas fa-chevron-down mt-1 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isOpen ? (
+                      <div className="px-5 pb-5 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                        {item.answer}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </section>
+      </div>
+    </section>
   );
 }

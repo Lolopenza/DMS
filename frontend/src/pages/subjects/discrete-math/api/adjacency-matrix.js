@@ -4,7 +4,9 @@
  * Endpoint: POST /api/v1/adjacency_matrix/{subPath}
  */
 
-const MATH_ENGINE_BASE = '/api/v1';
+// In dev/prod we call the Spring Boot proxy, not math-engine directly.
+// Backend forwards to math-engine and injects X-Internal-Api-Key.
+const MATH_ENGINE_BASE = '/api/calculator';
 
 const TIMEOUT_MATH_MS = 30_000;
 
@@ -55,6 +57,7 @@ async function request(url, options = {}) {
   }
 }
 
-export function calcAdjacencyMatrix(subPath, payload) {
-  return request(`${MATH_ENGINE_BASE}/adjacency_matrix/${subPath}`, { method: 'POST', body: JSON.stringify(payload) });
+export function calcAdjacencyMatrix(payload) {
+  const { operation, ...rest } = payload || {};
+  return request(`${MATH_ENGINE_BASE}/adjacency_matrix/${operation}`, { method: 'POST', body: JSON.stringify(rest) });
 }

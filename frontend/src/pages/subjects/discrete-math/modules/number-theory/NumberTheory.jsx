@@ -1,172 +1,105 @@
-import React, { useState } from 'react';
 import { calcNumberTheory } from '../../api/number-theory.js';
-import { useToast } from '../../../../../components/Toast.jsx';
-import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
-import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
+import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import numberTheoryContent from '../../../../../data/content/discrete-math/number-theory.content.js';
 
-const TWO_NUM_OPS = ['gcd', 'lcm'];
-const SINGLE_NUM_OPS = ['divisors', 'factorize', 'totient', 'is_prime', 'prime_sieve'];
+const OPERATIONS = [
+  { value: 'gcd', label: 'GCD(a, b)', hint: 'Greatest common divisor.' },
+  { value: 'lcm', label: 'LCM(a, b)', hint: 'Least common multiple.' },
+  { value: 'divisors', label: 'Divisors(n)', hint: 'List all positive divisors of n.' },
+  { value: 'factorize', label: 'Prime factorization', hint: 'Factor n into primes.' },
+  { value: 'totient', label: "Euler's φ(n)", hint: 'Count integers ≤ n coprime to n.' },
+  { value: 'mod_exp', label: 'Mod exp (base^exp mod m)', hint: 'Fast exponentiation modulo m.' },
+  { value: 'mod_inv', label: 'Mod inverse (a^{-1} mod m)', hint: 'Compute modular inverse if it exists.' },
+];
+
+const numberTheoryConfig = {
+  id: 'number-theory',
+  eyebrow: 'Discrete Mathematics',
+  title: 'Number Theory',
+  subtitle: 'GCD, primes, factorization, totient, and modular arithmetic.',
+  theory: numberTheoryContent,
+  practice: {
+    title: 'Number theory calculator',
+    description: 'Choose an operation and fill the needed inputs.',
+    operationLabel: 'Operation',
+    submitLabel: 'Calculate',
+    loadingLabel: 'Calculating...',
+    calculate: calcNumberTheory,
+    buildPayload: ({ operation, values }) => {
+      const op = String(operation);
+      if (op === 'gcd' || op === 'lcm') {
+        return { operation: op, a: Number(values.a), b: Number(values.b) };
+      }
+      if (op === 'mod_exp') {
+        return { operation: op, base: Number(values.base), exponent: Number(values.exponent), modulus: Number(values.modulus) };
+      }
+      if (op === 'mod_inv') {
+        return { operation: op, a: Number(values.a), m: Number(values.modulus) };
+      }
+      return { operation: op, n: Number(values.n) };
+    },
+    mapResult: (data) => data.result ?? data,
+    operations: OPERATIONS.map((op, idx) => ({ ...op, default: idx === 0 })),
+    fields: [
+      {
+        name: 'a',
+        label: 'a',
+        smartType: 'validated-number',
+        type: 'number',
+        defaultValue: 24,
+        required: true,
+        showWhen: ['gcd', 'lcm', 'mod_inv'],
+      },
+      {
+        name: 'b',
+        label: 'b',
+        smartType: 'validated-number',
+        type: 'number',
+        defaultValue: 36,
+        required: true,
+        showWhen: ['gcd', 'lcm'],
+      },
+      {
+        name: 'n',
+        label: 'n',
+        smartType: 'validated-number',
+        type: 'number',
+        defaultValue: 36,
+        required: true,
+        showWhen: ['divisors', 'factorize', 'totient'],
+        span: 'full',
+      },
+      {
+        name: 'base',
+        label: 'base',
+        smartType: 'validated-number',
+        type: 'number',
+        defaultValue: 17,
+        required: true,
+        showWhen: ['mod_exp'],
+      },
+      {
+        name: 'exponent',
+        label: 'exponent',
+        smartType: 'validated-number',
+        type: 'number',
+        defaultValue: 5,
+        required: true,
+        showWhen: ['mod_exp'],
+      },
+      {
+        name: 'modulus',
+        label: 'modulus (m)',
+        smartType: 'validated-number',
+        type: 'number',
+        defaultValue: 12,
+        required: true,
+        showWhen: ['mod_exp', 'mod_inv'],
+      },
+    ],
+  },
+};
 
 export default function NumberTheory() {
-  const { showSuccess, showError } = useToast();
-
-  const [operation, setOperation] = useState('gcd');
-  const [a, setA] = useState(24);
-  const [b, setB] = useState(36);
-  const [n, setN] = useState(36);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  // Modular arithmetic
-  const [modA, setModA] = useState(17);
-  const [modB, setModB] = useState(5);
-  const [modM, setModM] = useState(12);
-  const [modOp, setModOp] = useState('mod_add');
-  const [modResult, setModResult] = useState(null);
-  const [loadingMod, setLoadingMod] = useState(false);
-
-  const isTwoNum = TWO_NUM_OPS.includes(operation);
-
-  async function handleCalc() {
-    setLoading(true);
-    try {
-      const payload = { operation };
-      if (isTwoNum) { payload.a = Number(a); payload.b = Number(b); }
-      else { payload.n = Number(n); }
-      const data = await calcNumberTheory(payload);
-      setResult(data);
-      showSuccess(`${operation} calculated`);
-    } catch (err) {
-      showError('Error: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleModCalc() {
-    setLoadingMod(true);
-    try {
-      let payload;
-      if (modOp === 'mod_pow') {
-        payload = { operation: 'mod_exp', base: Number(modA), exponent: Number(modB), modulus: Number(modM) };
-      } else if (modOp === 'mod_inv') {
-        payload = { operation: 'mod_inv', a: Number(modA), m: Number(modM) };
-      } else {
-        const aVal = Number(modA); const bVal = Number(modB); const mVal = Number(modM);
-        let res;
-        if (modOp === 'mod_add') res = ((aVal + bVal) % mVal + mVal) % mVal;
-        else if (modOp === 'mod_sub') res = ((aVal - bVal) % mVal + mVal) % mVal;
-        else res = ((aVal * bVal) % mVal + mVal) % mVal;
-        setModResult({ result: res });
-        showSuccess('Modular operation done');
-        return;
-      }
-      const data = await calcNumberTheory(payload);
-      setModResult(data);
-      showSuccess('Modular operation done');
-    } catch (err) {
-      showError('Error: ' + err.message);
-    } finally {
-      setLoadingMod(false);
-    }
-  }
-
-  return (
-    <ModulePage
-      title="Number Theory Calculator"
-      subtitle="Explore prime numbers, GCD, LCM, and modular arithmetic"
-    >
-
-      {/* Divisibility */}
-      <ModuleCard title="Divisibility Properties" icon="fa-superscript">
-          <div className="theory-intro">
-            <p>Number theory studies the properties and relationships of integers, with divisibility being a fundamental concept.</p>
-          </div>
-          <div className="form-container">
-            <div className="form-group">
-              <label htmlFor="operation"><i className="fas fa-cog"></i> Operation</label>
-              <select id="operation" value={operation} onChange={e => { setOperation(e.target.value); setResult(null); }}>
-                <option value="gcd">Greatest Common Divisor (GCD)</option>
-                <option value="lcm">Least Common Multiple (LCM)</option>
-                <option value="divisors">Find All Divisors</option>
-                <option value="factorize">Prime Factorization</option>
-                <option value="totient">Euler's Totient Function</option>
-                <option value="is_prime">Prime Check (is_prime)</option>
-              </select>
-            </div>
-            {isTwoNum ? (
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="a">First Number</label>
-                  <input type="number" id="a" min="1" value={a} onChange={e => setA(e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="b">Second Number</label>
-                  <input type="number" id="b" min="1" value={b} onChange={e => setB(e.target.value)} />
-                </div>
-              </div>
-            ) : (
-              <div className="form-group">
-                <label htmlFor="n">Number</label>
-                <input type="number" id="n" min="1" value={n} onChange={e => setN(e.target.value)} />
-              </div>
-            )}
-            <button type="button" className="btn btn-primary" onClick={handleCalc} disabled={loading}>
-              <i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-calculator'}`}></i> {loading ? 'Calculating…' : 'Calculate'}
-            </button>
-          </div>
-          {result && (
-            <ResultPanel
-              value={result.result}
-              fallbackData={result}
-              explanation={result.explanation}
-            />
-          )}
-      </ModuleCard>
-
-      {/* Modular Arithmetic */}
-      <ModuleCard title="Modular Arithmetic" icon="fa-redo">
-          <div className="theory-intro">
-            <p>Modular arithmetic (clock arithmetic) deals with integer operations where numbers wrap around after reaching a modulus.</p>
-          </div>
-          <div className="form-container">
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="modOp">Operation</label>
-                <select id="modOp" value={modOp} onChange={e => setModOp(e.target.value)}>
-                  <option value="mod_add">Addition (a + b) mod m</option>
-                  <option value="mod_sub">Subtraction (a - b) mod m</option>
-                  <option value="mod_mul">Multiplication (a × b) mod m</option>
-                  <option value="mod_pow">Power (a^b) mod m</option>
-                  <option value="mod_inv">Modular Inverse</option>
-                </select>
-              </div>
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="modA">a</label>
-                <input type="number" id="modA" value={modA} onChange={e => setModA(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="modB">b</label>
-                <input type="number" id="modB" value={modB} onChange={e => setModB(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="modM">m (modulus)</label>
-                <input type="number" id="modM" min="2" value={modM} onChange={e => setModM(e.target.value)} />
-              </div>
-            </div>
-            <button type="button" className="btn btn-primary" onClick={handleModCalc} disabled={loadingMod}>
-              <i className={`fas ${loadingMod ? 'fa-spinner fa-spin' : 'fa-calculator'}`}></i> {loadingMod ? 'Calculating…' : 'Calculate'}
-            </button>
-          </div>
-          {modResult && (
-            <ResultPanel
-              value={modResult.result}
-              fallbackData={modResult}
-            />
-          )}
-      </ModuleCard>
-    </ModulePage>
-  );
+  return <ModuleExperience config={numberTheoryConfig} />;
 }

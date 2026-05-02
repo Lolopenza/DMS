@@ -10,26 +10,23 @@ export default function Breadcrumb({ items }) {
   if (!items || items.length === 0) return null;
 
   return (
-    <nav className="breadcrumb" aria-label="Breadcrumb">
-      <ol className="breadcrumb-list">
-        {items.map((item, index) => (
-          <li key={index} className="breadcrumb-item">
-            {item.href ? (
-              <>
-                <Link to={item.href} className="breadcrumb-link">
+    <nav aria-label="Breadcrumb">
+      <ol className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400">
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+          return (
+            <li key={`${item.label}-${index}`} className="flex items-center gap-2">
+              {item.href ? (
+                <Link className="hover:text-slate-900 dark:hover:text-slate-100" to={item.href}>
                   {item.label}
                 </Link>
-                {index < items.length - 1 && (
-                  <span className="breadcrumb-sep" aria-hidden="true">/</span>
-                )}
-              </>
-            ) : (
-              <>
-                <span className="breadcrumb-current">{item.label}</span>
-              </>
-            )}
-          </li>
-        ))}
+              ) : (
+                <span className="text-slate-900 dark:text-slate-100">{item.label}</span>
+              )}
+              {!isLast ? <span className="text-slate-400">/</span> : null}
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );

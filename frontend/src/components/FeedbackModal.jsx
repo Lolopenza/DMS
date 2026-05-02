@@ -1,4 +1,6 @@
 import React from 'react';
+import { Button, Card, CardHeader } from './ui/index.js';
+import { Textarea } from './ui/Input.jsx';
 
 function StarButton({ active, onClick, label }) {
   return (
@@ -6,14 +8,11 @@ function StarButton({ active, onClick, label }) {
       type="button"
       onClick={onClick}
       aria-label={label}
-      style={{
-        border: 'none',
-        background: 'transparent',
-        cursor: 'pointer',
-        fontSize: '1.6rem',
-        color: active ? '#f59e0b' : '#cbd5e1',
-        lineHeight: 1,
-      }}
+      className={`inline-flex h-10 w-10 items-center justify-center rounded-xl text-2xl leading-none transition-colors focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+        active
+          ? 'text-amber-500 hover:text-amber-400'
+          : 'text-slate-300 hover:text-slate-400 dark:text-slate-600 dark:hover:text-slate-500'
+      }`}
     >
       ★
     </button>
@@ -62,29 +61,16 @@ export default function FeedbackModal({
       role="dialog"
       aria-modal="true"
       aria-label="Student feedback form"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(15, 23, 42, 0.45)',
-        display: 'grid',
-        placeItems: 'center',
-        zIndex: 1000,
-        padding: '1rem',
-      }}
+      className="fixed inset-0 z-[10000] grid place-items-center bg-slate-950/50 p-4"
     >
-      <div className="dmc-card" style={{ width: '100%', maxWidth: '520px', borderRadius: '12px' }}>
-        <div className="dmc-card-header">
-          <h3 className="dmc-title" style={{ margin: 0, marginBottom: '.4rem' }}>Share your feedback</h3>
-        </div>
-        <div className="dmc-card-body">
-        <p className="dmc-subtitle" style={{ marginTop: 0, marginBottom: '1rem' }}>
-          Rate your current learning experience and add a short comment.
-        </p>
+      <Card variant="elevated" padding="lg" className="w-full max-w-[520px]">
+        <CardHeader title="Share your feedback" subtitle="Rate your current learning experience and add a short comment." />
+        <div className="mt-6">
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '0.8rem' }}>
-            <div className="dmc-title" style={{ marginBottom: '.4rem', fontWeight: 600 }}>Rating</div>
-            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Rating</div>
+              <div className="mt-2 flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((value) => (
                 <StarButton
                   key={value}
@@ -93,48 +79,40 @@ export default function FeedbackModal({
                   label={`Set rating ${value}`}
                 />
               ))}
-              <span className="dmc-subtitle" style={{ marginLeft: '.5rem', fontSize: '.9rem' }}>
+                <span className="ml-2 text-sm text-slate-600 dark:text-slate-400">
                 {rating > 0 ? `${rating}/5` : 'Not selected'}
               </span>
             </div>
-          </div>
+            </div>
 
-          <div style={{ marginBottom: '0.8rem' }}>
-            <label htmlFor="feedback-comment" className="dmc-title" style={{ display: 'block', marginBottom: '.4rem', fontWeight: 600 }}>
-              Comment
-            </label>
-            <textarea
-              id="feedback-comment"
+            <Textarea
+              id="feedbackComment"
+              label="Comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              rows={4}
               maxLength={600}
               placeholder="What works well, and what should we improve?"
-              className="form-control"
-              style={{ width: '100%', borderRadius: '8px', padding: '.6rem' }}
+              rows={4}
+              hint={`${comment.length}/600`}
             />
-            <div className="dmc-subtitle" style={{ marginTop: '.2rem', fontSize: '.8rem' }}>
-              {comment.length}/600
-            </div>
-          </div>
 
-          {(localError || serverError) && (
-            <div style={{ marginBottom: '.8rem', color: '#b91c1c', fontSize: '.9rem' }}>
-              {localError || serverError}
-            </div>
-          )}
+            {(localError || serverError) ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">
+                {localError || serverError}
+              </div>
+            ) : null}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '.5rem' }}>
-            <button type="button" className="dmc-button-secondary" onClick={onClose} disabled={submitting}>
-              Cancel
-            </button>
-            <button type="submit" className="dmc-button-primary" disabled={submitting}>
-              {submitting ? 'Sending...' : 'Send feedback'}
-            </button>
-          </div>
-        </form>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Sending…' : 'Send feedback'}
+              </Button>
+            </div>
+          </form>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

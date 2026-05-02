@@ -5,6 +5,7 @@ import { calcStringAlgorithms } from '../../api/string-algorithms';
 const StringAlgorithms = () => {
   return (
     <AlgorithmsModuleShell
+      module="string-algorithms"
       title="String Algorithms"
       subtitle="Pattern Matching"
       intro="Implement efficient algorithms for searching patterns in text."

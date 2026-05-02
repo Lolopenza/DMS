@@ -1,5 +1,5 @@
 export const itLogicModules = {
-  automata: () => import('../discrete-math/modules/automata/Automata.jsx'),
+  automata: () => import('./modules/automata/Automata.jsx'),
   'propositional-logic': () => import('./modules/propositional-logic/PropositionalLogic.jsx'),
   'truth-tables': () => import('./modules/truth-tables/TruthTables.jsx'),
   'equivalence-laws': () => import('./modules/equivalence-laws/EquivalenceLaws.jsx'),

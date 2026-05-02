@@ -10,10 +10,16 @@
     "smoke:routes": "node scripts/smoke-routes.mjs"
   },
   "dependencies": {
+    "cytoscape": "^3.33.3",
+    "framer-motion": "^12.38.0",
     "katex": "^0.16.40",
+    "lucide-react": "^1.14.0",
+    "mathquill": "^0.10.1-a",
     "react": "^18.3.1",
+    "react-cytoscapejs": "^2.0.0",
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
+    "react-mathquill": "^1.0.4",
     "react-router-dom": "^6.28.0",
     "recharts": "^3.8.1",
     "rehype-katex": "^7.0.1",

@@ -6,31 +6,30 @@ function progressKey(subject, moduleSlug) {
 
 export function getModuleProgress(subject, moduleSlug) {
   if (!subject || !moduleSlug || typeof window === 'undefined') {
-    return { theory: false, videos: false, calculator: false };
+    return { visited: false };
   }
 
   try {
     const raw = window.localStorage.getItem(progressKey(subject, moduleSlug));
-    if (!raw) return { theory: false, videos: false, calculator: false };
+    if (!raw) return { visited: false };
     const parsed = JSON.parse(raw);
-    return {
-      theory: Boolean(parsed.theory),
-      videos: Boolean(parsed.videos),
-      calculator: Boolean(parsed.calculator),
-    };
+    const visited = Boolean(
+      parsed.visited
+      || parsed.theory
+      || parsed.videos
+      || parsed.calculator,
+    );
+    return { visited };
   } catch {
-    return { theory: false, videos: false, calculator: false };
+    return { visited: false };
   }
 }
 
-export function markModuleProgress(subject, moduleSlug, mode) {
-  if (!subject || !moduleSlug || !mode || typeof window === 'undefined') return;
-  if (!['theory', 'videos', 'calculator'].includes(mode)) return;
-
-  const current = getModuleProgress(subject, moduleSlug);
-  const next = { ...current, [mode]: true };
+/** Mark the unified module page as visited (theory + practice on one URL). */
+export function markModuleProgress(subject, moduleSlug) {
+  if (!subject || !moduleSlug || typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(progressKey(subject, moduleSlug), JSON.stringify(next));
+    window.localStorage.setItem(progressKey(subject, moduleSlug), JSON.stringify({ visited: true }));
   } catch {
     // Ignore storage errors for private modes / quota constraints.
   }

@@ -1,5 +1,5 @@
-import React, { Suspense, lazy, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import Hub from './pages/platform/Hub.jsx';
 import HelpCenter from './pages/platform/HelpCenter.jsx';
@@ -11,18 +11,19 @@ import Calculator from './pages/Calculator.jsx';
 import Roadmap from './pages/Roadmap.jsx';
 import Tracks from './pages/platform/Tracks.jsx';
 import SubjectEntry from './pages/platform/SubjectEntry.jsx';
-import ModuleDashboard from './pages/platform/ModuleDashboard.jsx';
 import SubjectRouter from './pages/subjects/_shared/SubjectRouter.jsx';
 import SignIn from './pages/auth/SignIn.jsx';
 import SignUp from './pages/auth/SignUp.jsx';
 import ResetPassword from './pages/auth/ResetPassword.jsx';
 import Dashboard from './pages/user/Dashboard.jsx';
+import Achievements from './pages/user/Achievements.jsx';
 import InteractivePractice from './pages/user/InteractivePractice.jsx';
 import Profile from './pages/user/Profile.jsx';
 import Settings from './pages/user/Settings.jsx';
 import Sandbox from './pages/user/Sandbox.jsx';
 import ContentAdmin from './pages/admin/ContentAdmin.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import GlobalErrorBoundary from './components/GlobalErrorBoundary.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import {
   ADMIN_CONTENT_PATH,
@@ -38,6 +39,7 @@ import {
   ROADMAP_PATH,
   SECTIONS,
   TRACKS_PATH,
+  USER_ACHIEVEMENTS_PATH,
   USER_DASHBOARD_PATH,
   USER_GENERATED_PRACTICE_PATH,
   USER_PRACTICE_PATH,
@@ -51,15 +53,10 @@ const MODULE_COMPONENTS = {
   // MODULE_COMPONENTS enum deprecated - use discreteMathModules registry instead
 };
 
-const ModuleModePlaceholder = lazy(() => import('./pages/platform/ModuleModePlaceholder.jsx'));
-
-function RouteLoader() {
-  return (
-    <div className="ui-state ui-state-loading" role="status" style={{ margin: '6rem auto 0', maxWidth: '720px' }}>
-      <h3><i className="fas fa-spinner fa-spin"></i> Loading module mode</h3>
-      <p className="ui-state-message">Preparing theory and video content...</p>
-    </div>
-  );
+/** Redirect /:subject/modules/:module → canonical /:subject/:module */
+function ModulesPathRedirect() {
+  const { subject, module: moduleSlug } = useParams();
+  return <Navigate to={`/${subject}/${moduleSlug}`} replace />;
 }
 
 export default function App() {
@@ -69,6 +66,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Layout chatHistory={chatHistory} setChatHistory={setChatHistory}>
+          <GlobalErrorBoundary>
           <Routes>
             <Route path="/" element={<Hub />} />
             <Route path={TRACKS_PATH} element={<Tracks />} />
@@ -85,6 +83,14 @@ export default function App() {
               element={(
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path={USER_ACHIEVEMENTS_PATH}
+              element={(
+                <ProtectedRoute>
+                  <Achievements />
                 </ProtectedRoute>
               )}
             />
@@ -141,21 +147,13 @@ export default function App() {
             <Route path="/:subject" element={<SubjectEntry />} />
             <Route path="/:subject/calculator" element={<Calculator />} />
             <Route path="/:subject/roadmap" element={<Roadmap />} />
-            <Route path="/:subject/:module" element={<ModuleDashboard />} />
-            <Route path="/:subject/:module/calculator" element={<SubjectRouter />} />
-            <Route
-              path="/:subject/:module/:mode"
-              element={(
-                <Suspense fallback={<RouteLoader />}>
-                  <ModuleModePlaceholder />
-                </Suspense>
-              )}
-            />
+            {/* Legacy /modules/ prefix → canonical two-segment module URL */}
+            <Route path="/:subject/modules/:module" element={<ModulesPathRedirect />} />
+            <Route path="/:subject/:module/calculator" element={<Navigate to=".." relative="path" replace />} />
+            <Route path="/:subject/:module/:mode" element={<Navigate to=".." relative="path" replace />} />
+            <Route path="/:subject/:module" element={<SubjectRouter />} />
             <Route path={CALCULATOR_PATH} element={<Calculator />} />
             <Route path={ROADMAP_PATH} element={<Roadmap />} />
-            
-            {/* New multi-subject module routing (Phase 2+) */}
-            <Route path="/:subject/modules/:module" element={<SubjectRouter />} />
             
             {/* Legacy batch 2 modules (will be migrated in Phase 2 batch 2) */}
             {SECTIONS.map((section) => {
@@ -177,6 +175,7 @@ export default function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </GlobalErrorBoundary>
         </Layout>
       </BrowserRouter>
     </AuthProvider>

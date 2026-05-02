@@ -11,10 +11,10 @@ function applyTheme(theme) {
   const html = document.documentElement;
   if (theme === 'dark') {
     body.classList.add('dark-theme');
-    html.classList.add('dark-theme');
+    html.classList.add('dark');
   } else {
     body.classList.remove('dark-theme');
-    html.classList.remove('dark-theme');
+    html.classList.remove('dark');
   }
   localStorage.setItem('theme', theme);
 }
@@ -30,11 +30,11 @@ export default function ThemeToggle() {
 
   return (
     <button
-      className="theme-toggle"
+      className="fixed bottom-6 right-6 z-[2000] inline-flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition-transform hover:-translate-y-0.5 hover:scale-105 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-white dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus:ring-indigo-500 dark:focus:ring-offset-slate-950"
       aria-label="Toggle dark mode"
       onClick={toggle}
     >
-      <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
+      <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`} />
     </button>
   );
 }

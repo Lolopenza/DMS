@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Breadcrumb from '../../components/Breadcrumb.jsx';
 import StateNotice from '../../components/ui/StateNotice.jsx';
 import { HOME_PATH, AUTH_RESET_PATH, AUTH_SIGN_IN_PATH, LEGAL_COOKIES_PATH, LEGAL_PRIVACY_PATH, LEGAL_TERMS_PATH } from '../../routes.js';
+import { Button, Card, CardHeader } from '../../components/ui/index.js';
 
 const supportChannels = [
   {
@@ -27,59 +27,86 @@ const supportChannels = [
 
 export default function HelpCenter() {
   return (
-    <div className="container">
-      <Breadcrumb items={[
-        { label: 'Home', href: HOME_PATH },
-        { label: 'Help Center' }
-      ]} />
+    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400" aria-label="Breadcrumb">
+          <Link className="hover:text-slate-900 dark:hover:text-slate-100" to={HOME_PATH}>
+            Home
+          </Link>
+          <span className="text-slate-400">/</span>
+          <span className="text-slate-900 dark:text-slate-100">Help Center</span>
+        </nav>
 
-      <div className="page-title">
-        <h1><i className="fas fa-circle-question"></i> Help & Support</h1>
-        <p className="subtitle">Get help, reach our support team, and explore your account options</p>
-      </div>
+        <header className="mx-auto max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Support
+          </p>
+          <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">Help & Support</h1>
+          <p className="mt-5 text-base leading-7 text-slate-600 dark:text-slate-400">
+            Get help, reach our support team, and explore your account options.
+          </p>
+        </header>
 
-      <div className="features-grid" style={{ marginBottom: '1.5rem' }}>
-        {supportChannels.map((channel) => (
-          <a key={channel.title} className="feature-card" href={channel.href}>
-            <div className="icon"><i className={`fas ${channel.icon}`}></i></div>
-            <div className="content">
-              <h3>{channel.title}</h3>
-              <p>{channel.detail}</p>
+        <section className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {supportChannels.map((channel) => (
+            <a
+              key={channel.title}
+              href={channel.href}
+              className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/30 transition hover:-translate-y-0.5 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:shadow-none dark:hover:bg-slate-900"
+            >
+              <div className="flex items-start gap-4">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm shadow-indigo-600/20 dark:bg-indigo-500">
+                  <i className={`fas ${channel.icon}`} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{channel.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{channel.detail}</p>
+                </div>
+              </div>
+            </a>
+          ))}
+        </section>
+
+        <section className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Card variant="elevated" padding="lg">
+            <CardHeader title="Get in touch" subtitle="Account-related actions and access links." />
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link to={AUTH_SIGN_IN_PATH} className="sm:flex-1">
+                <Button className="w-full">
+                  <i className="fas fa-right-to-bracket mr-2" /> Sign in to account
+                </Button>
+              </Link>
+              <Link to={AUTH_RESET_PATH} className="sm:flex-1">
+                <Button variant="secondary" className="w-full">
+                  <i className="fas fa-key mr-2" /> Reset my password
+                </Button>
+              </Link>
             </div>
-          </a>
-        ))}
-      </div>
+            <div className="mt-6">
+              <StateNotice
+                type="info"
+                title="Support status"
+                message="Support channels are active and routed to the release support desk. Responses are handled during the current integration window."
+              />
+            </div>
+          </Card>
 
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div className="card-header">
-          <h2><i className="fas fa-life-ring"></i> Get in Touch</h2>
-        </div>
-        <div className="card-body" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link className="btn btn-primary" to={AUTH_SIGN_IN_PATH}>
-            <i className="fas fa-right-to-bracket"></i> Sign In to Account
-          </Link>
-          <Link className="btn btn-outline" to={AUTH_RESET_PATH}>
-            <i className="fas fa-key"></i> Reset My Password
-          </Link>
-        </div>
+          <Card variant="elevated" padding="lg">
+            <CardHeader title="Legal policies" subtitle="Review our policies and compliance details." />
+            <div className="mt-6 flex flex-col gap-3">
+              <Link to={LEGAL_TERMS_PATH}>
+                <Button variant="outline" className="w-full">Read Terms of Use</Button>
+              </Link>
+              <Link to={LEGAL_PRIVACY_PATH}>
+                <Button variant="outline" className="w-full">Review Privacy Policy</Button>
+              </Link>
+              <Link to={LEGAL_COOKIES_PATH}>
+                <Button variant="outline" className="w-full">Manage Cookie Settings</Button>
+              </Link>
+            </div>
+          </Card>
+        </section>
       </div>
-
-      <StateNotice
-        type="info"
-        title="Support status"
-        message="Support channels are active and routed to the release support desk. Responses are handled during the current integration window."
-      />
-
-      <div className="card">
-        <div className="card-header">
-          <h2><i className="fas fa-gavel"></i> Legal Policies</h2>
-        </div>
-        <div className="card-body" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link className="btn btn-outline" to={LEGAL_TERMS_PATH}>Read Terms of Use</Link>
-          <Link className="btn btn-outline" to={LEGAL_PRIVACY_PATH}>Review Privacy Policy</Link>
-          <Link className="btn btn-outline" to={LEGAL_COOKIES_PATH}>Manage Cookie Settings</Link>
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }

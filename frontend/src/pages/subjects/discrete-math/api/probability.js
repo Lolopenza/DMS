@@ -4,7 +4,9 @@
  * Endpoint: POST /api/v1/probability/
  */
 
-const MATH_ENGINE_BASE = '/api/v1';
+// In dev/prod we call the Spring Boot proxy, not math-engine directly.
+// Backend forwards to math-engine and injects X-Internal-Api-Key.
+const MATH_ENGINE_BASE = '/api/calculator';
 
 const TIMEOUT_MATH_MS = 30_000;
 
@@ -56,5 +58,5 @@ async function request(url, options = {}) {
 }
 
 export function calcProbability(payload) {
-  return request(`${MATH_ENGINE_BASE}/probability/`, { method: 'POST', body: JSON.stringify(payload) });
+  return request(`${MATH_ENGINE_BASE}/probability`, { method: 'POST', body: JSON.stringify(payload) });
 }

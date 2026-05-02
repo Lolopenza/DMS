@@ -1,42 +1,29 @@
-import { discreteMathModules } from '../discrete-math/index.js';
-import { linearAlgebraModules } from '../linear-algebra/index.js';
-import { algorithmModules } from '../algorithms/index.js';
-import { probabilityStatisticsModules } from '../probability-statistics/index.js';
-import { itLogicModules } from '../it-logic/index.js';
+import { isCatalogSubjectImplemented, loadCatalogSubjectModule, getCatalogSubjects } from '../../../catalog/subjectCatalog.js';
 
-export const SUBJECT_MODULE_REGISTRIES = {
-  'discrete-math': discreteMathModules,
-  'linear-algebra': linearAlgebraModules,
-  'algorithms': algorithmModules,
-  'probability-statistics': probabilityStatisticsModules,
-  'it-logic': itLogicModules,
-};
+// Backwards-compatible API used by SubjectRouter.
 
 export function isSubjectImplemented(subjectSlug) {
-  return Boolean(subjectSlug && SUBJECT_MODULE_REGISTRIES[subjectSlug]);
+  return isCatalogSubjectImplemented(subjectSlug);
 }
 
 export function getModuleSlugsBySubject(subjectSlug) {
-  return Object.keys(SUBJECT_MODULE_REGISTRIES[subjectSlug] || {});
+  const subj = getCatalogSubjects().find((s) => s.slug === subjectSlug);
+  if (!subj) return [];
+  return (subj.modules || []).map((m) => m.slug);
 }
 
 export function getKnownModuleSlugs() {
-  const all = Object.values(SUBJECT_MODULE_REGISTRIES).flatMap((registry) => Object.keys(registry));
+  const all = getCatalogSubjects().flatMap((s) => (s.modules || []).map((m) => m.slug));
   return Array.from(new Set(all));
 }
 
 export async function loadSubjectModule(subjectSlug, moduleSlug) {
-  const registry = SUBJECT_MODULE_REGISTRIES[subjectSlug];
-  if (!registry) return undefined;
-
-  const loader = registry[moduleSlug];
-  if (!loader) return undefined;
-
   try {
-    const module = await loader();
-    return module.default || module;
+    return await loadCatalogSubjectModule(subjectSlug, moduleSlug);
   } catch (error) {
+    // Don't mask evaluation/import errors as "Module not found" in UI.
+    // SubjectRouter will render the real message from this thrown error.
     console.error(`Failed to load module ${subjectSlug}/${moduleSlug}:`, error);
-    return undefined;
+    throw error;
   }
 }

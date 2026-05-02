@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../components/Toast.jsx';
 import { CALCULATOR_PATH } from '../routes.js';
+import { Badge, Button, Card, CardHeader } from '../components/ui/index.js';
 
 const steps = [
   {
@@ -110,11 +111,6 @@ const ITEM_COLORS = { alt: '#a855f7', opt: '#eab308', default: '#22c55e' };
 export default function Roadmap() {
   const { showSuccess } = useToast();
 
-  useEffect(() => {
-    document.body.classList.add('roadmap-page');
-    return () => document.body.classList.remove('roadmap-page');
-  }, []);
-
   function share() {
     if (navigator.share) {
       navigator.share({ title: 'Discrete Mathematics Roadmap', url: window.location.href });
@@ -125,69 +121,86 @@ export default function Roadmap() {
   }
 
   return (
-    <>
-      <header className="roadmap-hero">
-        <h1>Discrete Mathematics Roadmap</h1>
-        <p>Step by step guide to becoming a Discrete Mathematics Developer.</p>
-        <div className="roadmap-actions">
-          <Link to="/" className="roadmap-btn roadmap-btn-back">
-            <i className="fas fa-arrow-left"></i> Back to home
-          </Link>
-          <Link to={CALCULATOR_PATH} className="roadmap-btn roadmap-btn-ai">
-            <i className="fas fa-calculator"></i> Open Calculator
-          </Link>
-          <button type="button" className="roadmap-btn roadmap-btn-share" onClick={share}>
-            <i className="fas fa-share-nodes"></i> Share
-          </button>
-        </div>
-      </header>
+    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <header className="mx-auto max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Discrete Mathematics
+          </p>
+          <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">Roadmap</h1>
+          <p className="mt-5 text-base leading-7 text-slate-600 dark:text-slate-400">
+            Step-by-step guide to becoming confident in logic, sets, combinatorics, and graph theory.
+          </p>
 
-      <div className="roadmap-content">
-        <div className="roadmap-legend">
-          <h3>Legend</h3>
-          <div className="roadmap-legend-item">
-            <span className="roadmap-legend-dot green"></span> Recommended
+          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link to="/">
+              <Button size="lg" variant="outline">
+                <i className="fas fa-arrow-left" /> Back to home
+              </Button>
+            </Link>
+            <Link to={CALCULATOR_PATH}>
+              <Button size="lg">
+                <i className="fas fa-calculator" /> Open calculator
+              </Button>
+            </Link>
+            <Button size="lg" variant="secondary" onClick={share}>
+              <i className="fas fa-share-nodes" /> Share
+            </Button>
           </div>
-          <div className="roadmap-legend-item">
-            <span className="roadmap-legend-dot purple"></span> Alternatives
-          </div>
-          <div className="roadmap-legend-item">
-            <span className="roadmap-legend-dot yellow"></span> Optional
-          </div>
-        </div>
+        </header>
 
-        <div className="roadmap-timeline">
-          {steps.map(step => (
-            <article key={step.num} className="roadmap-step">
-              <div className="roadmap-step-card">
-                <div className="roadmap-step-header">
-                  <span className="roadmap-step-num">{step.num}</span>
-                  <div className="roadmap-step-title-wrap">
-                    <h2 className="roadmap-step-title">{step.title}</h2>
+        <section className="mt-10">
+          <Card variant="elevated" padding="lg">
+            <CardHeader title="Legend" subtitle="How to read the roadmap items." />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Badge tone="success">Recommended</Badge>
+              <Badge tone="neutral">Alternatives</Badge>
+              <Badge tone="warning">Optional</Badge>
+            </div>
+          </Card>
+        </section>
+
+        <section className="mt-10 space-y-5">
+          {steps.map((step) => (
+            <Card key={step.num} variant="elevated" padding="lg">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-start gap-3">
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-sm font-bold text-white shadow-sm shadow-indigo-600/20 dark:bg-indigo-500">
+                      {step.num}
+                    </span>
+                    <div className="min-w-0">
+                      <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{step.title}</h2>
+                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{step.desc}</p>
+                    </div>
                   </div>
                 </div>
-                <p className="roadmap-step-desc">{step.desc}</p>
-                <ul className="roadmap-step-list">
-                  {step.items.map((item, i) => (
-                    <li
-                      key={i}
-                      className={item.type ? `roadmap-sub-${item.type}` : ''}
-                      style={{ '--item-color': ITEM_COLORS[item.type || 'default'] }}
-                    >
-                      {item.text}
-                      {item.type && (
-                        <span className={`roadmap-badge roadmap-badge-${item.type}`}>
-                          {BADGE_LABELS[item.type]}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
               </div>
-            </article>
+
+              <ul className="mt-6 space-y-2">
+                {step.items.map((item, idx) => {
+                  const tone = item.type === 'opt' ? 'warning' : item.type === 'alt' ? 'neutral' : 'success';
+                  const border =
+                    item.type === 'opt'
+                      ? 'border-amber-300 dark:border-amber-700'
+                      : item.type === 'alt'
+                        ? 'border-violet-300 dark:border-violet-700'
+                        : 'border-emerald-300 dark:border-emerald-700';
+                  return (
+                    <li
+                      key={idx}
+                      className={`flex items-start justify-between gap-4 rounded-2xl border ${border} bg-white px-4 py-3 text-sm text-slate-800 dark:bg-slate-950 dark:text-slate-200`}
+                    >
+                      <span className="min-w-0">{item.text}</span>
+                      {item.type ? <Badge tone={tone}>{BADGE_LABELS[item.type]}</Badge> : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
           ))}
-        </div>
+        </section>
       </div>
-    </>
+    </section>
   );
 }

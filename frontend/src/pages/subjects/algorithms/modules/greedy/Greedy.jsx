@@ -5,6 +5,7 @@ import { calcGreedy } from '../../api/greedy';
 const Greedy = () => {
   return (
     <AlgorithmsModuleShell
+      module="greedy"
       title="Greedy Algorithms"
       subtitle="Fractional Knapsack"
       intro="Solve optimization problems using greedy strategy with locally optimal choices."

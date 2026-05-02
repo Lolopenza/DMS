@@ -1,124 +1,140 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { calcProbability } from '../../../../../api.js';
-import { useToast } from '../../../../../components/Toast.jsx';
-import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
-import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
+import MathResultBox from '../../../../../components/module/MathResultBox.jsx';
+import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import probabilityBasicsTheory from '../../../../../data/content/probability-statistics/probability-basics.content.js';
 
-function toNum(value, name) {
-	const n = Number(value);
-	if (!Number.isFinite(n)) throw new Error(`${name}: invalid number`);
-	return n;
+function fmtProb(x) {
+  const n = Number(x);
+  if (!Number.isFinite(n)) return String(x);
+  const s = n.toFixed(8).replace(/\.?0+$/, '');
+  return s || '0';
 }
 
+/** Handles flat API payloads or nested `{ result: { ... } }` from proxies. */
+function unwrapIndependencePayload(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  if (typeof raw.expected_joint === 'number' && typeof raw.actual_joint === 'number') {
+    const independent =
+      typeof raw.result === 'boolean'
+        ? raw.result
+        : Math.abs(raw.actual_joint - raw.expected_joint) < 1e-10;
+    return {
+      result: independent,
+      expected_joint: raw.expected_joint,
+      actual_joint: raw.actual_joint,
+      steps: raw.steps,
+    };
+  }
+  const inner = raw.result;
+  if (inner && typeof inner === 'object' && typeof inner.expected_joint === 'number' && typeof inner.actual_joint === 'number') {
+    const independent =
+      typeof inner.result === 'boolean'
+        ? inner.result
+        : Math.abs(inner.actual_joint - inner.expected_joint) < 1e-10;
+    return {
+      result: independent,
+      expected_joint: inner.expected_joint,
+      actual_joint: inner.actual_joint,
+      steps: inner.steps,
+    };
+  }
+  return null;
+}
+
+function ProbabilityBasicsResult({ result, operation, values }) {
+  if (!result) return null;
+
+  if (operation === 'independence_check') {
+    const payload = unwrapIndependencePayload(result);
+    if (payload) {
+      const independent = payload.result === true;
+      const exp = payload.expected_joint;
+      const act = payload.actual_joint;
+      const stepsText = typeof payload.steps === 'string' ? payload.steps.trim() : '';
+      const title = independent ? 'Independent' : 'Not independent';
+      const pa = fmtProb(values.pA);
+      const pb = fmtProb(values.pB);
+      const content = `Events are **${independent ? 'independent' : 'dependent'}**: compare $P(A \\cap B)$ with $P(A)P(B)$.
+
+$$P(A)P(B)=${pa}\\cdot${pb}=${fmtProb(exp)}$$
+
+$$P(A \\cap B)=${fmtProb(act)}$$
+
+${stepsText ? `\n\n**Reasoning:** ${stepsText}` : ''}`;
+      return <MathResultBox title={title} content={content} />;
+    }
+  }
+
+  const numeric = typeof result?.result === 'number' ? result.result : null;
+
+  const contentByOp = {
+    simple:
+      typeof numeric === 'number'
+        ? `$$P(A)=\\frac{${values.favorable}}{${values.total}} \\approx ${numeric.toFixed(6)}$$`
+        : null,
+    complement: typeof numeric === 'number' ? `$$P(A^c)=1-P(A)=1-${values.pEvent}=${numeric.toFixed(6)}$$` : null,
+    union:
+      typeof numeric === 'number'
+        ? `$$P(A\\cup B)=P(A)+P(B)-P(A\\cap B) = ${values.pA}+${values.pB}-${values.pAandB}=${numeric.toFixed(6)}$$`
+        : null,
+    independence_check: null,
+  };
+
+  return (
+    <MathResultBox
+      title="Result"
+      content={contentByOp[operation] || `\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``}
+    />
+  );
+}
+
+const probabilityBasicsConfig = {
+  id: 'probability-basics',
+  eyebrow: 'Probability & Statistics',
+  title: 'Probability Basics',
+  subtitle: 'Foundations: simple probability, union, complement, independence.',
+  theory: probabilityBasicsTheory,
+  practice: {
+    title: 'Core Probability',
+    description: 'Choose an operation and fill in the required parameters.',
+    operationLabel: 'Operation',
+    submitLabel: 'Calculate',
+    loadingLabel: 'Calculating...',
+    calculate: calcProbability,
+    buildPayload: ({ operation, values }) => {
+      if (operation === 'simple') {
+        return { operation, favorable: Number(values.favorable), total: Number(values.total) };
+      }
+      if (operation === 'complement') {
+        return { operation, pEvent: Number(values.pEvent) };
+      }
+      return {
+        operation,
+        pA: Number(values.pA),
+        pB: Number(values.pB),
+        pAandB: Number(values.pAandB),
+      };
+    },
+    mapResult: (data) => data,
+    resultRenderer: (props) => <ProbabilityBasicsResult {...props} />,
+    operations: [
+      { value: 'simple', label: 'Simple probability', hint: 'P = favorable / total', default: true },
+      { value: 'union', label: 'Union P(A ∪ B)', hint: 'P(A) + P(B) − P(A ∩ B)' },
+      { value: 'complement', label: "Complement P(A')", hint: '1 − P(A)' },
+      { value: 'independence_check', label: 'Independence check', hint: 'Compare P(A∩B) with P(A)P(B)' },
+    ],
+    fields: [
+      { name: 'favorable', label: 'Favorable outcomes', type: 'number', min: 0, defaultValue: 3, required: true, showWhen: ['simple'] },
+      { name: 'total', label: 'Total outcomes', type: 'number', min: 1, defaultValue: 10, required: true, showWhen: ['simple'] },
+      { name: 'pEvent', label: 'P(A)', type: 'number', min: 0, max: 1, step: 0.01, defaultValue: 0.2, required: true, showWhen: ['complement'] },
+      { name: 'pA', label: 'P(A)', type: 'number', min: 0, max: 1, step: 0.01, defaultValue: 0.6, required: true, showWhen: ['union', 'independence_check'] },
+      { name: 'pB', label: 'P(B)', type: 'number', min: 0, max: 1, step: 0.01, defaultValue: 0.5, required: true, showWhen: ['union', 'independence_check'] },
+      { name: 'pAandB', label: 'P(A ∩ B)', type: 'number', min: 0, max: 1, step: 0.01, defaultValue: 0.3, required: true, showWhen: ['union', 'independence_check'] },
+    ],
+  },
+};
+
 export default function ProbabilityBasics() {
-	const { showSuccess, showError } = useToast();
-	const [operation, setOperation] = useState('simple');
-	const [inputs, setInputs] = useState({
-		favorable: 3,
-		total: 10,
-		pA: 0.6,
-		pB: 0.5,
-		pAandB: 0.3,
-		pEvent: 0.2,
-	});
-	const [result, setResult] = useState(null);
-	const [loading, setLoading] = useState(false);
-
-	const set = (key, value) => setInputs((prev) => ({ ...prev, [key]: value }));
-
-	async function handleCalculate() {
-		setLoading(true);
-		try {
-			const payload = { operation };
-			if (operation === 'simple') {
-				payload.favorable = toNum(inputs.favorable, 'favorable');
-				payload.total = toNum(inputs.total, 'total');
-			} else if (operation === 'union' || operation === 'independence_check') {
-				payload.pA = toNum(inputs.pA, 'pA');
-				payload.pB = toNum(inputs.pB, 'pB');
-				payload.pAandB = toNum(inputs.pAandB, 'pAandB');
-			} else if (operation === 'complement') {
-				payload.pEvent = toNum(inputs.pEvent, 'pEvent');
-			}
-
-			const data = await calcProbability(payload);
-			setResult(data);
-			showSuccess('Calculation complete');
-		} catch (err) {
-			showError('Error: ' + err.message);
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	return (
-		<ModulePage
-			title="Probability Basics"
-			subtitle="Foundations: simple, union, complement, independence"
-		>
-			<ModuleCard title="Core Probability" icon="fa-dice">
-				<div className="form-container">
-					<div className="form-group">
-						<label htmlFor="op"><i className="fas fa-cog"></i> Operation</label>
-						<select id="op" value={operation} onChange={(e) => { setOperation(e.target.value); setResult(null); }}>
-							<option value="simple">Simple probability P = favorable / total</option>
-							<option value="union">Union: P(A ∪ B)</option>
-							<option value="complement">Complement: P(A')</option>
-							<option value="independence_check">Independence check</option>
-						</select>
-					</div>
-
-					{operation === 'simple' && (
-						<div className="form-row">
-							<div className="form-group">
-								<label>Favorable outcomes</label>
-								<input type="number" min="0" value={inputs.favorable} onChange={(e) => set('favorable', e.target.value)} />
-							</div>
-							<div className="form-group">
-								<label>Total outcomes</label>
-								<input type="number" min="1" value={inputs.total} onChange={(e) => set('total', e.target.value)} />
-							</div>
-						</div>
-					)}
-
-					{(operation === 'union' || operation === 'independence_check') && (
-						<div className="form-row">
-							<div className="form-group">
-								<label>P(A)</label>
-								<input type="number" min="0" max="1" step="0.01" value={inputs.pA} onChange={(e) => set('pA', e.target.value)} />
-							</div>
-							<div className="form-group">
-								<label>P(B)</label>
-								<input type="number" min="0" max="1" step="0.01" value={inputs.pB} onChange={(e) => set('pB', e.target.value)} />
-							</div>
-							<div className="form-group">
-								<label>P(A ∩ B)</label>
-								<input type="number" min="0" max="1" step="0.01" value={inputs.pAandB} onChange={(e) => set('pAandB', e.target.value)} />
-							</div>
-						</div>
-					)}
-
-					{operation === 'complement' && (
-						<div className="form-group">
-							<label>P(A)</label>
-							<input type="number" min="0" max="1" step="0.01" value={inputs.pEvent} onChange={(e) => set('pEvent', e.target.value)} />
-						</div>
-					)}
-
-					<button type="button" className="btn btn-primary" onClick={handleCalculate} disabled={loading}>
-						<i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-calculator'}`}></i> {loading ? 'Calculating...' : 'Calculate'}
-					</button>
-				</div>
-
-				{result && (
-					<ResultPanel
-						value={result.result}
-						fallbackData={result}
-						valueRenderer={(val) => (typeof val === 'number' ? val.toFixed(6) : String(val))}
-						steps={result.steps}
-					/>
-				)}
-			</ModuleCard>
-		</ModulePage>
-	);
+  return <ModuleExperience config={probabilityBasicsConfig} />;
 }

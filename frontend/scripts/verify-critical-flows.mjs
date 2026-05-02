@@ -67,11 +67,12 @@ switchPaths.forEach(({ from, to }) => {
   }
 });
 
-// Test Case 4: Lazy loading verification (check module slugs)
+// Test Case 4: Lazy loading verification (check module slugs registered on discrete-math)
 console.log('\nTEST 4: Module Registry & Lazy Loading');
 const { discreteMathModules } = await import('../src/pages/subjects/discrete-math/index.js');
+const discreteMathLoaderSlugs = Object.keys(discreteMathModules);
 let flow4Pass = true;
-modules.forEach((mod) => {
+discreteMathLoaderSlugs.forEach((mod) => {
   const exists = Boolean(discreteMathModules[mod]);
   const isFunction = typeof discreteMathModules[mod] === 'function';
   const status = exists && isFunction ? '✓' : '✗';

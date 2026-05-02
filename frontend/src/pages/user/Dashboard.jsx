@@ -14,6 +14,13 @@ import FeedbackModal from '../../components/FeedbackModal.jsx';
 import ColabExportCard from '../../components/ColabExportCard.jsx';
 import StudentMiniLab from '../../components/StudentMiniLab.jsx';
 import JupyterLiteSandboxCard from '../../components/JupyterLiteSandboxCard.jsx';
+import HeroSection from '../../components/dashboard/HeroSection.jsx';
+import OnboardingWizard from '../../components/dashboard/OnboardingWizard.jsx';
+import LearningJourneyCard from '../../components/dashboard/LearningJourneyCard.jsx';
+import SmartRecommendations from '../../components/dashboard/SmartRecommendations.jsx';
+import SubjectProgressOverview from '../../components/dashboard/SubjectProgressOverview.jsx';
+import { Button, Card, CardHeader } from '../../components/ui/index.js';
+import useUserSkills from '../../hooks/useUserSkills.js';
 import {
   getLearningFeedback,
   getMyAnalyticsCsvUrl,
@@ -25,6 +32,8 @@ import {
 export default function Dashboard() {
   const { user } = useAuth();
   const displayName = user?.name || user?.username || 'Student';
+  const { skills, loading: skillsLoading, error: skillsError, overallPercent, totalAttempts, tier } = useUserSkills();
+
   const [feedback, setFeedback] = React.useState(null);
   const [loadingFeedback, setLoadingFeedback] = React.useState(false);
   const [feedbackError, setFeedbackError] = React.useState('');
@@ -38,6 +47,9 @@ export default function Dashboard() {
   const [exportingNotebook, setExportingNotebook] = React.useState(false);
   const [exportError, setExportError] = React.useState('');
   const [exportDone, setExportDone] = React.useState(false);
+
+  const showOnboarding = tier === 'beginner' && totalAttempts < 5;
+  const showAdvancedAnalytics = tier !== 'beginner' || totalAttempts >= 8;
 
   async function onAnalyze() {
     setLoadingFeedback(true);
@@ -93,7 +105,6 @@ export default function Dashboard() {
           setFeedbackModalOpen(true);
         }, delayMs);
       } catch {
-        // Fallback: auto-prompt once after a short delay if status endpoint is unavailable.
         if (!mounted) return;
         timerId = setTimeout(() => {
           setFeedbackModalOpen(true);
@@ -141,159 +152,195 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h1><i className="fas fa-chart-line"></i> Welcome back, {displayName}!</h1>
-        <p className="subtitle">Pick up where you left off or explore something new today.</p>
-      </div>
+    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <header className="sr-only">
+          <h1>Learner dashboard</h1>
+        </header>
 
-      <SkillMasteryDashboard />
-      <StudentMiniLab />
+        <HeroSection displayName={displayName} tier={tier} />
 
-      <ColabExportCard
-        windowDays={exportWindowDays}
-        setWindowDays={setExportWindowDays}
-        aiLessonMode={colabAiLessonMode}
-        setAiLessonMode={setColabAiLessonMode}
-        onDownloadCsv={onDownloadCsv}
-        onDownloadNotebook={onDownloadNotebook}
-        exporting={exportingNotebook}
-        exportError={exportError}
-        exportDone={exportDone}
-      />
-      <JupyterLiteSandboxCard />
+        <SkillMasteryDashboard skills={skills} loading={skillsLoading} error={skillsError} />
 
-      <div className="dmc-card" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-        <div className="dmc-card-header flex items-center justify-between flex-wrap gap-3">
-          <h3 className="text-lg font-semibold dmc-title">Feedback</h3>
-          {!hasSubmittedFeedback ? (
-            <button type="button" className="dmc-button-primary" onClick={() => setFeedbackModalOpen(true)}>
-              Leave feedback
-            </button>
-          ) : null}
-        </div>
-        <div className="dmc-card-body">
-          <p className="text-sm dmc-subtitle">
-            Tell us how helpful this platform is for your learning. Your rating helps improve future features.
-          </p>
-          {hasSubmittedFeedback && (
-            <div className="rounded-lg bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 text-sm mt-3">
-              Feedback already submitted. Thank you.
+        {showOnboarding ? <OnboardingWizard /> : null}
+
+        <LearningJourneyCard />
+
+        <SmartRecommendations />
+
+        <SubjectProgressOverview />
+
+        <StudentMiniLab defaultCollapsed />
+
+        {showAdvancedAnalytics ? (
+          <>
+            <ColabExportCard
+              windowDays={exportWindowDays}
+              setWindowDays={setExportWindowDays}
+              aiLessonMode={colabAiLessonMode}
+              setAiLessonMode={setColabAiLessonMode}
+              onDownloadCsv={onDownloadCsv}
+              onDownloadNotebook={onDownloadNotebook}
+              exporting={exportingNotebook}
+              exportError={exportError}
+              exportDone={exportDone}
+            />
+            <JupyterLiteSandboxCard />
+          </>
+        ) : null}
+
+        <Card variant="elevated" padding="lg" className="mt-6">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+            <CardHeader
+              title="Feedback"
+              subtitle="Tell us how helpful this platform is for your learning. Your rating helps improve future features."
+            />
+            {!hasSubmittedFeedback ? (
+              <Button variant="secondary" onClick={() => setFeedbackModalOpen(true)}>
+                Leave feedback
+              </Button>
+            ) : null}
+          </div>
+
+          <div className="mt-6 space-y-3 text-sm">
+            {hasSubmittedFeedback ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200">
+                Feedback already submitted. Thank you.
+              </div>
+            ) : null}
+            {feedbackSent ? (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100">
+                Thanks! Your feedback was sent.
+              </div>
+            ) : null}
+          </div>
+        </Card>
+
+        {showAdvancedAnalytics ? (
+          <Card variant="elevated" padding="lg" className="mt-8">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <CardHeader
+                title="Performance analysis"
+                subtitle="Get a short, personalized summary of your strengths and what to focus on next."
+              />
+              <Button loading={loadingFeedback} loadingLabel="Analyzing..." onClick={onAnalyze}>
+                Analyze my progress
+              </Button>
             </div>
-          )}
-          {feedbackSent && (
-            <div className="rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 text-sm mt-3">
-              Thanks! Your feedback was sent.
-            </div>
-          )}
-        </div>
-      </div>
 
-      <div className="dmc-card mt-8 mb-10">
-        <div className="dmc-card-header flex items-center justify-between flex-wrap gap-3">
-          <h3 className="text-lg font-semibold dmc-title">Performance Analysis</h3>
-          <button
-            type="button"
-            onClick={onAnalyze}
-            disabled={loadingFeedback}
-            className="dmc-button-primary disabled:opacity-60"
-          >
-            {loadingFeedback ? 'Analyzing…' : 'Analyze my progress'}
-          </button>
-        </div>
-        <div className="dmc-card-body space-y-3">
-          <p className="text-sm dmc-subtitle">
-            Get a short, personalized summary of your strengths and what to focus on next.
-          </p>
-
-          {feedbackError && (
-            <div className="rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
-              {feedbackError}
-            </div>
-          )}
-
-          {feedback?.feedbackText && (
-            <div className="rounded-xl border border-slate-200 dmc-surface-soft p-4 space-y-3">
-              <p className="text-sm dmc-title whitespace-pre-wrap leading-relaxed">{feedback.feedbackText}</p>
-              {(feedback.strengths?.length || feedback.focusTopics?.length) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <div className="font-semibold dmc-title mb-1">Strengths</div>
-                    <div className="dmc-subtitle">{(feedback.strengths || []).join(', ') || '—'}</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold dmc-title mb-1">Focus next</div>
-                    <div className="dmc-subtitle">{(feedback.focusTopics || []).join(', ') || '—'}</div>
-                  </div>
+            <div className="mt-6 space-y-3 text-sm">
+              {feedbackError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-100">
+                  {feedbackError}
                 </div>
-              )}
+              ) : null}
+
+              {feedback?.feedbackText ? (
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+                  <p className="whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-200">
+                    {feedback.feedbackText}
+                  </p>
+                  {feedback.strengths?.length || feedback.focusTopics?.length ? (
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                          Strengths
+                        </p>
+                        <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">
+                          {(feedback.strengths || []).join(', ') || '—'}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                          Focus next
+                        </p>
+                        <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">
+                          {(feedback.focusTopics || []).join(', ') || '—'}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
-          )}
-        </div>
+          </Card>
+        ) : (
+          <Card variant="elevated" padding="lg" className="mt-8 border-indigo-100 dark:border-indigo-900/40">
+            <CardHeader
+              title="Performance analysis"
+              subtitle="Unlocks after more practice — complete a few sessions to enable personalized AI summaries and exports."
+            />
+            <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
+              Overall mastery: <strong>{overallPercent}%</strong> · attempts logged: <strong>{totalAttempts}</strong>
+            </p>
+          </Card>
+        )}
+
+        <section className="mt-10 pb-10">
+          <Card variant="elevated" padding="lg">
+            <CardHeader title="Quick actions" subtitle="Jump back into practice and account tools." />
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  to: CALCULATOR_PATH,
+                  icon: 'fa-calculator',
+                  title: 'Practice with Calculators',
+                  desc: 'Master concepts with interactive tools.',
+                },
+                {
+                  to: MATH_ROADMAP_PATH,
+                  icon: 'fa-route',
+                  title: 'Math Roadmap',
+                  desc: 'Explore learning paths and milestones.',
+                },
+                { to: TRACKS_PATH, icon: 'fa-layer-group', title: 'Subject Tracks', desc: 'Discover subjects and module catalogs.' },
+                {
+                  to: USER_PRACTICE_PATH,
+                  icon: 'fa-wand-magic-sparkles',
+                  title: 'AI-Powered Practice',
+                  desc: 'Personalized problems with feedback.',
+                },
+                { to: USER_PROFILE_PATH, icon: 'fa-id-badge', title: 'My Profile', desc: 'Update your information and goals.' },
+                {
+                  to: USER_SETTINGS_PATH,
+                  icon: 'fa-sliders',
+                  title: 'Preferences',
+                  desc: 'Customize your learning experience.',
+                },
+              ].map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-200/30 transition hover:-translate-y-0.5 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:shadow-none dark:hover:bg-slate-900"
+                >
+                  <div className="flex items-start gap-4">
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-sm shadow-indigo-600/20 dark:bg-indigo-500">
+                      <i className={`fas ${item.icon}`} />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{item.desc}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Card>
+        </section>
+
+        <FeedbackModal
+          isOpen={feedbackModalOpen}
+          onClose={() => {
+            if (!feedbackSubmitting) {
+              setFeedbackModalOpen(false);
+              setFeedbackSubmitError('');
+            }
+          }}
+          onSubmit={onSubmitFeedback}
+          submitting={feedbackSubmitting}
+          serverError={feedbackSubmitError}
+        />
       </div>
-
-      <div className="features-grid">
-        <Link to={CALCULATOR_PATH} className="feature-card">
-          <div className="icon"><i className="fas fa-calculator"></i></div>
-          <div className="content">
-            <h3>Practice with Calculators</h3>
-            <p>Master concepts with interactive tools for all major topics.</p>
-          </div>
-        </Link>
-
-        <Link to={MATH_ROADMAP_PATH} className="feature-card">
-          <div className="icon"><i className="fas fa-route"></i></div>
-          <div className="content">
-            <h3>Math Roadmap</h3>
-            <p>Explore learning paths across foundations and specialized domains.</p>
-          </div>
-        </Link>
-
-        <Link to={TRACKS_PATH} className="feature-card">
-          <div className="icon"><i className="fas fa-layer-group"></i></div>
-          <div className="content">
-            <h3>Subject Tracks</h3>
-            <p>Discover upcoming subjects and plan your learning journey.</p>
-          </div>
-        </Link>
-
-        <Link to={USER_PRACTICE_PATH} className="feature-card">
-          <div className="icon"><i className="fas fa-wand-magic-sparkles"></i></div>
-          <div className="content">
-            <h3>AI-Powered Practice</h3>
-            <p>Get personalized problems with instant feedback from AI.</p>
-          </div>
-        </Link>
-
-        <Link to={USER_PROFILE_PATH} className="feature-card">
-          <div className="icon"><i className="fas fa-id-badge"></i></div>
-          <div className="content">
-            <h3>My Profile</h3>
-            <p>Update your information and learning goals.</p>
-          </div>
-        </Link>
-
-        <Link to={USER_SETTINGS_PATH} className="feature-card">
-          <div className="icon"><i className="fas fa-sliders"></i></div>
-          <div className="content">
-            <h3>Preferences</h3>
-            <p>Customize your learning experience and notifications.</p>
-          </div>
-        </Link>
-      </div>
-
-      <FeedbackModal
-        isOpen={feedbackModalOpen}
-        onClose={() => {
-          if (!feedbackSubmitting) {
-            setFeedbackModalOpen(false);
-            setFeedbackSubmitError('');
-          }
-        }}
-        onSubmit={onSubmitFeedback}
-        submitting={feedbackSubmitting}
-        serverError={feedbackSubmitError}
-      />
-    </div>
+    </section>
   );
 }

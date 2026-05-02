@@ -1,176 +1,132 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { calcProbability } from '../../../../../api.js';
-import { useToast } from '../../../../../components/Toast.jsx';
-import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
-import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
+import MathResultBox from '../../../../../components/module/MathResultBox.jsx';
+import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import distributionsTheory from '../../../../../data/content/probability-statistics/distributions.content.js';
 
-function toNum(value, name) {
-	const n = Number(value);
-	if (!Number.isFinite(n)) throw new Error(`${name}: invalid number`);
-	return n;
+function DistributionsResult({ result }) {
+  if (!result) return null;
+  const inner = result?.result ?? result;
+  const numeric = typeof inner === 'number' ? inner : null;
+  const summary =
+    inner && typeof inner === 'object'
+      ? {
+          mean: typeof inner.mean === 'number' ? inner.mean : null,
+          variance: typeof inner.variance === 'number' ? inner.variance : null,
+          pmf_at_k: typeof inner.pmf_at_k === 'number' ? inner.pmf_at_k : null,
+        }
+      : null;
+
+  if (summary && (summary.mean !== null || summary.variance !== null || summary.pmf_at_k !== null)) {
+    const lines = [
+      summary.mean !== null ? `\\mathbb{E}[X]=${summary.mean}` : null,
+      summary.variance !== null ? `\\mathrm{Var}(X)=${summary.variance}` : null,
+      summary.pmf_at_k !== null ? `P(X=k)=${summary.pmf_at_k}` : null,
+    ].filter(Boolean);
+
+    function formatStepsText(raw) {
+      const s = String(raw || '').trim();
+      if (!s) return null;
+      // Known short hints from backend, render as math.
+      if (/^Binomial:\s*mean=np,\s*variance=np\(1-p\)\s*$/i.test(s)) {
+        return '$$\\text{Binomial: }\\mathbb{E}[X]=np,\\;\\mathrm{Var}(X)=np(1-p)$$';
+      }
+      if (/^Poisson:\s*mean=lambda,\s*variance=lambda\s*$/i.test(s)) {
+        return '$$\\text{Poisson: }\\mathbb{E}[X]=\\lambda,\\;\\mathrm{Var}(X)=\\lambda$$';
+      }
+      if (/^Geometric:\s*mean=1\/p,\s*variance=\(1-p\)\/p\^2\s*$/i.test(s)) {
+        return '$$\\text{Geometric: }\\mathbb{E}[X]=\\frac{1}{p},\\;\\mathrm{Var}(X)=\\frac{1-p}{p^2}$$';
+      }
+      return `**Steps:** ${s}`;
+    }
+
+    return (
+      <div className="space-y-3">
+        <MathResultBox title="Result" content={`$$${lines.join('\\\\') }$$`} />
+        {typeof result?.steps === 'string' && result.steps.trim() ? (
+          <MathResultBox title="Steps" content={formatStepsText(result.steps)} showCopy={false} />
+        ) : null}
+      </div>
+    );
+  }
+  return (
+    <MathResultBox
+      title="Result"
+      content={
+        typeof numeric === 'number'
+          ? `$$${numeric.toFixed(6)}$$`
+          : `\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``
+      }
+    />
+  );
 }
 
+const distributionsConfig = {
+  id: 'distributions',
+  eyebrow: 'Probability & Statistics',
+  title: 'Distributions',
+  subtitle: 'PMF and summary metrics for common discrete distributions.',
+  theory: distributionsTheory,
+  practice: {
+    title: 'Distribution toolkit',
+    description: 'Pick an operation and fill the needed parameters.',
+    operationLabel: 'Operation',
+    submitLabel: 'Calculate',
+    loadingLabel: 'Calculating...',
+    calculate: calcProbability,
+    buildPayload: ({ operation, values }) => {
+      const payload = { operation };
+      if (operation === 'distribution_summary') {
+        payload.dist = values.dist;
+        payload.k = Number(values.k);
+        if (values.dist === 'binomial') {
+          payload.n = Number(values.n);
+          payload.p = Number(values.p);
+        } else if (values.dist === 'poisson') {
+          payload.lambda_ = Number(values.lambda_);
+        } else {
+          payload.p = Number(values.p);
+        }
+        return payload;
+      }
+
+      if (operation === 'binomial_pmf') {
+        return { operation, n: Number(values.n), p: Number(values.p), k: Number(values.k) };
+      }
+      if (operation === 'poisson_pmf') {
+        return { operation, lambda_: Number(values.lambda_), k: Number(values.k) };
+      }
+      return { operation, p: Number(values.p), k: Number(values.k) };
+    },
+    mapResult: (data) => data,
+    resultRenderer: (props) => <DistributionsResult {...props} />,
+    operations: [
+      { value: 'distribution_summary', label: 'Distribution summary', default: true },
+      { value: 'binomial_pmf', label: 'Binomial PMF' },
+      { value: 'poisson_pmf', label: 'Poisson PMF' },
+      { value: 'geometric_pmf', label: 'Geometric PMF' },
+    ],
+    fields: [
+      {
+        name: 'dist',
+        label: 'Distribution',
+        type: 'select',
+        defaultValue: 'binomial',
+        options: [
+          { value: 'binomial', label: 'Binomial' },
+          { value: 'poisson', label: 'Poisson' },
+          { value: 'geometric', label: 'Geometric' },
+        ],
+        showWhen: ['distribution_summary'],
+      },
+      { name: 'n', label: 'n', type: 'number', min: 0, defaultValue: 10, showWhen: ['distribution_summary', 'binomial_pmf'] },
+      { name: 'p', label: 'p', type: 'number', min: 0, max: 1, step: 0.01, defaultValue: 0.4, showWhen: ['distribution_summary', 'binomial_pmf', 'geometric_pmf'] },
+      { name: 'lambda_', label: 'lambda', type: 'number', min: 0, step: 0.1, defaultValue: 2.5, showWhen: ['distribution_summary', 'poisson_pmf'] },
+      { name: 'k', label: 'k', type: 'number', min: 0, defaultValue: 3, showWhen: ['distribution_summary', 'binomial_pmf', 'poisson_pmf', 'geometric_pmf'] },
+    ],
+  },
+};
+
 export default function Distributions() {
-	const { showSuccess, showError } = useToast();
-	const [operation, setOperation] = useState('distribution_summary');
-	const [inputs, setInputs] = useState({
-		dist: 'binomial',
-		n: 10,
-		p: 0.4,
-		k: 3,
-		lambda_: 2.5,
-	});
-	const [result, setResult] = useState(null);
-	const [loading, setLoading] = useState(false);
-
-	const set = (key, value) => setInputs((prev) => ({ ...prev, [key]: value }));
-
-	async function handleCalculate() {
-		setLoading(true);
-		try {
-			const payload = { operation };
-
-			if (operation === 'distribution_summary') {
-				payload.dist = inputs.dist;
-				payload.k = toNum(inputs.k, 'k');
-				if (inputs.dist === 'binomial') {
-					payload.n = toNum(inputs.n, 'n');
-					payload.p = toNum(inputs.p, 'p');
-				} else if (inputs.dist === 'poisson') {
-					payload.lambda_ = toNum(inputs.lambda_, 'lambda_');
-				} else {
-					payload.p = toNum(inputs.p, 'p');
-				}
-			} else if (operation === 'binomial_pmf') {
-				payload.n = toNum(inputs.n, 'n');
-				payload.p = toNum(inputs.p, 'p');
-				payload.k = toNum(inputs.k, 'k');
-			} else if (operation === 'poisson_pmf') {
-				payload.lambda_ = toNum(inputs.lambda_, 'lambda_');
-				payload.k = toNum(inputs.k, 'k');
-			} else if (operation === 'geometric_pmf') {
-				payload.p = toNum(inputs.p, 'p');
-				payload.k = toNum(inputs.k, 'k');
-			}
-
-			const data = await calcProbability(payload);
-			setResult(data);
-			showSuccess('Distribution calculation complete');
-		} catch (err) {
-			showError('Error: ' + err.message);
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	return (
-		<ModulePage
-			title="Distributions"
-			subtitle="PMF and summary metrics for common discrete distributions"
-		>
-			<ModuleCard title="Distribution Toolkit" icon="fa-chart-area">
-				<div className="form-container">
-					<div className="form-group">
-						<label htmlFor="distOp"><i className="fas fa-cog"></i> Operation</label>
-						<select id="distOp" value={operation} onChange={(e) => { setOperation(e.target.value); setResult(null); }}>
-							<option value="distribution_summary">Distribution summary</option>
-							<option value="binomial_pmf">Binomial PMF</option>
-							<option value="poisson_pmf">Poisson PMF</option>
-							<option value="geometric_pmf">Geometric PMF</option>
-						</select>
-					</div>
-
-					{operation === 'distribution_summary' && (
-						<div className="form-row">
-							<div className="form-group">
-								<label>Distribution</label>
-								<select value={inputs.dist} onChange={(e) => set('dist', e.target.value)}>
-									<option value="binomial">Binomial</option>
-									<option value="poisson">Poisson</option>
-									<option value="geometric">Geometric</option>
-								</select>
-							</div>
-							{inputs.dist === 'binomial' && (
-								<>
-									<div className="form-group">
-										<label>n</label>
-										<input type="number" min="0" value={inputs.n} onChange={(e) => set('n', e.target.value)} />
-									</div>
-									<div className="form-group">
-										<label>p</label>
-										<input type="number" min="0" max="1" step="0.01" value={inputs.p} onChange={(e) => set('p', e.target.value)} />
-									</div>
-								</>
-							)}
-							{inputs.dist === 'poisson' && (
-								<div className="form-group">
-									<label>lambda</label>
-									<input type="number" min="0" step="0.1" value={inputs.lambda_} onChange={(e) => set('lambda_', e.target.value)} />
-								</div>
-							)}
-							{inputs.dist === 'geometric' && (
-								<div className="form-group">
-									<label>p</label>
-									<input type="number" min="0" max="1" step="0.01" value={inputs.p} onChange={(e) => set('p', e.target.value)} />
-								</div>
-							)}
-							<div className="form-group">
-								<label>k (optional PMF point)</label>
-								<input type="number" min="0" value={inputs.k} onChange={(e) => set('k', e.target.value)} />
-							</div>
-						</div>
-					)}
-
-					{(operation === 'binomial_pmf' || operation === 'poisson_pmf' || operation === 'geometric_pmf') && (
-						<div className="form-row">
-							{operation === 'binomial_pmf' && (
-								<>
-									<div className="form-group">
-										<label>n</label>
-										<input type="number" min="0" value={inputs.n} onChange={(e) => set('n', e.target.value)} />
-									</div>
-									<div className="form-group">
-										<label>p</label>
-										<input type="number" min="0" max="1" step="0.01" value={inputs.p} onChange={(e) => set('p', e.target.value)} />
-									</div>
-								</>
-							)}
-
-							{operation === 'poisson_pmf' && (
-								<div className="form-group">
-									<label>lambda</label>
-									<input type="number" min="0" step="0.1" value={inputs.lambda_} onChange={(e) => set('lambda_', e.target.value)} />
-								</div>
-							)}
-
-							{operation === 'geometric_pmf' && (
-								<div className="form-group">
-									<label>p</label>
-									<input type="number" min="0" max="1" step="0.01" value={inputs.p} onChange={(e) => set('p', e.target.value)} />
-								</div>
-							)}
-
-							<div className="form-group">
-								<label>k</label>
-								<input type="number" min="0" value={inputs.k} onChange={(e) => set('k', e.target.value)} />
-							</div>
-						</div>
-					)}
-
-					<button type="button" className="btn btn-primary" onClick={handleCalculate} disabled={loading}>
-						<i className={`fas ${loading ? 'fa-spinner fa-spin' : 'fa-calculator'}`}></i> {loading ? 'Calculating...' : 'Calculate'}
-					</button>
-				</div>
-
-				{result && (
-					<ResultPanel
-						value={result.result}
-						fallbackData={result}
-						valueRenderer={(val) => (typeof val === 'number' ? val.toFixed(6) : String(val))}
-						steps={result.steps}
-					/>
-				)}
-			</ModuleCard>
-		</ModulePage>
-	);
+  return <ModuleExperience config={distributionsConfig} />;
 }

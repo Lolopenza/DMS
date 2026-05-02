@@ -4,6 +4,7 @@ import {
   loginUser,
   logoutCurrentSession,
   registerUser,
+  registerSessionExpiryHandler,
 } from '../api.js';
 
 const AuthContext = createContext(null);
@@ -37,6 +38,11 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  useEffect(() => {
+    registerSessionExpiryHandler(() => setSession(null));
+    return () => registerSessionExpiryHandler(null);
+  }, []);
+
   async function login({ email, password }) {
     const response = await loginUser({ email, password });
     const nextSession = response?.user || null;
@@ -44,8 +50,8 @@ export function AuthProvider({ children }) {
     return nextSession;
   }
 
-  async function register({ name, email, password }) {
-    const response = await registerUser({ name, email, password });
+  async function register({ name, email, password, confirmPassword }) {
+    const response = await registerUser({ name, email, password, confirmPassword });
     const nextSession = response?.user || null;
     setSession(nextSession);
     return nextSession;

@@ -5,6 +5,7 @@ import { calcSearching } from '../../api/searching';
 const Searching = () => {
   return (
     <AlgorithmsModuleShell
+      module="searching"
       title="Searching Algorithms"
       subtitle="Linear and Binary Search"
       intro="Implement and analyze linear and binary search algorithms with performance metrics."

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AUTH_RESET_PATH, AUTH_SIGN_UP_PATH, USER_DASHBOARD_PATH } from '../../routes.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import StateNotice from '../../components/ui/StateNotice.jsx';
+import { Button, Card, CardHeader, Input } from '../../components/ui/index.js';
 
 export default function SignIn() {
   const { login } = useAuth();
@@ -34,58 +35,64 @@ export default function SignIn() {
   }
 
   return (
-    <div className="container">
-      <div className="page-title">
-        <h2>Sign in</h2>
-        <p className="subtitle">Sign in to continue your learning progress and account activity</p>
-      </div>
+    <section className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-950 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950 dark:text-slate-100">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <header className="mx-auto max-w-xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Account</p>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Sign in</h1>
+          <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-400">
+            Sign in to continue your learning progress and account activity.
+          </p>
+        </header>
 
-      <div className="card" style={{ maxWidth: '520px', margin: '0 auto' }}>
-        <div className="card-header">
-          <h3><i className="fas fa-right-to-bracket"></i> Account access</h3>
-        </div>
-        <div className="card-body">
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="signInEmail">Email</label>
-              <input
+        <div className="mx-auto mt-10 max-w-xl">
+          <Card variant="elevated" padding="lg">
+            <CardHeader title="Account access" subtitle="Use your email and password." />
+
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+              <Input
                 id="signInEmail"
-                className="form-control"
+                label="Email"
                 type="email"
                 autoComplete="email"
                 required
                 value={form.email}
                 onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
               />
-            </div>
-            <div className="form-group">
-              <label htmlFor="signInPassword">Password</label>
-              <input
+              <Input
                 id="signInPassword"
-                className="form-control"
+                label="Password"
                 type="password"
                 autoComplete="current-password"
                 required
                 value={form.password}
                 onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
               />
-            </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-              <button type="submit" className="btn btn-primary" disabled={submitting}>
-                <i className="fas fa-arrow-right-to-bracket"></i> Sign in
-              </button>
-              <Link to={AUTH_RESET_PATH} className="btn btn-outline">
-                <i className="fas fa-key"></i> Reset password
-              </Link>
-              <Link to={AUTH_SIGN_UP_PATH} className="btn btn-outline">
-                <i className="fas fa-user-plus"></i> Create account
-              </Link>
+              <Button type="submit" loading={submitting} loadingLabel="Signing in..." className="w-full">
+                <i className="fas fa-arrow-right-to-bracket mr-2" /> Sign in
+              </Button>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Link to={AUTH_RESET_PATH} className="sm:flex-1">
+                  <Button variant="secondary" className="w-full">
+                    <i className="fas fa-key mr-2" /> Reset password
+                  </Button>
+                </Link>
+                <Link to={AUTH_SIGN_UP_PATH} className="sm:flex-1">
+                  <Button variant="outline" className="w-full">
+                    <i className="fas fa-user-plus mr-2" /> Create account
+                  </Button>
+                </Link>
+              </div>
+            </form>
+
+            <div className="mt-6">
+              <StateNotice type={status.type} title="Sign in status" message={status.message} />
             </div>
-          </form>
-          <StateNotice type={status.type} title="Sign in status" message={status.message} />
+          </Card>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,10 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { getUserSkills } from '../api.js';
-
-function clampPercent(value) {
-  const normalized = Number.isFinite(value) ? value : 0;
-  return Math.max(0, Math.min(100, Math.round(normalized * 100)));
-}
+import React, { useMemo } from 'react';
+import { clampPercent, computeOverallPercent } from '../utils/skillMetrics.js';
 
 function masteryMeta(percent) {
   if (percent < 40) {
@@ -38,49 +33,8 @@ function confidenceMeta(totalAttempts) {
   return { label: 'High confidence', cls: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
 }
 
-export default function SkillMasteryDashboard() {
-  const [skills, setSkills] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    let active = true;
-    async function loadSkills() {
-      setLoading(true);
-      setError('');
-      try {
-        const data = await getUserSkills();
-        if (!active) return;
-        setSkills(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (!active) return;
-        setError(err?.message || 'Failed to load mastery data');
-        setSkills([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-    loadSkills();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const overallPercent = useMemo(() => {
-    if (!skills.length) return 0;
-    const weighted = skills.reduce((acc, item) => {
-      const attempts = Math.max(0, Number(item?.totalAttempts) || 0);
-      const reliability = Math.min(1, attempts / 8); // damp noisy values for small N
-      const baseline = 0.25; // BKT prior
-      const pKnow = Number(item?.pKnow) || 0;
-      const adjusted = baseline + (pKnow - baseline) * reliability;
-      return {
-        valueSum: acc.valueSum + adjusted * Math.max(1, attempts),
-        weightSum: acc.weightSum + Math.max(1, attempts),
-      };
-    }, { valueSum: 0, weightSum: 0 });
-    return clampPercent(weighted.weightSum ? (weighted.valueSum / weighted.weightSum) : 0);
-  }, [skills]);
+export default function SkillMasteryDashboard({ skills = [], loading = false, error = '' }) {
+  const overallPercent = useMemo(() => computeOverallPercent(skills), [skills]);
 
   const overall = masteryMeta(overallPercent);
 
@@ -153,11 +107,15 @@ export default function SkillMasteryDashboard() {
                     <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
                       <h3 className="dmc-title text-sm font-semibold">{label}</h3>
                       <div className="flex items-center gap-2 flex-wrap justify-end">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-medium ${meta.badgeClass}`}>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-medium ${meta.badgeClass}`}
+                        >
                           <span>{meta.emoji}</span>
                           {meta.label}
                         </span>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full border text-xs font-medium ${confidence.cls}`}>
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full border text-xs font-medium ${confidence.cls}`}
+                        >
                           {confidence.label}
                         </span>
                       </div>
@@ -187,7 +145,9 @@ export default function SkillMasteryDashboard() {
                     </div>
                     <div className="mt-1 flex items-center justify-between text-xs dmc-subtitle">
                       <span>Attempts / Accuracy</span>
-                      <span className="dmc-title font-semibold">{attempts} / {accuracy}%</span>
+                      <span className="dmc-title font-semibold">
+                        {attempts} / {accuracy}%
+                      </span>
                     </div>
                   </article>
                 );

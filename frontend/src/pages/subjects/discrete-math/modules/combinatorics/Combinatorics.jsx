@@ -1,207 +1,170 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { calcCombinatorics } from '../../api/combinatorics.js';
-import { useToast } from '../../../../../components/Toast.jsx';
-import { ModuleCard, ModulePage } from '../../../../../components/module/ModuleLayout.jsx';
-import ResultPanel from '../../../../../components/module/ResultPanel.jsx';
+import ModuleExperience from '../../../../../components/module/ModuleExperience.jsx';
+import combinatoricsTheory from '../../../../../data/content/discrete-math/combinatorics.content.js';
 
-const ADVANCED_OPS = ['pigeonhole', 'catalan', 'stirling', 'binomial'];
+function toNumber(value) {
+  return Number(value);
+}
+
+function buildCombinatoricsPayload({ operation, values }) {
+  if (operation === 'factorial') {
+    return { operation, n: toNumber(values.n) };
+  }
+
+  if (operation === 'permutation' || operation === 'combination') {
+    return { operation, n: toNumber(values.n), r: toNumber(values.r) };
+  }
+
+  if (operation === 'pigeonhole') {
+    return { operation, pigeons: toNumber(values.pigeons), holes: toNumber(values.holes) };
+  }
+
+  if (operation === 'catalan') {
+    return { operation, n: toNumber(values.catalanN) };
+  }
+
+  if (operation === 'stirling') {
+    return { operation, n: toNumber(values.stirlingN), k: toNumber(values.stirlingK) };
+  }
+
+  return { operation, n: toNumber(values.binomialN), k: toNumber(values.binomialK) };
+}
+
+const combinatoricsConfig = {
+  id: 'combinatorics',
+  eyebrow: 'Discrete Mathematics',
+  title: 'Combinatorics',
+  subtitle: 'A structured workspace for finite counting: factorials, permutations, combinations, and classical counting sequences.',
+  theory: combinatoricsTheory,
+  practice: {
+    title: 'Counting Calculator',
+    description: 'Select a counting model, provide the parameters, and compare the numeric result with the reference formula.',
+    operationLabel: 'Counting Model',
+    submitLabel: 'Calculate',
+    loadingLabel: 'Calculating...',
+    calculate: calcCombinatorics,
+    buildPayload: buildCombinatoricsPayload,
+    operations: [
+      { value: 'factorial', label: 'Factorial (n!)', hint: 'Counts arrangements of n distinct objects.', default: true },
+      { value: 'permutation', label: 'Permutation P(n, r)', hint: 'Order matters: arrange r objects from n.' },
+      { value: 'combination', label: 'Combination C(n, r)', hint: 'Order does not matter: select r objects from n.' },
+      { value: 'pigeonhole', label: 'Pigeonhole Principle', hint: 'Find the guaranteed minimum occupancy.' },
+      { value: 'catalan', label: 'Catalan Number', hint: 'Counts recursive structures such as valid parentheses.' },
+      { value: 'stirling', label: 'Stirling Number S(n, k)', hint: 'Partitions n labeled objects into k non-empty unlabeled subsets.' },
+      { value: 'binomial', label: 'Binomial Coefficient', hint: 'Compute a coefficient from the binomial theorem.' },
+    ],
+    fields: [
+      {
+        name: 'n',
+        label: 'n value',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 0,
+        max: 170,
+        defaultValue: 5,
+        hint: 'Total number of elements.',
+        showWhen: ['factorial', 'permutation', 'combination'],
+        required: true,
+      },
+      {
+        name: 'r',
+        label: 'r value',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 0,
+        max: 170,
+        defaultValue: 2,
+        hint: 'Number of selected or arranged elements.',
+        showWhen: ['permutation', 'combination'],
+        required: true,
+      },
+      {
+        name: 'pigeons',
+        label: 'Objects',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 1,
+        defaultValue: 10,
+        hint: 'Number of objects being distributed.',
+        showWhen: ['pigeonhole'],
+        required: true,
+      },
+      {
+        name: 'holes',
+        label: 'Containers',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 1,
+        defaultValue: 9,
+        hint: 'Number of available containers.',
+        showWhen: ['pigeonhole'],
+        required: true,
+      },
+      {
+        name: 'catalanN',
+        label: 'n value',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 0,
+        max: 20,
+        defaultValue: 4,
+        hint: 'Index of the Catalan number.',
+        showWhen: ['catalan'],
+        required: true,
+      },
+      {
+        name: 'stirlingN',
+        label: 'n value',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 0,
+        max: 50,
+        defaultValue: 5,
+        hint: 'Number of labeled elements.',
+        showWhen: ['stirling'],
+        required: true,
+      },
+      {
+        name: 'stirlingK',
+        label: 'k value',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 0,
+        max: 50,
+        defaultValue: 3,
+        hint: 'Number of non-empty subsets.',
+        showWhen: ['stirling'],
+        required: true,
+      },
+      {
+        name: 'binomialN',
+        label: 'n value',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 0,
+        max: 170,
+        defaultValue: 5,
+        hint: 'Upper value in the binomial coefficient.',
+        showWhen: ['binomial'],
+        required: true,
+      },
+      {
+        name: 'binomialK',
+        label: 'k value',
+        smartType: 'validated-number',
+        type: 'number',
+        min: 0,
+        max: 170,
+        defaultValue: 2,
+        hint: 'Lower value in the binomial coefficient.',
+        showWhen: ['binomial'],
+        required: true,
+      },
+    ],
+  },
+};
 
 export default function Combinatorics() {
-  const { showSuccess, showError } = useToast();
-
-  // Basic counting state
-  const [operation, setOperation] = useState('factorial');
-  const [n, setN] = useState(5);
-  const [r, setR] = useState(2);
-  const [basicResult, setBasicResult] = useState(null);
-  const [loadingBasic, setLoadingBasic] = useState(false);
-
-  // Advanced counting state
-  const [advOp, setAdvOp] = useState('pigeonhole');
-  const [advInputs, setAdvInputs] = useState({ pigeons: 10, holes: 9, catalanN: 4, stirlingN: 5, stirlingK: 3, binomialN: 5, binomialK: 2 });
-  const [advResult, setAdvResult] = useState(null);
-  const [loadingAdv, setLoadingAdv] = useState(false);
-
-  async function handleBasicCalc() {
-    setLoadingBasic(true);
-    try {
-      const payload = { operation, n: Number(n) };
-      if (operation !== 'factorial') payload.r = Number(r);
-      const data = await calcCombinatorics(payload);
-      let formula = '';
-      if (operation === 'factorial') formula = `${n}! = `;
-      else if (operation === 'permutation') formula = `P(${n}, ${r}) = `;
-      else if (operation === 'combination') formula = `C(${n}, ${r}) = `;
-      setBasicResult({ formula, value: data.result });
-      showSuccess(`Calculated ${operation} successfully`);
-    } catch (err) {
-      showError('Calculation error: ' + err.message);
-    } finally {
-      setLoadingBasic(false);
-    }
-  }
-
-  async function handleAdvancedCalc() {
-    setLoadingAdv(true);
-    try {
-      const payload = { operation: advOp };
-      if (advOp === 'pigeonhole') { payload.pigeons = Number(advInputs.pigeons); payload.holes = Number(advInputs.holes); }
-      else if (advOp === 'catalan') { payload.n = Number(advInputs.catalanN); }
-      else if (advOp === 'stirling') { payload.n = Number(advInputs.stirlingN); payload.k = Number(advInputs.stirlingK); }
-      else if (advOp === 'binomial') { payload.n = Number(advInputs.binomialN); payload.k = Number(advInputs.binomialK); }
-      const data = await calcCombinatorics(payload);
-      setAdvResult(data.result);
-      showSuccess(`${advOp} calculation completed`);
-    } catch (err) {
-      showError(err.message);
-    } finally {
-      setLoadingAdv(false);
-    }
-  }
-
-  function setAdv(key, val) {
-    setAdvInputs(prev => ({ ...prev, [key]: val }));
-  }
-
-  return (
-    <ModulePage
-      title="Combinatorics Calculator"
-      subtitle="Calculate permutations, combinations, and solve counting problems"
-    >
-
-      {/* Basic Counting */}
-      <ModuleCard title="Basic Counting" icon="fa-calculator">
-          <div className="theory-intro">
-            <p>Combinatorics studies ways to count finite discrete structures, providing formulas for permutations, combinations, and other counting problems.</p>
-          </div>
-          <div className="form-container">
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="operation"><i className="fas fa-cog"></i> Operation</label>
-                <select id="operation" value={operation} onChange={e => setOperation(e.target.value)}>
-                  <option value="factorial">Factorial (n!)</option>
-                  <option value="permutation">Permutation (nPr)</option>
-                  <option value="combination">Combination (nCr)</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="n"><i className="fas fa-hashtag"></i> n value</label>
-                <input type="number" id="n" min="0" max="170" value={n} onChange={e => setN(e.target.value)} />
-                <div className="form-hint">Total number of elements (0-170)</div>
-              </div>
-              {operation !== 'factorial' && (
-                <div className="form-group">
-                  <label htmlFor="r"><i className="fas fa-hashtag"></i> r value</label>
-                  <input type="number" id="r" min="0" max="170" value={r} onChange={e => setR(e.target.value)} />
-                  <div className="form-hint">Number of elements to select (0-n)</div>
-                </div>
-              )}
-            </div>
-            <button type="button" className="btn btn-primary" onClick={handleBasicCalc} disabled={loadingBasic}>
-              <i className={`fas ${loadingBasic ? 'fa-spinner fa-spin' : 'fa-calculator'}`}></i> {loadingBasic ? 'Calculating…' : 'Calculate'}
-            </button>
-          </div>
-          {basicResult && (
-            <ResultPanel
-              value={basicResult}
-              valueRenderer={(val) => (
-                <>
-                  <strong>{val.formula}</strong>{val.value}
-                </>
-              )}
-            />
-          )}
-      </ModuleCard>
-
-      {/* Advanced Counting */}
-      <ModuleCard title="Advanced Counting" icon="fa-sitemap">
-          <div className="theory-intro">
-            <p>Advanced counting techniques help solve more complex counting problems.</p>
-          </div>
-          <div className="form-container">
-            <div className="form-group">
-              <label htmlFor="advOp"><i className="fas fa-cog"></i> Operation</label>
-              <select id="advOp" value={advOp} onChange={e => { setAdvOp(e.target.value); setAdvResult(null); }}>
-                <option value="pigeonhole">Pigeonhole Principle</option>
-                <option value="catalan">Catalan Number</option>
-                <option value="stirling">Stirling Number (2nd kind)</option>
-                <option value="binomial">Binomial Coefficient</option>
-              </select>
-            </div>
-            {advOp === 'pigeonhole' && (
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Number of pigeons</label>
-                  <input type="number" min="1" value={advInputs.pigeons} onChange={e => setAdv('pigeons', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>Number of holes</label>
-                  <input type="number" min="1" value={advInputs.holes} onChange={e => setAdv('holes', e.target.value)} />
-                </div>
-              </div>
-            )}
-            {advOp === 'catalan' && (
-              <div className="form-group">
-                <label>n value</label>
-                <input type="number" min="0" max="20" value={advInputs.catalanN} onChange={e => setAdv('catalanN', e.target.value)} />
-              </div>
-            )}
-            {advOp === 'stirling' && (
-              <div className="form-row">
-                <div className="form-group">
-                  <label>n value</label>
-                  <input type="number" min="0" max="50" value={advInputs.stirlingN} onChange={e => setAdv('stirlingN', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>k value</label>
-                  <input type="number" min="0" max="50" value={advInputs.stirlingK} onChange={e => setAdv('stirlingK', e.target.value)} />
-                </div>
-              </div>
-            )}
-            {advOp === 'binomial' && (
-              <div className="form-row">
-                <div className="form-group">
-                  <label>n value</label>
-                  <input type="number" min="0" max="170" value={advInputs.binomialN} onChange={e => setAdv('binomialN', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>k value</label>
-                  <input type="number" min="0" max="170" value={advInputs.binomialK} onChange={e => setAdv('binomialK', e.target.value)} />
-                </div>
-              </div>
-            )}
-            <button type="button" className="btn btn-primary" onClick={handleAdvancedCalc} disabled={loadingAdv}>
-              <i className={`fas ${loadingAdv ? 'fa-spinner fa-spin' : 'fa-calculator'}`}></i> {loadingAdv ? 'Calculating…' : 'Calculate'}
-            </button>
-          </div>
-          {advResult !== null && <ResultPanel value={advResult} />}
-      </ModuleCard>
-
-      {/* Formulas Reference */}
-      <ModuleCard title="Formulas Reference" icon="fa-book">
-          <div className="formulas-grid">
-            <div className="formula-card">
-              <h4>Factorial</h4>
-              <div className="formula">n! = n × (n-1) × (n-2) × ... × 2 × 1</div>
-              <p>The number of ways to arrange n distinct objects in a row.</p>
-            </div>
-            <div className="formula-card">
-              <h4>Permutation</h4>
-              <div className="formula">P(n,r) = n! / (n-r)!</div>
-              <p>The number of ways to arrange r objects from n distinct objects, where order matters.</p>
-            </div>
-            <div className="formula-card">
-              <h4>Combination</h4>
-              <div className="formula">C(n,r) = n! / (r! × (n-r)!)</div>
-              <p>The number of ways to select r objects from n distinct objects, where order doesn't matter.</p>
-            </div>
-            <div className="formula-card">
-              <h4>Catalan Number</h4>
-              <div className="formula">C<sub>n</sub> = (1/(n+1)) × C(2n,n)</div>
-              <p>Appears in many counting problems like the number of valid parentheses expressions.</p>
-            </div>
-          </div>
-      </ModuleCard>
-    </ModulePage>
-  );
+  return <ModuleExperience config={combinatoricsConfig} />;
 }
