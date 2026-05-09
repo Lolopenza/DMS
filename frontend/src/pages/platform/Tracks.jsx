@@ -1,7 +1,7 @@
 import React from 'react';
 import { getSubjectCatalog, getTrackCardBlurb } from '../../routes.js';
 import { Link } from 'react-router-dom';
-import { Badge, Button, Card } from '../../components/ui/index.js';
+import { Badge, Button, Card, OpenCalculatorLink } from '../../components/ui/index.js';
 import { validateCatalog } from '../../catalog/subjectCatalog.js';
 
 export default function Tracks() {
@@ -84,10 +84,10 @@ export default function Tracks() {
                     'This track is planned and will unlock in future waves.'}
               </p>
 
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 {isActive ? (
-                  <Link to={track.subjectPath} className="inline-flex">
-                    <Button variant="primary" size="md" icon={<i className="fas fa-arrow-right" />}>
+                  <Link to={track.subjectPath} className="inline-flex w-full sm:w-auto">
+                    <Button variant="primary" size="md" className="w-full sm:w-auto" icon={<i className="fas fa-arrow-right" />}>
                       Open track
                     </Button>
                   </Link>
@@ -98,11 +98,7 @@ export default function Tracks() {
                 )}
 
                 {track.calculatorPath ? (
-                  <Link to={track.calculatorPath} className="inline-flex">
-                    <Button variant="ghost" size="md" icon={<i className="fas fa-calculator" />}>
-                      Calculator
-                    </Button>
-                  </Link>
+                  <OpenCalculatorLink to={track.calculatorPath} fullWidth={false} className="w-full shrink-0 sm:w-auto" />
                 ) : null}
               </div>
             </Card>

@@ -1,36 +1,35 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TRACKS_PATH, getSubjectCatalog, getTrackCardBlurb } from '../../routes.js';
+import { getCatalogSubjects, getCatalogModules } from '../../catalog/subjectCatalog.js';
 import { Badge, Button, Card, CardHeader } from '../../components/ui/index.js';
 
 const VALUE_PILLARS = [
   {
     icon: 'fa-graduation-cap',
     title: 'Structured learning path',
-    text: 'Move from fundamentals to practical exercises through topic-aligned track navigation.',
+    text: 'One catalog drives tracks, module workspaces, and calculators — navigate by subject without broken URLs.',
   },
   {
     icon: 'fa-robot',
     title: 'Math Lab AI assistant',
-    text: 'Get contextual hints and explanations directly inside modules and learning scenarios.',
+    text: 'A route-aware chat widget plus optional AI practice checks on topics that support generated problems (personalized drills when you are signed in).',
   },
   {
     icon: 'fa-chart-line',
     title: 'Progress-oriented workflow',
-    text: 'Combine calculator practice, roadmap milestones, and account-driven continuation points.',
+    text: 'Practice feeds skill estimates (BKT), the learner dashboard grows with your account, and roadmaps appear where a track ships them (e.g. Discrete Math).',
   },
 ];
 
-const TRUST_METRICS = [
-  { value: '7+', label: 'Discrete intro modules available now' },
-  { value: '5', label: 'Active learning tracks' },
-  { value: '100+', label: 'Automated checks in math-engine baseline' },
-];
+/** pytest collection in math-engine is ~140 tests; bump when the suite grows. */
+const MATH_ENGINE_TEST_SUITE_HINT = '140+';
 
 const FAQ_ITEMS = [
   {
     question: 'What is already available today?',
-    answer: 'All five core tracks are active with subject-first routing and calculator workspaces.',
+    answer:
+      'Six subject tracks are wired into the catalog with subject-first routing and calculator workspaces (Discrete Math includes multiple intro modules).',
   },
   {
     question: 'Is account/auth fully backend-connected?',
@@ -55,6 +54,26 @@ export default function Hub() {
       })),
     [tracks],
   );
+
+  const platformSnapshot = useMemo(() => {
+    const subjects = getCatalogSubjects();
+    const activeTracks = subjects.filter((s) => s.status === 'active').length;
+    const discreteWorkspaces = getCatalogModules('discrete-math').length;
+    return [
+      {
+        value: String(discreteWorkspaces),
+        label: 'Calculator workspaces in Discrete Mathematics',
+      },
+      {
+        value: String(activeTracks),
+        label: 'Active learning tracks',
+      },
+      {
+        value: MATH_ENGINE_TEST_SUITE_HINT,
+        label: 'Automated checks in math-engine (pytest)',
+      },
+    ];
+  }, []);
 
   return (
     <section className="min-h-screen bg-[var(--dmc-bg-page)] text-[var(--dmc-text-primary)]">
@@ -119,7 +138,7 @@ export default function Hub() {
             <Card variant="elevated" padding="lg" className="lg:col-span-2">
               <CardHeader
                 title="Why this platform"
-                subtitle="Commercial-grade information architecture for learning workflows."
+                subtitle="Built from a single subject/module catalog — same patterns across tracks, less duplicated wiring."
               />
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {VALUE_PILLARS.map((item) => (
@@ -135,9 +154,9 @@ export default function Hub() {
             </Card>
 
             <Card variant="elevated" padding="lg">
-              <CardHeader title="Platform snapshot" subtitle="Current baseline and readiness." />
+              <CardHeader title="Platform snapshot" subtitle="Grounded in the live catalog and backend test suite." />
               <div className="mt-6 space-y-3">
-                {TRUST_METRICS.map((metric) => (
+                {platformSnapshot.map((metric) => (
                   <div key={metric.label} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
                     <p className="text-xl font-bold text-slate-900 dark:text-slate-100">{metric.value}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">{metric.label}</p>

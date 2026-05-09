@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../components/Toast.jsx';
 import { CALCULATOR_PATH } from '../routes.js';
-import { Badge, Button, Card, CardHeader } from '../components/ui/index.js';
+import { Badge, Button, Card, CardHeader, OpenCalculatorLink } from '../components/ui/index.js';
 
 const steps = [
   {
@@ -138,11 +138,7 @@ export default function Roadmap() {
                 <i className="fas fa-arrow-left" /> Back to home
               </Button>
             </Link>
-            <Link to={CALCULATOR_PATH}>
-              <Button size="lg">
-                <i className="fas fa-calculator" /> Open calculator
-              </Button>
-            </Link>
+            <OpenCalculatorLink to={CALCULATOR_PATH} size="lg" fullWidth={false} className="w-full sm:w-auto" />
             <Button size="lg" variant="secondary" onClick={share}>
               <i className="fas fa-share-nodes" /> Share
             </Button>

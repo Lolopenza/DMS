@@ -36,6 +36,9 @@
 /* Global base typography for new UI layer */
 html {
   color-scheme: light dark;
+  /* Same wash as body so rubber-band / overscroll never flashes white above header or below footer */
+  background-color: var(--dmc-bg-page);
+  overscroll-behavior-y: none;
 }
 
 html,
@@ -47,6 +50,12 @@ body {
 body {
   background-color: var(--dmc-bg-page);
   color: var(--dmc-text-primary);
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100%;
+  background-color: var(--dmc-bg-page);
 }
 
 code, pre, kbd, samp {

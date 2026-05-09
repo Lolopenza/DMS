@@ -14,3 +14,4 @@ export { default as Badge } from './Badge.jsx';
 export { default as Input, Textarea, Select } from './Input.jsx';
 export { default as MathInput, MatrixInput, parseMatrixLatex, formatMatrixLatex } from './MathInput.jsx';
 export { default as Chart, AlgorithmVisualization, FunctionPlot, ComparisonChart } from './Chart.jsx';
+export { default as OpenCalculatorLink } from './OpenCalculatorLink.jsx';
