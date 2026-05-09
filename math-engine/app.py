@@ -32,7 +32,7 @@ from api.v1 import FEATURE_NAMES, ROUTERS
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s: %(message)s')
 logger = logging.getLogger(__name__)
-INTERNAL_API_KEY = os.environ.get('DMC_MATH_ENGINE_API_KEY', '')
+INTERNAL_API_KEY = os.environ.get('DMC_INTERNAL_API_KEY', '')
 
 
 def _is_non_dev_environment() -> bool:
@@ -43,7 +43,7 @@ def _is_non_dev_environment() -> bool:
 def _validate_internal_key_or_fail() -> None:
     if _is_non_dev_environment() and (not INTERNAL_API_KEY or INTERNAL_API_KEY.strip() == '' or INTERNAL_API_KEY == 'change-me'):
         raise RuntimeError(
-            'Unsafe configuration: DMC_MATH_ENGINE_API_KEY must be set to a non-default value in non-dev environments'
+            'Unsafe configuration: DMC_INTERNAL_API_KEY must be set to a non-default value in non-dev environments'
         )
 
 

@@ -140,3 +140,49 @@ def test_given_malicious_expression_payload_when_verify_called_then_endpoint_doe
     assert response.status_code == 200
     payload = response.json()
     assert payload['correct'] is False
+
+
+def test_given_judge_mode_code_when_verify_called_then_skips_symbolic_and_uses_code_judge(client, monkeypatch):
+    class _CodeJudge:
+        def chat(self, *_args, **_kwargs):
+            return {'reply': '{"correct": true, "confidence": 0.9, "feedback": "Acceptable solution."}'}
+
+    monkeypatch.setattr(pg, 'get_chatbot_service', lambda: _CodeJudge())
+
+    response = client.post(
+        '/api/v1/problem_generation/verify',
+        json={
+            'questionText': 'Implement sum of two numbers',
+            'candidateAnswer': {'type': 'code', 'language': 'python', 'source': 'def s(a,b): return a+b'},
+            'expectedAnswer': 'return a+b',
+            'judgeMode': 'code',
+            'answerExpression': '{{a}}+{{b}}',
+            'params': {'a': 1, 'b': 2},
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['method'] == 'code-judge'
+    assert payload['correct'] is True
+
+
+def test_given_operation_code_judge_when_verify_called_then_uses_code_judge_without_judge_mode_field(client, monkeypatch):
+    class _CodeJudge:
+        def chat(self, *_args, **_kwargs):
+            return {'reply': '{"correct": false, "confidence": 0.7, "feedback": "Not quite."}'}
+
+    monkeypatch.setattr(pg, 'get_chatbot_service', lambda: _CodeJudge())
+
+    response = client.post(
+        '/api/v1/problem_generation/verify',
+        json={
+            'questionText': 'Sort the array',
+            'candidateAnswer': 'def f(): return 1',
+            'expectedAnswer': 'O(n log n) sort',
+            'operation': 'code_judge',
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['method'] == 'code-judge'
+    assert payload['correct'] is False

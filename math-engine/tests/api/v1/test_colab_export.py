@@ -1,3 +1,4 @@
+import ast
 import os
 from datetime import datetime
 
@@ -21,6 +22,14 @@ def test_given_valid_request_when_building_colab_starter_then_notebook_structure
     assert any('Lesson mode (AI Tutor)' in cell.source for cell in markdown_cells)
     assert any('Reflection task' in cell.source for cell in markdown_cells)
     assert any('does not embed access tokens or internal API keys' in cell.source for cell in markdown_cells)
+
+    for cell in parsed.cells:
+        if cell.cell_type != 'code':
+            continue
+        try:
+            ast.parse(cell.source)
+        except SyntaxError as exc:
+            pytest.fail(f'Notebook code cell has syntax error: {exc}\n---\n{cell.source[:800]}')
 
 
 def test_given_lesson_mode_disabled_when_building_colab_starter_then_disabled_message_is_rendered(client):

@@ -24,10 +24,8 @@ google-genai==1.68.0
 openai
 requests
 
-# ─── Image / OCR ──────────────────────────────────────────────────────────────
-easyocr
+# ─── Image Processing ─────────────────────────────────────────────────────────
 pillow
-opencv-python-headless
 
 # ─── Utilities ────────────────────────────────────────────────────────────────
 python-dotenv
