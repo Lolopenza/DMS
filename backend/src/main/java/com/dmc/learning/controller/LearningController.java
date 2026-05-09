@@ -7,7 +7,16 @@ import com.dmc.learning.dto.CourseDto;
 import com.dmc.learning.dto.CourseModuleDto;
 import com.dmc.learning.dto.LessonDto;
 import com.dmc.learning.dto.LessonProgressDto;
+import com.dmc.learning.dto.AdaptivePracticeTopicDto;
+import com.dmc.learning.dto.LearningJourneySnapshotDto;
+import com.dmc.learning.dto.ModuleCatalogEntryDto;
+import com.dmc.learning.dto.ModuleRecommendationDto;
+import com.dmc.learning.dto.SubjectProgressDto;
+import com.dmc.learning.service.AdaptivePracticeTopicService;
+import com.dmc.learning.service.LearningCatalogService;
+import com.dmc.learning.service.LearningProgressService;
 import com.dmc.learning.service.LearningService;
+import com.dmc.learning.service.RecommendationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +34,10 @@ import java.util.List;
 public class LearningController {
 
     private final LearningService learningService;
+    private final RecommendationService recommendationService;
+    private final AdaptivePracticeTopicService adaptivePracticeTopicService;
+    private final LearningCatalogService learningCatalogService;
+    private final LearningProgressService learningProgressService;
 
     @GetMapping("/learning/courses")
     public ResponseEntity<List<CourseDto>> listCourses() {
@@ -44,6 +57,46 @@ public class LearningController {
     @GetMapping("/learning/progress")
     public ResponseEntity<List<LessonProgressDto>> myProgress() {
         return ResponseEntity.ok(learningService.userProgress(currentUserId()));
+    }
+
+    /**
+     * Personalized module recommendations from BKT mastery + prerequisite graph.
+     */
+    @GetMapping("/learning/recommendations")
+    public ResponseEntity<List<ModuleRecommendationDto>> learningRecommendations() {
+        return ResponseEntity.ok(recommendationService.recommendModules(currentUserId()));
+    }
+
+    /**
+     * Weakest interactive-practice topic by adjusted Bayesian mastery (practice catalog only).
+     */
+    @GetMapping("/learning/adaptive-practice-topic")
+    public ResponseEntity<AdaptivePracticeTopicDto> adaptivePracticeTopic() {
+        return ResponseEntity.ok(adaptivePracticeTopicService.resolveWeakestTopic(currentUserId()));
+    }
+
+    /**
+     * Static calculator catalog: maps UI route segments to BKT {@code skillTopicSlug}.
+     */
+    @GetMapping("/learning/catalog/modules")
+    public ResponseEntity<List<ModuleCatalogEntryDto>> moduleCatalog() {
+        return ResponseEntity.ok(learningCatalogService.listModuleCatalog());
+    }
+
+    /**
+     * Per-subject aggregates: average adjusted mastery and module counts above completion threshold.
+     */
+    @GetMapping("/learning/progress/subjects")
+    public ResponseEntity<List<SubjectProgressDto>> progressBySubject() {
+        return ResponseEntity.ok(learningProgressService.subjectProgress(currentUserId()));
+    }
+
+    /**
+     * Global journey bar + next recommended module for dashboard card.
+     */
+    @GetMapping("/learning/progress/journey")
+    public ResponseEntity<LearningJourneySnapshotDto> learningJourney() {
+        return ResponseEntity.ok(learningProgressService.journeySnapshot(currentUserId()));
     }
 
     @PostMapping("/learning/lessons/{lessonId}/complete")

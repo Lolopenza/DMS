@@ -19,6 +19,8 @@ public record GeneratedProblemItemDto(
         JsonNode params,
         Integer attemptCount,
         Integer correctCount,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        /** Career narrative used for AI generation; null for template problems or legacy rows. */
+        String careerTrack
 ) {
 }

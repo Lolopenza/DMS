@@ -5,6 +5,7 @@ public record UserResponse(
         String email,
         String username,
         String role,
-        boolean enabled
+        boolean enabled,
+        String careerTrack
 ) {
 }

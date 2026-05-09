@@ -72,7 +72,7 @@ public class MathEngineClient {
         return response.path("correct").asBoolean(false);
     }
 
-    public JsonNode generateAiProblem(String topicSlug, String difficulty, String skillLevel) {
+    public JsonNode generateAiProblem(String topicSlug, String difficulty, String skillLevel, String careerTrack) {
         ObjectNode request = objectMapper.createObjectNode();
         if (topicSlug != null && !topicSlug.isBlank()) {
             request.put("topicSlug", topicSlug);
@@ -82,6 +82,9 @@ public class MathEngineClient {
         }
         if (skillLevel != null && !skillLevel.isBlank()) {
             request.put("skillLevel", skillLevel);
+        }
+        if (careerTrack != null && !careerTrack.isBlank() && !"NONE".equalsIgnoreCase(careerTrack)) {
+            request.put("careerTrack", careerTrack.toUpperCase(Locale.ROOT));
         }
         return post("/api/v1/problem_generation/generate", request);
     }
@@ -93,6 +96,28 @@ public class MathEngineClient {
             String answerExpression,
             String operation,
             JsonNode params
+    ) {
+        return semanticVerify(
+                questionText,
+                candidateAnswer,
+                expectedAnswer,
+                answerExpression,
+                operation,
+                params,
+                null,
+                null
+        );
+    }
+
+    public JsonNode semanticVerify(
+            String questionText,
+            JsonNode candidateAnswer,
+            JsonNode expectedAnswer,
+            String answerExpression,
+            String operation,
+            JsonNode params,
+            String judgeMode,
+            String language
     ) {
         ObjectNode request = objectMapper.createObjectNode();
         request.put("questionText", questionText == null ? "" : questionText);
@@ -108,6 +133,12 @@ public class MathEngineClient {
         }
         if (params != null && !params.isNull()) {
             request.set("params", params);
+        }
+        if (judgeMode != null && !judgeMode.isBlank()) {
+            request.put("judgeMode", judgeMode);
+        }
+        if (language != null && !language.isBlank()) {
+            request.put("language", language);
         }
         return post("/api/v1/problem_generation/verify", request);
     }

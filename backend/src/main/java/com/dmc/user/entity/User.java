@@ -84,4 +84,12 @@ public class User extends BaseEntity {
 
     @Column(name = "locked_until", columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime lockedUntil;
+
+    /**
+     * Narrative framing for AI-generated problems (stored as VARCHAR in DB).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "career_track", nullable = false, length = 30)
+    @Builder.Default
+    private CareerTrack careerTrack = CareerTrack.NONE;
 }

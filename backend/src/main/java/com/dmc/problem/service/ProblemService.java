@@ -32,6 +32,7 @@ import com.dmc.problem.repository.ProblemRepository;
 import com.dmc.problem.repository.ProblemTemplateRepository;
 import com.dmc.problem.repository.StudentSkillRepository;
 import com.dmc.problem.repository.TopicRepository;
+import com.dmc.user.entity.CareerTrack;
 import com.dmc.user.entity.User;
 import com.dmc.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -154,7 +155,8 @@ public class ProblemService {
         problemAttemptRepository.save(attempt);
 
         if (problem.getTopic() != null && !problem.getTopic().isBlank()) {
-            bktService.updateSkill(user, problem.getTopic(), correct);
+            Difficulty bktDiff = problem.getDifficulty() != null ? problem.getDifficulty() : Difficulty.MEDIUM;
+            bktService.updateSkill(user, problem.getTopic(), correct, bktDiff);
         }
 
         return new ProblemAttemptResponse(
@@ -276,18 +278,47 @@ public class ProblemService {
             JsonNode correctAnswer = null;
 
             if (mode == GenerationMode.AI) {
-                JsonNode ai = mathEngineClient.generateAiProblem(request.topicSlug(), request.difficulty(), request.skillLevel());
+                String effectiveCareerTrack = resolveEffectiveCareerTrack(user, request);
+                JsonNode ai = mathEngineClient.generateAiProblem(
+                        request.topicSlug(),
+                        request.difficulty(),
+                        request.skillLevel(),
+                        effectiveCareerTrack
+                );
                 ObjectNode paramsNode = objectMapper.createObjectNode();
                 JsonNode aiParams = ai.path("parameters");
                 if (aiParams.isObject()) {
                     paramsNode.setAll((ObjectNode) aiParams);
                 }
+                paramsNode.put("careerTrack", effectiveCareerTrack);
 
                 String question = ai.path("questionText").asText(null);
                 String answerExpression = ai.path("answerExpression").asText(null);
                 String operation = ai.path("operation").asText(null);
-                if (question == null || answerExpression == null || operation == null) {
+                if (question == null || operation == null) {
                     throw new ApiException(HttpStatus.BAD_GATEWAY, "AI_GENERATION_INVALID", "AI generation response missing required fields");
+                }
+                if (!"code_judge".equalsIgnoreCase(operation)
+                        && (answerExpression == null || answerExpression.isBlank())) {
+                    throw new ApiException(HttpStatus.BAD_GATEWAY, "AI_GENERATION_INVALID", "AI generation response missing required fields");
+                }
+                if ("code_judge".equalsIgnoreCase(operation)
+                        && (answerExpression == null || answerExpression.isBlank())) {
+                    answerExpression = "0";
+                }
+
+                if (ai.has("problemKind") && !ai.get("problemKind").isNull()) {
+                    if (ai.get("problemKind").isTextual()) {
+                        paramsNode.put("problemKind", ai.get("problemKind").asText());
+                    } else {
+                        paramsNode.set("problemKind", ai.get("problemKind"));
+                    }
+                }
+                if (ai.has("language") && ai.get("language").isTextual()) {
+                    paramsNode.put("language", ai.get("language").asText());
+                }
+                if (ai.has("starterCode") && ai.get("starterCode").isTextual()) {
+                    paramsNode.put("starterCode", ai.get("starterCode").asText());
                 }
 
                 generated = new GeneratedProblemDto(null, question, paramsNode, answerExpression, operation);
@@ -348,8 +379,10 @@ public class ProblemService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "ANSWER_REQUIRED", "Answer is required");
         }
 
+        boolean isCodeJudge = isCodeJudgeProblem(generatedProblem);
+
         boolean symbolicCorrect = false;
-        if (generatedProblem.getAnswerExpression() != null && generatedProblem.getOperation() != null) {
+        if (!isCodeJudge && generatedProblem.getAnswerExpression() != null && generatedProblem.getOperation() != null) {
             try {
                 symbolicCorrect = mathEngineClient.validateTemplateAnswer(
                     generatedProblem.getOperation(),
@@ -366,6 +399,7 @@ public class ProblemService {
         boolean semanticCorrect = false;
         BigDecimal semanticConfidence = BigDecimal.valueOf(0.50);
         String semanticFeedback = "Semantic verification completed";
+        String semanticMethod = "semantic";
         if (!symbolicCorrect) {
             JsonNode semantic = mathEngineClient.semanticVerify(
                 generatedProblem.getQuestionText(),
@@ -373,15 +407,18 @@ public class ProblemService {
                 generatedProblem.getCorrectAnswer(),
                 generatedProblem.getAnswerExpression(),
                 generatedProblem.getOperation(),
-                generatedProblem.getParamsJson()
+                generatedProblem.getParamsJson(),
+                isCodeJudge ? "code" : null,
+                isCodeJudge ? resolveVerifyLanguage(generatedProblem.getParamsJson()) : null
             );
             semanticCorrect = semantic.path("correct").asBoolean(false);
             semanticConfidence = BigDecimal.valueOf(semantic.path("confidence").asDouble(0.5));
             semanticFeedback = semantic.path("feedback").asText("Semantic verification completed");
+            semanticMethod = semantic.path("method").asText("semantic");
         }
 
         boolean correct = symbolicCorrect || semanticCorrect;
-        String method = symbolicCorrect ? "symbolic" : "semantic";
+        String method = symbolicCorrect ? "symbolic" : semanticMethod;
         BigDecimal confidence = symbolicCorrect ? BigDecimal.valueOf(0.99) : semanticConfidence;
         int xpEarned = correct ? 10 : 0;
         String feedback = correct
@@ -420,7 +457,12 @@ public class ProblemService {
 
         String topicSlug = generatedProblem.getTopicSlug();
         if (topicSlug != null && !topicSlug.isBlank()) {
-            bktService.updateSkill(user, topicSlug, correct);
+            Difficulty bktDiff = parseDifficultyWithFallback(
+                    request.difficultyAtAttempt(),
+                    generatedProblem.getDifficulty()
+            );
+            String bktSkillTopic = resolveBktSkillTopic(topicSlug);
+            bktService.updateSkill(user, bktSkillTopic, correct, bktDiff);
         }
 
         return new GeneratedProblemAttemptResponse(
@@ -443,7 +485,7 @@ public class ProblemService {
 
         GenerationMode genMode = parseMode(mode);
         InteractiveProblemGenerateRequest genRequest = new InteractiveProblemGenerateRequest(
-                null, topicSlug, recommended.name(), null, genMode.name()
+                null, topicSlug, recommended.name(), null, genMode.name(), null
         );
 
         GeneratedProblemItemDto generated = generateInteractive(userId, genRequest);
@@ -588,6 +630,29 @@ public class ProblemService {
         return () -> iterator;
     }
 
+    private boolean isCodeJudgeProblem(GeneratedProblem problem) {
+        if (problem.getOperation() != null && "code_judge".equalsIgnoreCase(problem.getOperation().trim())) {
+            return true;
+        }
+        JsonNode params = problem.getParamsJson();
+        if (params == null || !params.isObject()) {
+            return false;
+        }
+        JsonNode pk = params.get("problemKind");
+        return pk != null && pk.isTextual() && "code".equalsIgnoreCase(pk.asText().trim());
+    }
+
+    private String resolveVerifyLanguage(JsonNode params) {
+        if (params == null || !params.isObject()) {
+            return null;
+        }
+        JsonNode l = params.get("language");
+        if (l != null && l.isTextual() && !l.asText().isBlank()) {
+            return l.asText();
+        }
+        return null;
+    }
+
     private GeneratedProblemItemDto toGeneratedItemDto(GeneratedProblem problem) {
         return new GeneratedProblemItemDto(
                 problem.getId(),
@@ -601,8 +666,35 @@ public class ProblemService {
                 problem.getParamsJson(),
                 problem.getAttemptCount(),
                 problem.getCorrectCount(),
-                problem.getCreatedAt()
+                problem.getCreatedAt(),
+                extractCareerTrackFromParams(problem.getParamsJson(), problem.getGenerationMode())
         );
+    }
+
+    private String resolveEffectiveCareerTrack(User user, InteractiveProblemGenerateRequest request) {
+        if (request.careerTrack() != null && !request.careerTrack().isBlank()) {
+            try {
+                return CareerTrack.valueOf(request.careerTrack().trim().toUpperCase(Locale.ROOT)).name();
+            } catch (IllegalArgumentException ex) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_CAREER_TRACK", "Unknown career track: " + request.careerTrack());
+            }
+        }
+        CareerTrack u = user.getCareerTrack();
+        return u != null ? u.name() : CareerTrack.NONE.name();
+    }
+
+    private String extractCareerTrackFromParams(JsonNode params, GenerationMode mode) {
+        if (mode != GenerationMode.AI) {
+            return null;
+        }
+        if (params == null || !params.isObject()) {
+            return null;
+        }
+        JsonNode c = params.get("careerTrack");
+        if (c != null && c.isTextual() && !c.asText().isBlank()) {
+            return c.asText();
+        }
+        return null;
     }
 
     private GenerationMode parseMode(String rawMode) {
@@ -680,6 +772,20 @@ public class ProblemService {
         return topicRepository.findBySlugAndDeletedAtIsNull(topicSlug)
                 .map(this::buildTopicPath)
                 .orElse(topicSlug);
+    }
+
+    /**
+     * Map practice topic slugs to existing BKT skill topics (e.g. code-to-math → asymptotic_analysis / recursion).
+     */
+    private String resolveBktSkillTopic(String problemTopicSlug) {
+        if (problemTopicSlug == null || problemTopicSlug.isBlank()) {
+            return problemTopicSlug;
+        }
+        return switch (problemTopicSlug) {
+            case "code_complexity" -> "asymptotic_analysis";
+            case "code_recurrence" -> "recursion";
+            default -> problemTopicSlug;
+        };
     }
 
     private String firstNonBlank(String primary, String fallback) {

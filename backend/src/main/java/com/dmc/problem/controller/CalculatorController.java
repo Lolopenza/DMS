@@ -39,7 +39,11 @@ public class CalculatorController {
             @PathVariable String section,
             @RequestBody JsonNode payload
     ) {
-        return ResponseEntity.ok(calculatorProxyService.proxy(currentUserId(), section, null, payload));
+        Long userId = currentUserIdOrNull();
+        if (userId == null) {
+            return ResponseEntity.ok(calculatorProxyService.proxyAnonymous(section, null, payload));
+        }
+        return ResponseEntity.ok(calculatorProxyService.proxy(userId, section, null, payload));
     }
 
     @PostMapping("/{section}/{operation}")
@@ -48,7 +52,11 @@ public class CalculatorController {
             @PathVariable String operation,
             @RequestBody JsonNode payload
     ) {
-        return ResponseEntity.ok(calculatorProxyService.proxy(currentUserId(), section, operation, payload));
+        Long userId = currentUserIdOrNull();
+        if (userId == null) {
+            return ResponseEntity.ok(calculatorProxyService.proxyAnonymous(section, operation, payload));
+        }
+        return ResponseEntity.ok(calculatorProxyService.proxy(userId, section, operation, payload));
     }
 
 

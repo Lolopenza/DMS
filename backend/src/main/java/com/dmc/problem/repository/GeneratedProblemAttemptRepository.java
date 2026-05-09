@@ -13,4 +13,10 @@ public interface GeneratedProblemAttemptRepository extends JpaRepository<Generat
 
     List<GeneratedProblemAttempt> findByUserAndCreatedAtAfter(User user, OffsetDateTime createdAtAfter);
     List<GeneratedProblemAttempt> findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(User user, OffsetDateTime createdAtAfter);
+
+    long countByUser(User user);
+
+    long countByUserAndCreatedAtAfter(User user, OffsetDateTime createdAtAfter);
+
+    List<GeneratedProblemAttempt> findByUserAndTopicSlugOrderByCreatedAtAsc(User user, String topicSlug);
 }

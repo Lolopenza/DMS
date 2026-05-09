@@ -49,7 +49,7 @@ class AuthFlowIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void registerMeLogoutFlowWorks() throws Exception {
-        RegisterRequest request = new RegisterRequest("integration-user", "integration.user@example.com", "StrongPass123");
+        RegisterRequest request = new RegisterRequest("integration-user", "integration.user@example.com", "StrongPass123", "StrongPass123");
 
         MvcResult registerResult = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -77,7 +77,7 @@ class AuthFlowIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void refreshRotatesRefreshToken() throws Exception {
-        RegisterRequest register = new RegisterRequest("refresh-user", "refresh.user@example.com", "StrongPass123");
+        RegisterRequest register = new RegisterRequest("refresh-user", "refresh.user@example.com", "StrongPass123", "StrongPass123");
 
         MvcResult registerResult = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -98,7 +98,7 @@ class AuthFlowIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void refreshTokenReplayRevokesSessionFamily() throws Exception {
-        RegisterRequest register = new RegisterRequest("replay-user", "replay.user@example.com", "StrongPass123");
+        RegisterRequest register = new RegisterRequest("replay-user", "replay.user@example.com", "StrongPass123", "StrongPass123");
 
         MvcResult registerResult = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -127,7 +127,7 @@ class AuthFlowIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void revokeSingleSessionInvalidatesItsRefreshToken() throws Exception {
-        RegisterRequest register = new RegisterRequest("session-user", "session.user@example.com", "StrongPass123");
+        RegisterRequest register = new RegisterRequest("session-user", "session.user@example.com", "StrongPass123", "StrongPass123");
 
         MvcResult registerResult = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -158,7 +158,7 @@ class AuthFlowIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void passwordResetConfirmAllowsNewPasswordAndRevokesOldCredentials() throws Exception {
-        RegisterRequest register = new RegisterRequest("reset-user", "reset.user@example.com", "StrongPass123");
+        RegisterRequest register = new RegisterRequest("reset-user", "reset.user@example.com", "StrongPass123", "StrongPass123");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

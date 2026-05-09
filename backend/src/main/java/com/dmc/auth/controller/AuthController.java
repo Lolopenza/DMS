@@ -7,6 +7,7 @@ import com.dmc.auth.dto.PasswordResetConfirmDto;
 import com.dmc.auth.dto.PasswordResetRequestDto;
 import com.dmc.auth.dto.RegisterRequest;
 import com.dmc.auth.dto.SessionResponse;
+import com.dmc.auth.dto.UpdateProfileRequest;
 import com.dmc.auth.dto.UserResponse;
 import com.dmc.auth.service.AuthService;
 import com.dmc.auth.service.RequestMetadata;
@@ -27,6 +28,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -94,6 +96,11 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me() {
         return ResponseEntity.ok(authService.me(currentUserId()));
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<UserResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(authService.updateProfile(currentUserId(), request));
     }
 
     @GetMapping("/sessions")

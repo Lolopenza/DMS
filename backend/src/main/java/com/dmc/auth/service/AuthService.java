@@ -6,6 +6,7 @@ import com.dmc.auth.dto.LoginRequest;
 import com.dmc.auth.dto.PasswordResetConfirmDto;
 import com.dmc.auth.dto.RegisterRequest;
 import com.dmc.auth.dto.SessionResponse;
+import com.dmc.auth.dto.UpdateProfileRequest;
 import com.dmc.auth.dto.UserResponse;
 import com.dmc.auth.entity.PasswordResetToken;
 import com.dmc.auth.entity.RefreshToken;
@@ -16,6 +17,7 @@ import com.dmc.auth.repository.UserSessionRepository;
 import com.dmc.common.exception.ApiException;
 import com.dmc.common.security.JwtProperties;
 import com.dmc.common.security.JwtService;
+import com.dmc.user.entity.CareerTrack;
 import com.dmc.user.entity.User;
 import com.dmc.user.entity.UserRole;
 import com.dmc.user.repository.UserRepository;
@@ -51,6 +53,10 @@ public class AuthService {
 
     @Transactional
     public AuthResult register(RegisterRequest request, RequestMetadata metadata) {
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "PASSWORD_MISMATCH", "Passwords do not match");
+        }
+
         String email = request.email().trim().toLowerCase(Locale.ROOT);
         String username = request.name().trim();
 
@@ -242,6 +248,24 @@ public class AuthService {
         return toUserResponse(user);
     }
 
+    @Transactional
+    public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
+
+        if (request.careerTrack() != null && !request.careerTrack().isBlank()) {
+            String normalized = request.careerTrack().trim().toUpperCase(Locale.ROOT);
+            try {
+                user.setCareerTrack(CareerTrack.valueOf(normalized));
+            } catch (IllegalArgumentException ex) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_CAREER_TRACK", "Unknown career track: " + request.careerTrack());
+            }
+        }
+
+        userRepository.save(user);
+        return toUserResponse(user);
+    }
+
     public List<SessionResponse> activeSessions(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "User not found"));
@@ -305,12 +329,14 @@ public class AuthService {
     }
 
     private UserResponse toUserResponse(User user) {
+        CareerTrack track = user.getCareerTrack() != null ? user.getCareerTrack() : CareerTrack.NONE;
         return new UserResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getUsername(),
                 user.getRole().name(),
-                Boolean.TRUE.equals(user.getEnabled())
+                Boolean.TRUE.equals(user.getEnabled()),
+                track.name()
         );
     }
 

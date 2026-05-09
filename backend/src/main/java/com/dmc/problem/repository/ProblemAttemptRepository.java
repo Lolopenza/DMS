@@ -10,4 +10,10 @@ import java.util.List;
 public interface ProblemAttemptRepository extends JpaRepository<ProblemAttempt, Long> {
     List<ProblemAttempt> findByUserOrderByCreatedAtDesc(User user);
     List<ProblemAttempt> findByUserAndCreatedAtAfterOrderByTopicSlugAscCreatedAtDesc(User user, OffsetDateTime createdAtAfter);
+
+    long countByUser(User user);
+
+    long countByUserAndCreatedAtAfter(User user, OffsetDateTime createdAtAfter);
+
+    List<ProblemAttempt> findByUserAndTopicSlugOrderByCreatedAtAsc(User user, String topicSlug);
 }

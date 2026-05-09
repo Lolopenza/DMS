@@ -37,12 +37,18 @@ management:
     mail:
       enabled: false
 
+dmc:
+  gamification:
+    daily-goal-target: ${GAMIFICATION_DAILY_GOAL_TARGET:5}
+    mastery-king-modules-required: ${GAMIFICATION_MASTERY_KING_MODULES:3}
+    streak-lookback-days: ${GAMIFICATION_STREAK_LOOKBACK_DAYS:730}
+
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   integration:
     math-engine:
       base-url: ${DMC_MATH_ENGINE_URL:http://localhost:8081}
-      api-key: ${DMC_MATH_ENGINE_API_KEY:change-me}
+      api-key: ${DMC_INTERNAL_API_KEY:change-me}
   security:
     jwt:
       issuer: dmc-backend
