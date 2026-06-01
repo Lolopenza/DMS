@@ -39,7 +39,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    registerSessionExpiryHandler(() => setSession(null));
+    registerSessionExpiryHandler(() => {
+      localStorage.removeItem('dmc_token');
+      setSession(null);
+    });
     return () => registerSessionExpiryHandler(null);
   }, []);
 

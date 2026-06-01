@@ -6,7 +6,7 @@
 
 // In dev/prod we call the Spring Boot proxy, not math-engine directly.
 // Backend forwards to math-engine and injects X-Internal-Api-Key.
-const MATH_ENGINE_BASE = '/api/calculator';
+const MATH_ENGINE_BASE = (import.meta.env.VITE_API_BASE_URL || '/api') + '/calculator';
 
 const TIMEOUT_MATH_MS = 30_000;
 

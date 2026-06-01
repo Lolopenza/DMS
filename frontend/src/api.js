@@ -164,7 +164,7 @@ async function performRequest(url, options = {}) {
 
     if (!res.ok) {
       if (res.status === 401 && !skipAuthRefresh) {
-        return scheduleRetry(url, { timeoutMs: effectiveTimeout, skipAuthRefresh, ...fetchOptions });
+        return scheduleRetry(url, { timeoutMs: effectiveTimeout, skipAuthRefresh: true, ...fetchOptions });
       }
 
       const apiMessage = data?.error?.message;
