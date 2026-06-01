@@ -45,6 +45,9 @@ export function AuthProvider({ children }) {
 
   async function login({ email, password }) {
     const response = await loginUser({ email, password });
+    if (response?.accessToken) {
+      localStorage.setItem('dmc_token', response.accessToken);
+    }
     const nextSession = response?.user || null;
     setSession(nextSession);
     return nextSession;
@@ -52,6 +55,9 @@ export function AuthProvider({ children }) {
 
   async function register({ name, email, password, confirmPassword }) {
     const response = await registerUser({ name, email, password, confirmPassword });
+    if (response?.accessToken) {
+      localStorage.setItem('dmc_token', response.accessToken);
+    }
     const nextSession = response?.user || null;
     setSession(nextSession);
     return nextSession;
@@ -63,6 +69,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Ensure local state is cleared even if API call fails.
     }
+    localStorage.removeItem('dmc_token');
     setSession(null);
   }
 

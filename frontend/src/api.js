@@ -45,14 +45,20 @@ async function rawFetch(url, options = {}) {
   const timer = options.timeoutMs ? setTimeout(() => controller.abort(), options.timeoutMs) : null;
 
   try {
+    const token = localStorage.getItem('dmc_token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const res = await fetch(url, {
       ...options,
       credentials: 'include',
       signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
-      },
+      headers,
     });
     return res;
   } finally {
@@ -122,14 +128,20 @@ async function performRequest(url, options = {}) {
   const timer = setTimeout(() => controller.abort(), effectiveTimeout);
 
   try {
+    const token = localStorage.getItem('dmc_token');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(fetchOptions.headers || {}),
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const res = await fetch(url, {
       ...fetchOptions,
       credentials: 'include',
       signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(fetchOptions.headers || {}),
-      },
+      headers,
     });
 
     let data = null;
