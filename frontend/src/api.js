@@ -74,6 +74,17 @@ async function rawRefresh() {
     err.code = 'SESSION_EXPIRED';
     throw err;
   }
+  
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    // ignore
+  }
+  
+  if (data && data.accessToken) {
+    localStorage.setItem('dmc_token', data.accessToken);
+  }
 }
 
 function scheduleRetry(url, options) {
