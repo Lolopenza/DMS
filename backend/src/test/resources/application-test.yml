@@ -6,18 +6,12 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
-  data:
-    redis:
-      host: localhost
-      port: 6399
   mail:
     host: localhost
     port: 1025
 
 management:
   health:
-    redis:
-      enabled: false
     rabbit:
       enabled: false
     mail:

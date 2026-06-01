@@ -1,0 +1,10 @@
+management:
+  health:
+    redis:
+      enabled: false
+
+app:
+  security:
+    cors:
+      allowed-origin-patterns: >
+        ${CORS_ALLOWED_ORIGIN_PATTERNS:https://dms-nu-six.vercel.app,https://*-lolopenza-2215s-projects.vercel.app}

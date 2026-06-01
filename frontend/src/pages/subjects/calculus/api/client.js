@@ -1,7 +1,7 @@
 /**
  * Calculus calculator — proxied via Spring POST /api/calculator/calculus → math-engine /api/v1/calculus/
  */
-const MATH_ENGINE_BASE = '/api/calculator';
+const MATH_ENGINE_BASE = (import.meta.env.VITE_API_BASE_URL || '/api') + '/calculator';
 const TIMEOUT_MATH_MS = 30_000;
 
 async function request(url, options = {}) {
