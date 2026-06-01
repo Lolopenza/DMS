@@ -12,7 +12,7 @@ class RagDocument:
 
 
 class InMemoryRagIndex:
-    """Simple in-memory index used as Wave 3A baseline."""
+    """Simple in-memory index """
 
     def __init__(self):
         self._docs: List[RagDocument] = []

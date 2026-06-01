@@ -1,0 +1,186 @@
+HYBRID ANSWER VERIFICATION — BENCHMARK DATA (Section B only)
+MathLab / DMS platform — for LaTeX thesis subsection (English)
+Generated: 2026-05-31 | Source: eval/run_verification_benchmark.py --live
+Do NOT include Section C (production DB statistics).
+
+================================================================================
+1. SYSTEM CONTEXT (facts — do not invent)
+================================================================================
+
+Platform: MathLab (repo: DMS) — educational web platform for IT students.
+
+Verification pipeline (math-engine, FastAPI, endpoint verify_answer):
+  1) code-judge (LLM reviews code; code is NOT executed in sandbox)
+  2) math-judge (LLM for Big-O / recurrence notation)
+  3) symbolic (SymPy — deterministic, confidence 0.99 if correct, 0.35 if wrong)
+  4) semantic (Gemini/Groq LLM judge — returns JSON: correct, confidence, feedback)
+  5) semantic-fallback (when LLM fails or JSON unparseable — string/SymPy equivalence)
+
+Each attempt stores: correct, confidence, verification_method, feedback in PostgreSQL
+(table generated_problem_attempts). Confidence is NOT shown in the student UI in MVP;
+no automated teacher review queue in MVP.
+
+Benchmark tool: math-engine/eval/run_verification_benchmark.py
+Benchmark cases: math-engine/eval/verification_benchmark.json (50 cases)
+Ground truth: author-assigned teacher reference labels (groundTruthCorrect)
+
+Run mode: --live (all 50 cases evaluated; 7 used real Gemini API, others deterministic
+or reproducible LLM mocks as documented below)
+
+================================================================================
+2. BENCHMARK COMPOSITION (N = 50)
+================================================================================
+
+Category              | Count | Description
+----------------------|-------|--------------------------------------------
+symbolic              | 15    | Numeric, algebraic, logic (SymPy path)
+semantic-fallback     | 8     | LLM down / parse guard / forced fallback
+semantic (live LLM)   | 7     | Free-form prose, dirty formats (real Gemini)
+semantic (LLM mock)   | 7     | Reproducible simulated LLM responses
+code-judge            | 7     | Python code submissions (LLM mock + 1 unavailable)
+math-judge            | 2     | Big-O equivalence (LLM mock)
+edge                  | 4     | Empty answer, unparseable, LaTeX-like strings
+
+Answer types tested: correct numeric, wrong numeric, equivalent forms (x+x vs 2x,
+O(n^2) vs O(n*n)), wrong counts, free-form explanations, dirty whitespace,
+malicious/unparseable input, code with logic bugs.
+
+================================================================================
+3. OVERALL METRICS (Table B.1) — N = 50
+================================================================================
+
+Evaluated cases:           50
+Matches with ground truth: 43
+Accuracy:                  86.0%
+True positive (TP):        22
+True negative (TN):        21
+False positive (FP):       3  (system accepted wrong answer)
+False negative (FN):       4  (system rejected correct answer)
+Precision:                 88.0%
+Recall:                    84.6%
+Mean confidence:           0.6704
+
+Confusion matrix:
+                    Ground truth: correct   Ground truth: incorrect
+System: correct              TP = 22                 FP = 3
+System: incorrect            FN = 4                  TN = 21
+
+================================================================================
+4. BREAKDOWN BY verification_method (Table B.2)
+================================================================================
+
+Method                  | N  | Accuracy | FP | FN
+------------------------|----|---------:|---:|---:
+symbolic                | 15 |   100.0% |  0 |  0
+semantic-fallback       | 15 |    80.0% |  0 |  3
+semantic                | 11 |    81.8% |  1 |  1
+code-judge              |  6 |    66.7% |  2 |  0
+code-judge-unavailable  |  1 |   100.0% |  0 |  0
+math-judge              |  2 |   100.0% |  0 |  0
+
+================================================================================
+5. BREAKDOWN BY answer category (Table B.3)
+================================================================================
+
+Category          | N  | Accuracy
+------------------|----|--------:
+symbolic          | 15 | 100.0%
+semantic-fallback |  8 | 100.0%  (forced-fallback subset only)
+semantic          | 14 |  64.3%  (includes live + mock — lower due to FN/FP)
+code-judge        |  7 |  71.4%
+math-judge        |  2 | 100.0%
+edge              |  4 | 100.0%
+
+================================================================================
+6. ALL MISMATCHES — 7 cases (Table B.4)
+================================================================================
+
+Case ID       | Type | Method            | Live or Mock | Description
+--------------|------|-------------------|--------------|----------------------------------
+sem-001       | FN   | semantic-fallback | LIVE         | Free-form correct explanation (K4 edges = 6)
+sem-003       | FN   | semantic-fallback | LIVE         | Equivalent wording ("10 handshakes total" vs "10")
+sem-006       | FN   | semantic-fallback | LIVE         | Formula in words ("n*(n-1)/2 with n=5 gives 10")
+sem-mock-006  | FN   | semantic          | MOCK         | LLM wrongly rejected correct free-form (tree edges)
+sem-mock-004  | FP   | semantic          | MOCK         | LLM wrongly accepted 6 instead of 8 subsets
+code-003      | FP   | code-judge        | MOCK         | Infinite recursion fact(n) calls fact(n) — accepted
+code-006      | FP   | code-judge        | MOCK         | Off-by-one: range(n) instead of range(n+1) — accepted
+
+Detailed mismatch narratives for thesis:
+
+FN sem-001 (LIVE):
+  Question: "Explain: how many edges in a complete graph K4?"
+  Candidate: "6 edges — each of 4 vertices connects to 3 others, 4*3/2 = 6"
+  Expected: "6"
+  Root cause: Gemini returned {"correct": true, "confidence": 1, "feedback": ""}.
+  Empty feedback failed Pydantic validation → semantic-fallback compared strings → rejected.
+
+FN sem-003 (LIVE): Same parse-failure → fallback pattern.
+  Candidate: "10 handshakes total" vs expected "10"
+
+FN sem-006 (LIVE): Same parse-failure → fallback pattern.
+  Candidate: "n*(n-1)/2 with n=5 gives 10" vs expected "10"
+
+FN sem-mock-006 (MOCK — illustrative):
+  Candidate: "6 edges in any tree with 7 nodes" (correct) — mock LLM returned correct=false
+
+FP sem-mock-004 (MOCK — illustrative):
+  Question: subsets of {a,b,c}. Candidate "6" (wrong, answer is 8) — mock LLM accepted
+
+FP code-003 (MOCK — illustrative):
+  def fact(n): ... return n * fact(n)  # infinite recursion, not fact(n-1)
+  Code-judge accepted because code is not executed in sandbox
+
+FP code-006 (MOCK — illustrative):
+  def sum_n(n): for i in range(n): s += i  # sums 0..n-1, not 1..n
+  Code-judge accepted — syntax looks plausible without runtime tests
+
+================================================================================
+7. POSITIVE GUARD EXAMPLE (not a mismatch — include in discussion)
+================================================================================
+
+fallback-003: LLM returned {"correct":"false",...} with correct as STRING not boolean.
+  Parse guard triggered → semantic-fallback → correctly rejected wrong answer (5 vs 4).
+  Confidence: 0.28
+
+================================================================================
+8. CONFIDENCE & MANUAL REVIEW (Table B.5 summary)
+================================================================================
+
+Policy (design, not fully implemented in MVP UI):
+  - symbolic + confidence >= 0.95 → auto-grade, no teacher needed
+  - semantic/code-judge + confidence < 0.55 → recommend manual teacher review
+  - semantic-fallback, *-unavailable, *-parse-error → treat with caution
+
+Cases with confidence < 0.55 in benchmark: 12 cases
+  Includes all 3 live FN cases (sem-001, sem-003, sem-006) at confidence 0.28
+  Includes fallback edge cases at 0.28–0.30
+
+================================================================================
+9. LIMITATIONS (mandatory paragraph)
+================================================================================
+
+- N = 50 is a controlled benchmark, not a large-scale field study.
+- 7 cases used live Gemini (non-deterministic); remaining LLM cases use fixed mocks
+  for reproducibility — must be stated explicitly in thesis.
+- Unit tests (pytest) validate pipeline logic, NOT Gemini accuracy — cite this
+  benchmark instead.
+- code-judge does not execute code — FP on logic bugs is an architectural limitation.
+- factorial() expressions currently fail SymPy parsing in production — combinatorics
+  templates may route to semantic path (acknowledged technical debt).
+- Do NOT claim: Redis/RabbitMQ actively used, public nginx hosting, teacher review
+  queue implemented, or pytest count equals LLM accuracy.
+
+================================================================================
+10. KEY CONCLUSIONS FOR THESIS
+================================================================================
+
+- SymPy symbolic path: 15/15 = 100% accuracy on parseable expressions (deterministic).
+- Overall hybrid pipeline: 86% agreement with teacher ground truth (43/50).
+- Main failure mode (live): Gemini empty feedback → JSON parse fail → semantic-fallback
+  rejects valid prose answers (3 FN).
+- Main failure mode (mock/code): LLM false positives on wrong code without sandbox (2 FP).
+- Confidence score identifies low-trust cases but is not yet used for teacher workflow in MVP.
+
+================================================================================
+END OF DATA — Section C (DB stats) intentionally omitted
+================================================================================

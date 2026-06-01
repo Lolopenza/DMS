@@ -3,7 +3,7 @@ from typing import Set
 
 
 class SimpleTextEmbedder:
-    """Lightweight token-based embedder for Wave 3A skeleton."""
+    """Lightweight token-based embedder """
 
     TOKEN_RE = re.compile(r"[A-Za-z0-9_\-]+")
 

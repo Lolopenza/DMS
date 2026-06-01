@@ -14,7 +14,7 @@ def _jaccard(a: set, b: set) -> float:
 
 
 class SimpleRagRetriever:
-    """Token-overlap retriever for Wave 3A skeleton."""
+    """Token-overlap retriever"""
 
     def __init__(self, index: InMemoryRagIndex, embedder: SimpleTextEmbedder):
         self.index = index

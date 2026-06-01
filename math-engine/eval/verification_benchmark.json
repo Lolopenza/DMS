@@ -1,0 +1,687 @@
+{
+  "version": 1,
+  "description": "Ground-truth benchmark for hybrid SymPy + LLM verification (thesis evaluation)",
+  "cases": [
+    {
+      "id": "sym-001",
+      "category": "symbolic",
+      "label": "Correct numeric sum",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Compute 2 + 2.",
+        "candidateAnswer": 4,
+        "answerExpression": "{{a}} + {{b}}",
+        "operation": "sum",
+        "params": { "a": 2, "b": 2 }
+      }
+    },
+    {
+      "id": "sym-002",
+      "category": "symbolic",
+      "label": "Wrong numeric sum",
+      "groundTruthCorrect": false,
+      "request": {
+        "questionText": "Compute 2 + 2.",
+        "candidateAnswer": 5,
+        "answerExpression": "{{a}} + {{b}}",
+        "operation": "sum",
+        "params": { "a": 2, "b": 2 }
+      }
+    },
+    {
+      "id": "sym-003",
+      "category": "symbolic",
+      "label": "Combinatorics C(5,2)=10",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "How many 2-subsets of a 5-element set?",
+        "candidateAnswer": 10,
+        "answerExpression": "{{result}}",
+        "operation": "combination",
+        "params": { "n": 5, "k": 2, "result": 10 }
+      }
+    },
+    {
+      "id": "sym-004",
+      "category": "symbolic",
+      "label": "Combinatorics wrong count",
+      "groundTruthCorrect": false,
+      "request": {
+        "questionText": "How many 2-subsets of a 5-element set?",
+        "candidateAnswer": 20,
+        "answerExpression": "{{result}}",
+        "operation": "combination",
+        "params": { "n": 5, "k": 2, "result": 10 }
+      }
+    },
+    {
+      "id": "sym-005",
+      "category": "symbolic",
+      "label": "Algebraic equivalent 2*x",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Simplify coefficient times variable.",
+        "candidateAnswer": "2*x",
+        "answerExpression": "{{c}}*x",
+        "operation": "algebra",
+        "params": { "c": 2 }
+      }
+    },
+    {
+      "id": "sym-006",
+      "category": "symbolic",
+      "label": "Boolean true as 1",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Logic constant.",
+        "candidateAnswer": true,
+        "answerExpression": "1",
+        "operation": "logic",
+        "params": {}
+      }
+    },
+    {
+      "id": "sym-007",
+      "category": "symbolic",
+      "label": "Permutation P(4,2)=12",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Ordered selections P(4,2).",
+        "candidateAnswer": 12,
+        "answerExpression": "{{result}}",
+        "operation": "permutation",
+        "params": { "n": 4, "k": 2, "result": 12 }
+      }
+    },
+    {
+      "id": "sym-008",
+      "category": "symbolic",
+      "label": "Wrong permutation",
+      "groundTruthCorrect": false,
+      "request": {
+        "questionText": "Ordered selections P(4,2).",
+        "candidateAnswer": 6,
+        "answerExpression": "{{result}}",
+        "operation": "permutation",
+        "params": { "n": 4, "k": 2, "result": 12 }
+      }
+    },
+    {
+      "id": "sym-009",
+      "category": "symbolic",
+      "label": "Equivalent form x+x",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Double x.",
+        "candidateAnswer": "x + x",
+        "answerExpression": "2*x",
+        "operation": "algebra",
+        "params": {}
+      }
+    },
+    {
+      "id": "sym-010",
+      "category": "symbolic",
+      "label": "Off-by-one wrong",
+      "groundTruthCorrect": false,
+      "request": {
+        "questionText": "Compute 3 * 7.",
+        "candidateAnswer": 22,
+        "answerExpression": "{{a}} * {{b}}",
+        "operation": "product",
+        "params": { "a": 3, "b": 7 }
+      }
+    },
+    {
+      "id": "sym-011",
+      "category": "symbolic",
+      "label": "Correct subtraction",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Compute 10 - 3.",
+        "candidateAnswer": 7,
+        "answerExpression": "{{a}} - {{b}}",
+        "operation": "difference",
+        "params": { "a": 10, "b": 3 }
+      }
+    },
+    {
+      "id": "sym-012",
+      "category": "symbolic",
+      "label": "Wrong subtraction",
+      "groundTruthCorrect": false,
+      "request": {
+        "questionText": "Compute 10 - 3.",
+        "candidateAnswer": 8,
+        "answerExpression": "{{a}} - {{b}}",
+        "operation": "difference",
+        "params": { "a": 10, "b": 3 }
+      }
+    },
+    {
+      "id": "sym-013",
+      "category": "symbolic",
+      "label": "Power equivalent 2^3",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Compute 2 to the power 3.",
+        "candidateAnswer": 8,
+        "answerExpression": "2**3",
+        "operation": "power",
+        "params": {}
+      }
+    },
+    {
+      "id": "sym-014",
+      "category": "symbolic",
+      "label": "Equivalent 3*x vs x*3",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Coefficient times x.",
+        "candidateAnswer": "x*3",
+        "answerExpression": "3*x",
+        "operation": "algebra",
+        "params": {}
+      }
+    },
+    {
+      "id": "sym-015",
+      "category": "symbolic",
+      "label": "Boolean false as 0",
+      "groundTruthCorrect": true,
+      "request": {
+        "questionText": "Logic constant false.",
+        "candidateAnswer": false,
+        "answerExpression": "0",
+        "operation": "logic",
+        "params": {}
+      }
+    },
+    {
+      "id": "fallback-001",
+      "category": "semantic-fallback",
+      "label": "Fraction 1/2 vs 0.5 (LLM down, fallback)",
+      "groundTruthCorrect": true,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Equivalent fraction.",
+        "candidateAnswer": "0.5",
+        "expectedAnswer": "1/2"
+      }
+    },
+    {
+      "id": "fallback-002",
+      "category": "semantic-fallback",
+      "label": "Fraction 2/4 vs 1/2 (LLM down)",
+      "groundTruthCorrect": true,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Equivalent fraction.",
+        "candidateAnswer": "1/2",
+        "expectedAnswer": "2/4"
+      }
+    },
+    {
+      "id": "fallback-003",
+      "category": "semantic-fallback",
+      "label": "String false boolean from LLM (parse guard)",
+      "groundTruthCorrect": false,
+      "llmMock": {
+        "reply": "{\"correct\":\"false\",\"confidence\":0.9,\"feedback\":\"Wrong\"}"
+      },
+      "request": {
+        "questionText": "2 + 2 = ?",
+        "candidateAnswer": "5",
+        "expectedAnswer": "4"
+      }
+    },
+    {
+      "id": "fallback-004",
+      "category": "semantic-fallback",
+      "label": "LLM down, wrong answer vs expected",
+      "groundTruthCorrect": false,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Simple sum.",
+        "candidateAnswer": "5",
+        "expectedAnswer": "4"
+      }
+    },
+    {
+      "id": "fallback-005",
+      "category": "semantic-fallback",
+      "label": "LLM down, matching strings",
+      "groundTruthCorrect": true,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Name the set size.",
+        "candidateAnswer": "42",
+        "expectedAnswer": "42"
+      }
+    },
+    {
+      "id": "fallback-006",
+      "category": "semantic-fallback",
+      "label": "Non-equivalent decimals (LLM down)",
+      "groundTruthCorrect": false,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Compare values.",
+        "candidateAnswer": "0.33",
+        "expectedAnswer": "1/3"
+      }
+    },
+    {
+      "id": "fallback-007",
+      "category": "semantic-fallback",
+      "label": "Trimmed whitespace match (LLM down)",
+      "groundTruthCorrect": true,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Answer with spaces.",
+        "candidateAnswer": "  15  ",
+        "expectedAnswer": "15"
+      }
+    },
+    {
+      "id": "fallback-008",
+      "category": "semantic-fallback",
+      "label": "Markdown-wrapped JSON from LLM (parse guard)",
+      "groundTruthCorrect": true,
+      "llmMock": {
+        "reply": "```json\n{\"correct\": true, \"confidence\": 0.85, \"feedback\": \"OK\"}\n```"
+      },
+      "request": {
+        "questionText": "5 + 5 = ?",
+        "candidateAnswer": "10",
+        "expectedAnswer": "10"
+      }
+    },
+    {
+      "id": "sem-001",
+      "category": "semantic",
+      "label": "Free-form correct explanation (needs LLM)",
+      "groundTruthCorrect": true,
+      "requiresLiveLlm": true,
+      "request": {
+        "questionText": "Explain: how many edges in a complete graph K4?",
+        "candidateAnswer": "6 edges — each of 4 vertices connects to 3 others, 4*3/2 = 6",
+        "expectedAnswer": "6"
+      }
+    },
+    {
+      "id": "sem-002",
+      "category": "semantic",
+      "label": "Free-form wrong count (needs LLM)",
+      "groundTruthCorrect": false,
+      "requiresLiveLlm": true,
+      "request": {
+        "questionText": "How many edges in K4?",
+        "candidateAnswer": "8",
+        "expectedAnswer": "6"
+      }
+    },
+    {
+      "id": "sem-003",
+      "category": "semantic",
+      "label": "Equivalent wording correct (needs LLM)",
+      "groundTruthCorrect": true,
+      "requiresLiveLlm": true,
+      "request": {
+        "questionText": "What is the handshake lemma count for 5 people each shaking once?",
+        "candidateAnswer": "10 handshakes total",
+        "expectedAnswer": "10"
+      }
+    },
+    {
+      "id": "sem-004",
+      "category": "semantic",
+      "label": "Dirty format with spaces (needs LLM)",
+      "groundTruthCorrect": true,
+      "requiresLiveLlm": true,
+      "request": {
+        "questionText": "Value of C(4,2).",
+        "candidateAnswer": "  6  ",
+        "expectedAnswer": "6"
+      }
+    },
+    {
+      "id": "sem-005",
+      "category": "semantic",
+      "label": "Wrong with confident wording (needs LLM)",
+      "groundTruthCorrect": false,
+      "requiresLiveLlm": true,
+      "request": {
+        "questionText": "Is 17 prime?",
+        "candidateAnswer": "No, 17 is composite because it divides by 1 and 17.",
+        "expectedAnswer": "Yes, 17 is prime"
+      }
+    },
+    {
+      "id": "sem-006",
+      "category": "semantic",
+      "label": "Formula in words n*(n-1)/2 (needs LLM)",
+      "groundTruthCorrect": true,
+      "requiresLiveLlm": true,
+      "request": {
+        "questionText": "How many unordered pairs among 5 items?",
+        "candidateAnswer": "n*(n-1)/2 with n=5 gives 10",
+        "expectedAnswer": "10"
+      }
+    },
+    {
+      "id": "sem-007",
+      "category": "semantic",
+      "label": "Almost correct off-by-one (needs LLM)",
+      "groundTruthCorrect": false,
+      "requiresLiveLlm": true,
+      "request": {
+        "questionText": "How many edges in K5?",
+        "candidateAnswer": "9",
+        "expectedAnswer": "10"
+      }
+    },
+    {
+      "id": "sem-mock-001",
+      "category": "semantic",
+      "label": "Mock LLM accepts equivalent prose",
+      "groundTruthCorrect": true,
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.88, \"feedback\": \"Correct — equivalent answer.\"}"
+      },
+      "request": {
+        "questionText": "Number of binary strings length 3.",
+        "candidateAnswer": "eight",
+        "expectedAnswer": "8"
+      }
+    },
+    {
+      "id": "sem-mock-002",
+      "category": "semantic",
+      "label": "Mock LLM rejects wrong",
+      "groundTruthCorrect": false,
+      "llmMock": {
+        "reply": "{\"correct\": false, \"confidence\": 0.82, \"feedback\": \"Should be 8, not 7.\"}"
+      },
+      "request": {
+        "questionText": "Number of binary strings length 3.",
+        "candidateAnswer": "7",
+        "expectedAnswer": "8"
+      }
+    },
+    {
+      "id": "sem-mock-003",
+      "category": "semantic",
+      "label": "Mock LLM low confidence reject",
+      "groundTruthCorrect": false,
+      "llmMock": {
+        "reply": "{\"correct\": false, \"confidence\": 0.40, \"feedback\": \"Uncertain — check your formula.\"}"
+      },
+      "request": {
+        "questionText": "Approximate ln(2).",
+        "candidateAnswer": "0.69",
+        "expectedAnswer": "0.693"
+      }
+    },
+    {
+      "id": "sem-mock-004",
+      "category": "semantic",
+      "label": "Mock LLM false positive (thesis error example)",
+      "groundTruthCorrect": false,
+      "notes": "Simulates LLM wrongly accepting an incorrect answer — use in thesis as failure mode",
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.75, \"feedback\": \"Looks fine.\"}"
+      },
+      "request": {
+        "questionText": "How many subsets of {a,b,c}?",
+        "candidateAnswer": "6",
+        "expectedAnswer": "8"
+      }
+    },
+    {
+      "id": "sem-mock-005",
+      "category": "semantic",
+      "label": "Mock accepts formula notation",
+      "groundTruthCorrect": true,
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.86, \"feedback\": \"Equivalent combinatorial formula.\"}"
+      },
+      "request": {
+        "questionText": "Pairs in n=4 set.",
+        "candidateAnswer": "4*3/2",
+        "expectedAnswer": "6"
+      }
+    },
+    {
+      "id": "sem-mock-006",
+      "category": "semantic",
+      "label": "Mock false negative (thesis error example)",
+      "groundTruthCorrect": true,
+      "notes": "Simulates LLM wrongly rejecting a correct free-form answer",
+      "llmMock": {
+        "reply": "{\"correct\": false, \"confidence\": 0.62, \"feedback\": \"Answer format unclear.\"}"
+      },
+      "request": {
+        "questionText": "Number of edges in a tree with 7 vertices?",
+        "candidateAnswer": "6 edges in any tree with 7 nodes",
+        "expectedAnswer": "6"
+      }
+    },
+    {
+      "id": "sem-mock-007",
+      "category": "semantic",
+      "label": "Correct verdict but hallucinated feedback",
+      "groundTruthCorrect": true,
+      "notes": "correct=true matches ground truth; feedback text is misleading — discuss in thesis",
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.80, \"feedback\": \"Wrong method but answer accidentally matches.\"}"
+      },
+      "request": {
+        "questionText": "Value of 2^4.",
+        "candidateAnswer": "16",
+        "expectedAnswer": "16"
+      }
+    },
+    {
+      "id": "code-001",
+      "category": "code-judge",
+      "label": "Correct sum function (mock judge)",
+      "groundTruthCorrect": true,
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.91, \"feedback\": \"Implements sum correctly.\"}"
+      },
+      "request": {
+        "questionText": "Implement sum of two integers.",
+        "candidateAnswer": { "type": "code", "language": "python", "source": "def s(a,b): return a+b" },
+        "expectedAnswer": "return a+b",
+        "judgeMode": "code",
+        "operation": "code_judge"
+      }
+    },
+    {
+      "id": "code-002",
+      "category": "code-judge",
+      "label": "Wrong stub (mock judge)",
+      "groundTruthCorrect": false,
+      "llmMock": {
+        "reply": "{\"correct\": false, \"confidence\": 0.85, \"feedback\": \"Does not sort the array.\"}"
+      },
+      "request": {
+        "questionText": "Implement bubble sort.",
+        "candidateAnswer": { "type": "code", "language": "python", "source": "def f(): return 1" },
+        "expectedAnswer": "O(n^2) comparison sort",
+        "operation": "code_judge"
+      }
+    },
+    {
+      "id": "code-003",
+      "category": "code-judge",
+      "label": "Logic bug passes syntax (mock false positive)",
+      "groundTruthCorrect": false,
+      "notes": "Code looks valid but wrong algorithm — illustrates no sandbox execution",
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.72, \"feedback\": \"Acceptable.\"}"
+      },
+      "request": {
+        "questionText": "Return factorial of n recursively.",
+        "candidateAnswer": {
+          "type": "code",
+          "language": "python",
+          "source": "def fact(n):\n    if n <= 1: return 1\n    return n * fact(n)"
+        },
+        "expectedAnswer": "recursive factorial",
+        "judgeMode": "code"
+      }
+    },
+    {
+      "id": "code-004",
+      "category": "code-judge",
+      "label": "LLM unavailable for code",
+      "groundTruthCorrect": false,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Implement binary search.",
+        "candidateAnswer": { "type": "code", "language": "python", "source": "def bs(): pass" },
+        "expectedAnswer": "log n search",
+        "judgeMode": "code"
+      }
+    },
+    {
+      "id": "code-005",
+      "category": "code-judge",
+      "label": "Correct linear search (mock judge)",
+      "groundTruthCorrect": true,
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.89, \"feedback\": \"Linear scan is correct.\"}"
+      },
+      "request": {
+        "questionText": "Find index of target in array.",
+        "candidateAnswer": {
+          "type": "code",
+          "language": "python",
+          "source": "def find(a, t):\n    for i, x in enumerate(a):\n        if x == t: return i\n    return -1"
+        },
+        "expectedAnswer": "linear scan",
+        "judgeMode": "code"
+      }
+    },
+    {
+      "id": "code-006",
+      "category": "code-judge",
+      "label": "Off-by-one loop bug (mock false positive)",
+      "groundTruthCorrect": false,
+      "notes": "Classic fencepost error — LLM may still accept",
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.68, \"feedback\": \"Looks like a sum loop.\"}"
+      },
+      "request": {
+        "questionText": "Sum integers 1..n inclusive.",
+        "candidateAnswer": {
+          "type": "code",
+          "language": "python",
+          "source": "def sum_n(n):\n    s = 0\n    for i in range(n):\n        s += i\n    return s"
+        },
+        "expectedAnswer": "sum 1 to n",
+        "judgeMode": "code"
+      }
+    },
+    {
+      "id": "code-007",
+      "category": "code-judge",
+      "label": "Empty source stub",
+      "groundTruthCorrect": false,
+      "llmMock": {
+        "reply": "{\"correct\": false, \"confidence\": 0.90, \"feedback\": \"No implementation provided.\"}"
+      },
+      "request": {
+        "questionText": "Implement merge sort.",
+        "candidateAnswer": { "type": "code", "language": "python", "source": "" },
+        "expectedAnswer": "O(n log n) divide and conquer",
+        "judgeMode": "code"
+      }
+    },
+    {
+      "id": "math-001",
+      "category": "math-judge",
+      "label": "Big-O equivalent O(n^2) vs O(n*n)",
+      "groundTruthCorrect": true,
+      "llmMock": {
+        "reply": "{\"correct\": true, \"confidence\": 0.92, \"feedback\": \"Equivalent quadratic complexity.\"}"
+      },
+      "request": {
+        "questionText": "Complexity of nested loop over n.",
+        "candidateAnswer": "O(n*n)",
+        "expectedAnswer": "O(n^2)",
+        "operation": "math_from_code",
+        "params": { "mathType": "complexity" }
+      }
+    },
+    {
+      "id": "math-002",
+      "category": "math-judge",
+      "label": "Wrong complexity claimed linear",
+      "groundTruthCorrect": false,
+      "llmMock": {
+        "reply": "{\"correct\": false, \"confidence\": 0.84, \"feedback\": \"Nested loops are not O(n).\"}"
+      },
+      "request": {
+        "questionText": "Complexity of nested loop over n.",
+        "candidateAnswer": "O(n)",
+        "expectedAnswer": "O(n^2)",
+        "operation": "math_from_code",
+        "params": { "mathType": "complexity" }
+      }
+    },
+    {
+      "id": "edge-001",
+      "category": "edge",
+      "label": "Unparseable candidate with expression present",
+      "groundTruthCorrect": false,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Evaluate expression.",
+        "candidateAnswer": "not_a_valid_expr@@@",
+        "answerExpression": "{{a}} + {{b}}",
+        "operation": "sum",
+        "params": { "a": 1, "b": 2 },
+        "expectedAnswer": 3
+      }
+    },
+    {
+      "id": "edge-002",
+      "category": "edge",
+      "label": "Empty candidate",
+      "groundTruthCorrect": false,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "What is 2+2?",
+        "candidateAnswer": "",
+        "expectedAnswer": "4"
+      }
+    },
+    {
+      "id": "edge-003",
+      "category": "edge",
+      "label": "Null-like string candidate",
+      "groundTruthCorrect": false,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "What is 2+2?",
+        "candidateAnswer": "null",
+        "expectedAnswer": "4"
+      }
+    },
+    {
+      "id": "edge-004",
+      "category": "edge",
+      "label": "LaTeX-like answer falls to fallback",
+      "groundTruthCorrect": false,
+      "forceLlmError": true,
+      "request": {
+        "questionText": "Value of pi approx.",
+        "candidateAnswer": "\\pi \\approx 3.14",
+        "expectedAnswer": "3.14"
+      }
+    }
+  ]
+}

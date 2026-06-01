@@ -1,0 +1,61 @@
+Evaluation of Hybrid Answer Verification (Section B)
+
+A benchmark of N = 50 labelled student answers was executed against the verify_answer pipeline (full benchmark incl. live LLM). Ground-truth labels were assigned by the author (teacher reference). Accuracy is defined as the fraction of cases where the system verdict (correct/incorrect) matches the ground truth.
+
+Table B.1 — Overall metrics (N = 50)
+
+Metric	Value
+Evaluated cases	50
+Matches with ground truth	43
+Accuracy	86.0%
+False positive (accepted wrong)	3
+False negative (rejected correct)	4
+Precision	88.0%
+Recall	84.6%
+
+Table B.2 — Breakdown by verification_method
+
+Method	N	Accuracy	FP	FN
+code-judge	6	66.7%	2	0
+code-judge-unavailable	1	100.0%	0	0
+math-judge	2	100.0%	0	0
+semantic	11	81.8%	1	1
+semantic-fallback	15	80.0%	0	3
+symbolic	15	100.0%	0	0
+
+Table B.3 — Breakdown by answer category
+
+Category	N	Accuracy
+code-judge	7	71.4%
+edge	4	100.0%
+math-judge	2	100.0%
+semantic	14	64.3%
+semantic-fallback	8	100.0%
+symbolic	15	100.0%
+
+Table B.4 — Documented mismatches (illustrative LLM failure modes)
+
+Case ID	Type	Method	Description
+sem-001	false_negative	semantic-fallback	Free-form correct explanation (needs LLM)
+sem-003	false_negative	semantic-fallback	Equivalent wording correct (needs LLM)
+sem-006	false_negative	semantic-fallback	Formula in words n*(n-1)/2 (needs LLM)
+sem-mock-004	false_positive	semantic	Mock LLM false positive (thesis error example)
+sem-mock-006	false_negative	semantic	Mock false negative (thesis error example)
+code-003	false_positive	code-judge	Logic bug passes syntax (mock false positive)
+code-006	false_positive	code-judge	Off-by-one loop bug (mock false positive)
+
+Table B.5 — Cases flagged for manual teacher review (confidence < 0.55)
+
+Case ID	Method	Confidence	Ground truth	System verdict
+fallback-003	semantic-fallback	0.28	False	False
+fallback-004	semantic-fallback	0.3	False	False
+fallback-006	semantic-fallback	0.3	False	False
+sem-001	semantic-fallback	0.28	True	False
+sem-003	semantic-fallback	0.28	True	False
+sem-006	semantic-fallback	0.28	True	False
+sem-mock-003	semantic	0.4	False	False
+code-004	code-judge-unavailable	0.28	False	False
+edge-001	semantic-fallback	0.3	False	False
+edge-002	semantic-fallback	0.3	False	False
+edge-003	semantic-fallback	0.3	False	False
+edge-004	semantic-fallback	0.3	False	False

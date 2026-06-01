@@ -142,7 +142,8 @@ npm run build
 | **[API-TESTING-DOCKER-BEST-PRACTICES.md](docs/API-TESTING-DOCKER-BEST-PRACTICES.md)** | 🧪 Тестирование API, smoke-checks, Docker-рекомендации |
 | **[DOCKER-PROD-RUNBOOK.md](docs/DOCKER-PROD-RUNBOOK.md)** | 🚀 Production deployment, health checks, security |
 | **[TESTING.md](docs/TESTING.md)** | ✅ Тестирование: unit, integration, system tests |
-| **[waves/wave-4/README.md](docs/waves/wave-4/README.md)** | 🔐 Отложенный план Auth/Security Phase 2 (backlog) |
+| **[waves/DEVELOPMENT_WAVES.md](docs/waves/DEVELOPMENT_WAVES.md)** | 📅 Фактические волны разработки (Wave 0–15 + macro M1–M5) |
+| **[SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md)** | 🏗 Актуальное описание архитектуры (nginx, tiers, пакеты, Flyway) |
 | **[TAXONOMY.md](docs/TAXONOMY.md)** | 📚 Классификация предметов и модулей платформы |
 | **[ADD-NEW-SUBJECT-PLAYBOOK.md](docs/ADD-NEW-SUBJECT-PLAYBOOK.md)** | ➕ Playbook для добавления нового предмета |
 
