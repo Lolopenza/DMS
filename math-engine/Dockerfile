@@ -28,5 +28,4 @@ USER dmc
 
 EXPOSE 8081
 
-# Use --reload for hot reload in development
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8081", "--reload"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8081"]

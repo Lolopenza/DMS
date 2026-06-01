@@ -1,4 +1,4 @@
-const BACKEND_BASE = '/api';
+const BACKEND_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 const DEFAULT_TIMEOUT = 10_000;
 const TIMEOUT_MATH_MS = 30_000;
 const TIMEOUT_AI_MS = 60_000;
