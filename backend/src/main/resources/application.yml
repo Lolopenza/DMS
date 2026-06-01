@@ -27,7 +27,7 @@ spring:
             enable: ${MAIL_SMTP_STARTTLS:false}
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 management:
   health:
