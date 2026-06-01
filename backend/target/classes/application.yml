@@ -11,10 +11,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   flyway:
     enabled: true
-  data:
-    redis:
-      host: ${REDIS_HOST:redis}
-      port: ${REDIS_PORT:6379}
+    # Redis is disabled
   jackson:
     default-property-inclusion: non_null
   mail:
@@ -30,7 +27,7 @@ spring:
             enable: ${MAIL_SMTP_STARTTLS:false}
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 management:
   health:

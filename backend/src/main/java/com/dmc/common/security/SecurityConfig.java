@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(e -> e.authenticationEntryPoint((request, response, authException) -> response.sendError(401, "Unauthorized")))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - MUST be first
                         .requestMatchers("/api/calculator/**").permitAll()
