@@ -18,7 +18,6 @@ import HeroSection from '../../components/dashboard/HeroSection.jsx';
 import OnboardingWizard from '../../components/dashboard/OnboardingWizard.jsx';
 import LearningJourneyCard from '../../components/dashboard/LearningJourneyCard.jsx';
 import SmartRecommendations from '../../components/dashboard/SmartRecommendations.jsx';
-import SubjectProgressOverview from '../../components/dashboard/SubjectProgressOverview.jsx';
 import { Button, Card, CardHeader } from '../../components/ui/index.js';
 import useUserSkills from '../../hooks/useUserSkills.js';
 import useGamification from '../../hooks/useGamification.js';
@@ -169,8 +168,6 @@ export default function Dashboard() {
         <LearningJourneyCard />
 
         <SmartRecommendations />
-
-        <SubjectProgressOverview />
 
         <StudentMiniLab defaultCollapsed />
 
