@@ -41,10 +41,50 @@ class JudgeResponse(BaseModel):
     feedback: str = Field(..., min_length=1, max_length=2000)
 
 
-CODE_PRACTICE_TOPICS = frozenset({'sorting', 'searching', 'recursion', 'asymptotic_analysis'})
+CODE_PRACTICE_TOPICS = frozenset({
+    'sorting', 'searching', 'recursion', 'asymptotic_analysis',
+    'graph_algorithms', 'dynamic_programming', 'greedy',
+    'divide_conquer', 'string_algorithms',
+})
 
 # Code-to-math (Math Bug Hunter): must be routed before CODE_PRACTICE_TOPICS.
 CODE_TO_MATH_TOPICS = frozenset({'code_complexity', 'code_recurrence'})
+
+MATH_PRACTICE_TOPICS = frozenset({
+    'vectors', 'matrices', 'linear_systems', 'determinants',
+    'eigenvalues', 'linear_transformations', 'vector_spaces', 'orthogonality',
+    'probability_basics', 'conditional_probability', 'bayes_theorem', 'distributions',
+    'propositional_logic', 'truth_tables', 'equivalence_laws', 'boolean_algebra',
+    'automata',
+    'limits_continuity', 'derivatives', 'integrals', 'series',
+    'multivariable', 'differential_equations',
+})
+
+TOPIC_SUBJECT_MAP = {
+    'combinatorics': 'discrete-math', 'graph_theory': 'discrete-math',
+    'set_theory': 'discrete-math', 'logic': 'discrete-math',
+    'number_theory': 'discrete-math', 'probability': 'discrete-math',
+    'adjacency_matrix': 'discrete-math',
+    'sorting': 'algorithms', 'searching': 'algorithms',
+    'recursion': 'algorithms', 'asymptotic_analysis': 'algorithms',
+    'graph_algorithms': 'algorithms', 'dynamic_programming': 'algorithms',
+    'greedy': 'algorithms', 'divide_conquer': 'algorithms',
+    'string_algorithms': 'algorithms',
+    'vectors': 'linear-algebra', 'matrices': 'linear-algebra',
+    'linear_systems': 'linear-algebra', 'determinants': 'linear-algebra',
+    'eigenvalues': 'linear-algebra', 'linear_transformations': 'linear-algebra',
+    'vector_spaces': 'linear-algebra', 'orthogonality': 'linear-algebra',
+    'probability_basics': 'probability-statistics',
+    'conditional_probability': 'probability-statistics',
+    'bayes_theorem': 'probability-statistics', 'distributions': 'probability-statistics',
+    'propositional_logic': 'it-logic', 'truth_tables': 'it-logic',
+    'equivalence_laws': 'it-logic', 'boolean_algebra': 'it-logic',
+    'automata': 'it-logic',
+    'limits_continuity': 'calculus', 'derivatives': 'calculus',
+    'integrals': 'calculus', 'series': 'calculus',
+    'multivariable': 'calculus', 'differential_equations': 'calculus',
+    'code_complexity': 'code-to-math', 'code_recurrence': 'code-to-math',
+}
 
 ALLOWED_CAREER_TRACKS = frozenset({'NONE', 'BACKEND_ARCHITECT', 'DATA_SCIENTIST', 'GAME_DEVELOPER'})
 
@@ -416,6 +456,33 @@ def _fallback_code_challenge(slug: str, difficulty: Optional[str], career_track:
             'def answer():\n'
             '    return "O(???)"\n'
         ),
+        'graph_algorithms': (
+            'def bfs(graph, start):\n'
+            '    """Return list of nodes in BFS order from start.\n'
+            '    graph: dict mapping node -> list of neighbors.\n'
+            '    """\n'
+            '    pass\n'
+        ),
+        'dynamic_programming': (
+            'def longest_increasing_subsequence(nums):\n'
+            '    """Return the length of the longest strictly increasing subsequence."""\n'
+            '    pass\n'
+        ),
+        'greedy': (
+            'def activity_selection(activities):\n'
+            '    """Given list of (start, end) tuples, return max number of non-overlapping activities."""\n'
+            '    pass\n'
+        ),
+        'divide_conquer': (
+            'def merge_sort(arr):\n'
+            '    """Sort the array using merge sort and return the sorted array."""\n'
+            '    pass\n'
+        ),
+        'string_algorithms': (
+            'def longest_common_substring(s1, s2):\n'
+            '    """Return the longest common substring of s1 and s2."""\n'
+            '    pass\n'
+        ),
     }
     questions = {
         'sorting': (
@@ -431,12 +498,38 @@ def _fallback_code_challenge(slug: str, difficulty: Optional[str], career_track:
         'asymptotic_analysis': (
             'Analyze the worst-case time complexity (Big-O) for a nested loop structure as a function of input size n.'
         ),
+        'graph_algorithms': (
+            'Implement BFS (Breadth-First Search) on an adjacency-list graph. '
+            'Return the list of visited nodes in BFS order starting from the given node.'
+        ),
+        'dynamic_programming': (
+            'Find the length of the longest strictly increasing subsequence in a list of integers. '
+            'Use dynamic programming with O(n^2) or O(n log n) approach.'
+        ),
+        'greedy': (
+            'Activity selection: given a list of activities with start and end times, '
+            'find the maximum number of non-overlapping activities you can attend.'
+        ),
+        'divide_conquer': (
+            'Implement merge sort to sort an array of integers. '
+            'The algorithm should divide the array into halves, recursively sort each half, '
+            'and merge the sorted halves. Return the sorted array.'
+        ),
+        'string_algorithms': (
+            'Find the longest common substring between two strings. '
+            'Return the substring itself (not just its length).'
+        ),
     }
     rubric = {
         'sorting': 'Sort is correct for typical inputs; complexity claim matches implementation.',
         'searching': 'Correct loop bounds; returns -1 when absent.',
         'recursion': 'Correct recurrence and base cases.',
         'asymptotic_analysis': 'Big-O matches the described structure.',
+        'graph_algorithms': 'Correct BFS traversal with visited set; handles disconnected nodes.',
+        'dynamic_programming': 'Correct DP recurrence; O(n^2) or better; handles edge cases.',
+        'greedy': 'Sort by end time, greedily pick non-overlapping; correct count.',
+        'divide_conquer': 'Correct divide step, recursive calls, and merge; O(n log n) overall.',
+        'string_algorithms': 'Correct substring (not subsequence); handles empty input.',
     }
     starter = starters.get(slug, starters['sorting'])
     return {
@@ -527,6 +620,294 @@ def _fallback_generated(topic_slug: Optional[str], difficulty: Optional[str], ca
             'answerExpression': expr,
             'correctAnswer': expected,
             'operation': 'set_union_cardinality',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'probability' or slug == 'probability_basics':
+        n = random.randint(6, 12)
+        k = random.randint(1, 3)
+        total = n
+        favorable = k
+        return {
+            'questionText': f'A bag contains {total} balls numbered 1 to {total}. What is the probability of drawing a ball with number <= {favorable}? Express as a simplified fraction.',
+            'parameters': {'total': total, 'favorable': favorable},
+            'answerExpression': str(favorable) + '/' + str(total),
+            'correctAnswer': str(sp.Rational(favorable, total)),
+            'operation': 'probability_simple',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'adjacency_matrix':
+        n = random.randint(3, 5)
+        expected = n * n
+        return {
+            'questionText': f'How many entries does the adjacency matrix of a simple graph with {n} vertices have?',
+            'parameters': {'n': n},
+            'answerExpression': '{{n}} * {{n}}',
+            'correctAnswer': expected,
+            'operation': 'adjacency_matrix_size',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'conditional_probability':
+        a = random.randint(10, 40)
+        b = random.randint(max(a, 20), 60)
+        ab = random.randint(5, min(a, b))
+        expected = str(sp.Rational(ab, b))
+        return {
+            'questionText': f'Given P(A)={a}/100, P(B)={b}/100, P(A∩B)={ab}/100. Find P(A|B).',
+            'parameters': {'a': a, 'b': b, 'ab': ab},
+            'answerExpression': str(ab) + '/' + str(b),
+            'correctAnswer': expected,
+            'operation': 'conditional_probability',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'bayes_theorem':
+        return {
+            'questionText': 'A test is 95% accurate. 1% of the population has the disease. If a person tests positive, what is P(disease|positive)? Round to 4 decimal places.',
+            'parameters': {'sensitivity': 0.95, 'prevalence': 0.01, 'specificity': 0.95},
+            'answerExpression': '0',
+            'correctAnswer': round(0.95 * 0.01 / (0.95 * 0.01 + 0.05 * 0.99), 4),
+            'operation': 'bayes_theorem',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'distributions':
+        n = random.randint(5, 10)
+        p_val = random.choice([0.3, 0.4, 0.5, 0.6])
+        expected = round(n * p_val, 2)
+        return {
+            'questionText': f'X ~ Binomial(n={n}, p={p_val}). Find E[X].',
+            'parameters': {'n': n, 'p': p_val},
+            'answerExpression': '{{n}} * {{p}}',
+            'correctAnswer': expected,
+            'operation': 'expected_value_binomial',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'vectors':
+        a1, a2 = random.randint(1, 8), random.randint(1, 8)
+        b1, b2 = random.randint(1, 8), random.randint(1, 8)
+        expected = a1 * b1 + a2 * b2
+        return {
+            'questionText': f'Find the dot product of vectors a=({a1},{a2}) and b=({b1},{b2}).',
+            'parameters': {'a1': a1, 'a2': a2, 'b1': b1, 'b2': b2},
+            'answerExpression': '{{a1}}*{{b1}} + {{a2}}*{{b2}}',
+            'correctAnswer': expected,
+            'operation': 'dot_product',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'matrices':
+        a, b, c, d = random.randint(1, 5), random.randint(1, 5), random.randint(1, 5), random.randint(1, 5)
+        expected = a * d - b * c
+        return {
+            'questionText': f'Find the determinant of the 2x2 matrix [[{a},{b}],[{c},{d}]].',
+            'parameters': {'a': a, 'b': b, 'c': c, 'd': d},
+            'answerExpression': '{{a}}*{{d}} - {{b}}*{{c}}',
+            'correctAnswer': expected,
+            'operation': 'matrix_det_2x2',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'determinants':
+        a, b, c, d = random.randint(-5, 5), random.randint(-5, 5), random.randint(-5, 5), random.randint(-5, 5)
+        expected = a * d - b * c
+        return {
+            'questionText': f'Compute det([[{a},{b}],[{c},{d}]]).',
+            'parameters': {'a': a, 'b': b, 'c': c, 'd': d},
+            'answerExpression': '{{a}}*{{d}} - {{b}}*{{c}}',
+            'correctAnswer': expected,
+            'operation': 'determinant_2x2',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'linear_systems':
+        a, b = random.randint(1, 5), random.randint(1, 5)
+        expected = a + b
+        return {
+            'questionText': f'Solve: x + y = {expected}, x - y = {a - b}. Find x.',
+            'parameters': {'sum': expected, 'diff': a - b},
+            'answerExpression': str(a),
+            'correctAnswer': a,
+            'operation': 'linear_system_2x2',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'eigenvalues':
+        a, d = random.randint(1, 6), random.randint(1, 6)
+        return {
+            'questionText': f'Find the eigenvalues of the diagonal matrix diag({a}, {d}).',
+            'parameters': {'a': a, 'd': d},
+            'answerExpression': '0',
+            'correctAnswer': f'{a}, {d}',
+            'operation': 'eigenvalues_diagonal',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug in ('linear_transformations', 'vector_spaces', 'orthogonality'):
+        a1, a2 = random.randint(1, 5), random.randint(1, 5)
+        mag_sq = a1 * a1 + a2 * a2
+        return {
+            'questionText': f'Find ||({a1}, {a2})||^2 (the squared norm of the vector).',
+            'parameters': {'a1': a1, 'a2': a2},
+            'answerExpression': '{{a1}}*{{a1}} + {{a2}}*{{a2}}',
+            'correctAnswer': mag_sq,
+            'operation': 'vector_norm_squared',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'propositional_logic' or slug == 'truth_tables':
+        p = random.randint(0, 1)
+        q = random.randint(0, 1)
+        expected = int((not p) or q)
+        return {
+            'questionText': f'Evaluate (p -> q) for p={p}, q={q}. Answer 0 or 1.',
+            'parameters': {'p': p, 'q': q},
+            'answerExpression': '1 - {{p}} + {{p}} * {{q}}',
+            'correctAnswer': expected,
+            'operation': 'implication',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'equivalence_laws' or slug == 'boolean_algebra':
+        p = random.randint(0, 1)
+        q = random.randint(0, 1)
+        expected = int(not (p and q))
+        return {
+            'questionText': f'By De Morgan: NOT(p AND q) = ? for p={p}, q={q}. Answer 0 or 1.',
+            'parameters': {'p': p, 'q': q},
+            'answerExpression': '1 - {{p}} * {{q}}',
+            'correctAnswer': expected,
+            'operation': 'demorgan',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'automata':
+        states = random.randint(3, 6)
+        return {
+            'questionText': f'A DFA has {states} states and alphabet {{a, b}}. What is the maximum number of transitions?',
+            'parameters': {'states': states, 'alphabet_size': 2},
+            'answerExpression': '{{states}} * {{alphabet_size}}',
+            'correctAnswer': states * 2,
+            'operation': 'dfa_max_transitions',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'limits_continuity':
+        n = random.randint(2, 6)
+        return {
+            'questionText': f'Find lim(x->0) sin({n}x) / x.',
+            'parameters': {'n': n},
+            'answerExpression': str(n),
+            'correctAnswer': n,
+            'operation': 'limit_sinx_over_x',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'derivatives':
+        n = random.randint(2, 7)
+        expected = n
+        return {
+            'questionText': f'Find d/dx [x^{n}] at x=1.',
+            'parameters': {'n': n},
+            'answerExpression': str(n),
+            'correctAnswer': expected,
+            'operation': 'derivative_power',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'integrals':
+        n = random.randint(1, 5)
+        expected = n + 1
+        return {
+            'questionText': f'Evaluate the integral of x^{n} from 0 to 1. Express as a fraction if needed.',
+            'parameters': {'n': n},
+            'answerExpression': '0',
+            'correctAnswer': str(sp.Rational(1, n + 1)),
+            'operation': 'definite_integral_power',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug == 'series':
+        n = random.randint(3, 8)
+        expected = int(n * (n + 1) / 2)
+        return {
+            'questionText': f'Find the sum 1 + 2 + 3 + ... + {n}.',
+            'parameters': {'n': n},
+            'answerExpression': '{{n}} * ({{n}} + 1) / 2',
+            'correctAnswer': expected,
+            'operation': 'arithmetic_series',
+            'difficultyScore': _difficulty_score(difficulty),
+            'topicSlug': slug,
+            'sourceModel': 'fallback-template',
+            'careerTrack': career_track,
+        }
+
+    if slug in ('multivariable', 'differential_equations'):
+        a, b = random.randint(1, 5), random.randint(1, 5)
+        expected = a + b
+        return {
+            'questionText': f'If f(x,y) = {a}x + {b}y, find df/dx + df/dy.',
+            'parameters': {'a': a, 'b': b},
+            'answerExpression': '{{a}} + {{b}}',
+            'correctAnswer': expected,
+            'operation': 'partial_sum',
             'difficultyScore': _difficulty_score(difficulty),
             'topicSlug': slug,
             'sourceModel': 'fallback-template',
@@ -796,6 +1177,56 @@ def _generate_code_to_math_problem(
         return fb
 
 
+def _subject_system_prompt(topic_slug: str, career_fragment: str) -> str:
+    subject = TOPIC_SUBJECT_MAP.get(topic_slug, 'discrete-math')
+
+    subject_intros = {
+        'discrete-math': (
+            'You are a discrete-math problem generator for IT and software engineering students. '
+            'Wrap each problem in a short, realistic CS/IT scenario when it does not break the math: '
+            'e.g. routing or dependencies as graphs, resource allocation as combinatorics, feature '
+            'flags or message paths as logic. Keep the formal object mathematically precise.'
+        ),
+        'linear-algebra': (
+            'You are a linear algebra problem generator for IT and software engineering students. '
+            'Topics: vectors, matrices, determinants, eigenvalues, linear systems, transformations, vector spaces, orthogonality. '
+            'Use CS scenarios when natural: transformations in graphics, PageRank as eigenvectors, '
+            'systems in network analysis. Keep the math precise.'
+        ),
+        'probability-statistics': (
+            'You are a probability and statistics problem generator for IT students. '
+            'Topics: probability basics, conditional probability, Bayes theorem, distributions. '
+            'Use CS scenarios: A/B testing, system reliability, network packet loss, ML model evaluation. '
+            'Keep the math precise.'
+        ),
+        'it-logic': (
+            'You are a formal logic and computation problem generator for IT students. '
+            'Topics: propositional logic, truth tables, equivalence laws, boolean algebra, automata (DFA/NFA). '
+            'Use CS scenarios: circuit design, compiler verification, protocol validation. '
+            'Keep the formal object precise.'
+        ),
+        'calculus': (
+            'You are a calculus problem generator for IT and engineering students. '
+            'Topics: limits, derivatives, integrals, series, multivariable calculus, differential equations. '
+            'Use applied scenarios when natural: optimization, signal processing, growth models. '
+            'Keep the math precise.'
+        ),
+    }
+
+    intro = subject_intros.get(subject, subject_intros['discrete-math'])
+    return (
+        intro
+        + career_fragment
+        + ' RESPOND WITH RAW JSON ONLY. '
+        'DO NOT wrap the response in markdown code fences (```). '
+        'DO NOT add any text before or after the JSON object. '
+        'The JSON must have exactly these keys: questionText (string), parameters (object), '
+        'answerExpression (algebraic/symbolic string using {{key}} placeholders), operation (string), correctAnswer (number or boolean or string). '
+        'Example: {"questionText":"Find C(5,2).","parameters":{"n":5,"k":2},'
+        '"answerExpression":"{{n}}! / ({{k}}! * ({{n}}-{{k}})!)","operation":"combination","correctAnswer":10}'
+    )
+
+
 @router.post('/generate')
 def generate_problem(req: GenerateRequest):
     service = get_chatbot_service()
@@ -811,23 +1242,10 @@ def generate_problem(req: GenerateRequest):
     if topic_slug in CODE_PRACTICE_TOPICS:
         return _generate_algorithm_code_problem(service, topic_slug, difficulty, skill_level, career_track)
 
-    system_prompt = (
-        'You are a discrete-math problem generator for IT and software engineering students. '
-        'Wrap each problem in a short, realistic CS/IT scenario when it does not break the math: '
-        'e.g. routing or dependencies as graphs, resource allocation as combinatorics, feature '
-        'flags or message paths as logic, transforms as linear algebra. Keep the formal object '
-        'mathematically precise.'
-        + career_fragment
-        + ' RESPOND WITH RAW JSON ONLY. '
-        'DO NOT wrap the response in markdown code fences (```). '
-        'DO NOT add any text before or after the JSON object. '
-        'The JSON must have exactly these keys: questionText (string), parameters (object), '
-        'answerExpression (algebraic/symbolic string using {{key}} placeholders), operation (string), correctAnswer (number or boolean). '
-        'Example: {"questionText":"Find C(5,2).","parameters":{"n":5,"k":2},'
-        '"answerExpression":"{{n}}! / ({{k}}! * ({{n}}-{{k}})!)","operation":"combination","correctAnswer":10}'
-    )
+    subject = TOPIC_SUBJECT_MAP.get(topic_slug, 'discrete-math')
+    system_prompt = _subject_system_prompt(topic_slug, career_fragment)
     user_prompt = (
-        f'Generate one discrete math problem for topic={topic_slug}, difficulty={difficulty}, '
+        f'Generate one {subject.replace("-", " ")} problem for topic={topic_slug}, difficulty={difficulty}, '
         f'skillLevel={skill_level}. Keep it solvable by symbolic expression. '
         'Use an IT-relevant story hook in questionText when natural. '
         'Return raw JSON only, no markdown. '
@@ -839,7 +1257,7 @@ def generate_problem(req: GenerateRequest):
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_prompt},
         ],
-        subject='discrete-math',
+        subject=subject,
         module=topic_slug,
     )
 
