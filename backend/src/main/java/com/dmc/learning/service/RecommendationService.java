@@ -64,17 +64,35 @@ public class RecommendationService {
 
         List<ScoredModule> scored = new ArrayList<>();
         for (CatalogModule m : ModuleDependencyGraph.modules()) {
+            StudentSkill skill = skillByTopic.get(m.skillTopicSlug());
+            int attempts = skill == null ? 0 : Math.max(0, skill.getTotalAttempts());
+            int correct = skill == null ? 0 : Math.max(0, skill.getCorrectAttempts());
+            int accuracyPct = attempts > 0 ? (correct * 100 / attempts) : -1;
+
             int targetPct = adjustedMasteryPercent(skillByTopic, m.skillTopicSlug());
             PrereqSnapshot prereqs = summarizePrereqs(skillByTopic, m.prerequisiteSkillSlugs());
 
             if (targetPct >= TARGET_MASTERED_PERCENT) {
                 continue;
             }
-            if (!prereqs.ready()) {
+            boolean hasPracticeData = attempts > 0;
+            if (!prereqs.ready() && !hasPracticeData) {
                 continue;
             }
 
             double score = 100.0 - targetPct;
+            if (hasPracticeData) {
+                score += 20;
+                if (targetPct < 55) {
+                    score += (55 - targetPct) * 0.85;
+                }
+                if (accuracyPct >= 0 && accuracyPct < 40) {
+                    score += 18;
+                }
+            } else {
+                score -= 10;
+            }
+
             double maxPrereqAdj = prereqs.maxPrerequisiteAdjustedPknow();
             if (maxPrereqAdj >= PREREQ_PRIME_LOW && maxPrereqAdj <= PREREQ_PRIME_HIGH) {
                 score += 30;
@@ -82,8 +100,9 @@ public class RecommendationService {
             if (daysSinceLastSkillTouch(skillByTopic, m.skillTopicSlug()) >= STALE_DAYS_FOR_REVISIT) {
                 score += 15;
             }
+            boolean weakSpot = hasPracticeData && targetPct < 45 && accuracyPct >= 0 && accuracyPct < 40;
             if (burstFatigue && recentAttemptsOnTopic(skillByTopic, m.skillTopicSlug(), user, BURST_WINDOW_HOURS) >= 3) {
-                score -= 25;
+                score -= weakSpot ? 8 : 25;
             }
 
             String reason = buildReason(
@@ -218,12 +237,29 @@ public class RecommendationService {
     ) {
         String band = masteryBandLabel(targetPct);
         StringBuilder sb = new StringBuilder();
+        StudentSkill skill = skillByTopic.get(module.skillTopicSlug());
+        int attempts = skill == null ? 0 : Math.max(0, skill.getTotalAttempts());
+        int correct = skill == null ? 0 : Math.max(0, skill.getCorrectAttempts());
+        int accuracyPct = attempts > 0 ? (correct * 100 / attempts) : -1;
+
         sb.append(String.format(
                 "**%s** — adjusted mastery about **%d%%** (%s). ",
                 module.displayName(),
                 targetPct,
                 band
         ));
+
+        if (attempts > 0) {
+            sb.append(String.format(
+                    "You've practiced this **%d** time%s (~**%d%%** correct). ",
+                    attempts,
+                    attempts == 1 ? "" : "s",
+                    Math.max(0, accuracyPct)
+            ));
+            if (accuracyPct >= 0 && accuracyPct < 40) {
+                sb.append("**Weak spot** — extra practice here will move the needle. ");
+            }
+        }
 
         if (streakDays >= 3) {
             sb.append(String.format("You're on a **%d-day** learning streak (UTC) — great momentum. ", streakDays));
@@ -243,7 +279,7 @@ public class RecommendationService {
             sb.append(String.format("It's been **%d** days since this topic moved — good time to revisit. ", stale));
         }
 
-        if (burstFatigue) {
+        if (burstFatigue && !(attempts > 0 && accuracyPct >= 0 && accuracyPct < 40)) {
             sb.append("_Tip: many attempts in the last 2h — consider a short break or a gentler module._ ");
         }
 

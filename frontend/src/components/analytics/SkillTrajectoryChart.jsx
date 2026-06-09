@@ -167,7 +167,18 @@ export default function SkillTrajectoryChart({ windowDays = 30 }) {
                 }}
               />
               <Legend />
-              <Line type="monotone" dataKey="pKnow" name="P(L) %" stroke="#22c55e" strokeWidth={2} dot />
+              <Line
+                type="monotone"
+                dataKey="pKnow"
+                name="P(L) %"
+                stroke="#22c55e"
+                strokeWidth={2}
+                dot={({ cx, cy, payload }) => {
+                  if (cx == null || cy == null) return null;
+                  const fill = payload?.correct ? '#22c55e' : '#ef4444';
+                  return <circle cx={cx} cy={cy} r={5} fill={fill} stroke="#fff" strokeWidth={1.5} />;
+                }}
+              />
               {typeof adj === 'number' ? (
                 <ReferenceLine
                   y={adj}

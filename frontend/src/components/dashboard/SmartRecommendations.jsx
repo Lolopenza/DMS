@@ -58,7 +58,7 @@ export default function SmartRecommendations() {
               AI recommendations
             </span>
           }
-          subtitle="Ranked with transparent signals: BKT mastery, prerequisites, streak, and recency. Each card explains “why this next”."
+          subtitle="Prioritizes your weak spots (low mastery + low accuracy), then fresh catalog modules. Each card explains why it was picked."
         />
       </div>
 

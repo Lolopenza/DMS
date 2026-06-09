@@ -41,9 +41,25 @@ const FAQ_ITEMS = [
   },
 ];
 
+const LAST_SUBJECT_KEY = 'dmc_last_subject';
+
 export default function Hub() {
   const tracks = getSubjectCatalog();
-  const activeTrack = tracks.find((track) => track.status === 'active' && track.subjectPath);
+  const activeTrack = useMemo(() => {
+    let lastSlug = null;
+    try {
+      lastSlug = localStorage.getItem(LAST_SUBJECT_KEY);
+    } catch {
+      lastSlug = null;
+    }
+    if (lastSlug) {
+      const lastVisited = tracks.find(
+        (track) => track.slug === lastSlug && track.status === 'active' && track.subjectPath,
+      );
+      if (lastVisited) return lastVisited;
+    }
+    return tracks.find((track) => track.status === 'active' && track.subjectPath);
+  }, [tracks]);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   const trackCards = useMemo(

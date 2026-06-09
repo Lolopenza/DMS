@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { TRACKS_PATH, buildSectionsForSubject, getSubjectCatalog } from '../../routes.js';
 import { Badge, Button, Card, CardHeader } from '../../components/ui/index.js';
@@ -12,6 +12,16 @@ export default function SubjectEntry() {
   const tracks = getSubjectCatalog();
   const track = tracks.find((item) => item.slug === subject);
   const [scopeFilter, setScopeFilter] = useState('all');
+
+  useEffect(() => {
+    if (track?.slug) {
+      try {
+        localStorage.setItem('dmc_last_subject', track.slug);
+      } catch {
+        // Ignore storage errors for private modes / quota constraints.
+      }
+    }
+  }, [track?.slug]);
 
   if (!track) {
     return <Navigate to={TRACKS_PATH} replace />;

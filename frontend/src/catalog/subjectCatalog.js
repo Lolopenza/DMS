@@ -94,10 +94,10 @@ export const SUBJECT_CATALOG = [
   {
     slug: 'linear-algebra',
     label: 'Linear Algebra',
-    classification: 'specialized',
+    classification: 'foundation',
     goal: 'Spatial and matrix computation for graphics, optimization, and ML.',
     status: 'active',
-    features: { calculator: true, roadmap: false, videos: false },
+    features: { calculator: true, roadmap: true, videos: false },
     modules: [
       {
         slug: 'vectors',
@@ -171,7 +171,7 @@ export const SUBJECT_CATALOG = [
     classification: 'specialized',
     goal: 'Work with uncertainty and data for analytics and machine learning.',
     status: 'active',
-    features: { calculator: true, roadmap: false, videos: false },
+    features: { calculator: true, roadmap: true, videos: false },
     modules: [
       {
         slug: 'probability-basics',
@@ -213,7 +213,7 @@ export const SUBJECT_CATALOG = [
     classification: 'specialized',
     goal: 'Design fast code with complexity-aware and step-by-step problem solving.',
     status: 'active',
-    features: { calculator: true, roadmap: false, videos: false },
+    features: { calculator: true, roadmap: true, videos: false },
     modules: [
       {
         slug: 'asymptotic-analysis',
@@ -284,10 +284,10 @@ export const SUBJECT_CATALOG = [
   {
     slug: 'it-logic',
     label: 'Logic & Computation',
-    classification: 'specialized',
+    classification: 'foundation',
     goal: 'Deep formal logic for systems, compilers, and finite-state computation.',
     status: 'active',
-    features: { calculator: true, roadmap: false, videos: false },
+    features: { calculator: true, roadmap: true, videos: false },
     modules: [
       {
         slug: 'automata',
@@ -337,7 +337,7 @@ export const SUBJECT_CATALOG = [
     classification: 'specialized',
     goal: 'Limits, derivatives, integrals, and series for engineering, ML, and science.',
     status: 'active',
-    features: { calculator: true, roadmap: false, videos: false },
+    features: { calculator: true, roadmap: true, videos: false },
     modules: [
       {
         slug: 'limits-continuity',

@@ -16,19 +16,20 @@ const SUBJECT_ICON = {
   'probability-statistics': 'fa-chart-line',
   algorithms: 'fa-diagram-project',
   'it-logic': 'fa-microchip',
+  calculus: 'fa-infinity',
 };
 
 const GUIDANCE_STEPS = [
   {
     icon: 'fa-flag-checkered',
     title: 'Start with foundation',
-    body: 'Master Discrete Mathematics to build core skills in logic, sets, and structures.',
+    body: 'Build core skills in Discrete Math, Linear Algebra, and Logic & Computation — each track has a step-by-step roadmap and calculators.',
     accent: 'from-indigo-500 to-violet-600',
   },
   {
     icon: 'fa-compass',
     title: 'Choose your specialization',
-    body: 'ML → Linear Algebra + Probability. Systems → Algorithms. Logic-heavy work → IT Logic.',
+    body: 'ML → Probability + Calculus. Systems → Algorithms. Data → Probability & Statistics.',
     accent: 'from-violet-500 to-fuchsia-600',
   },
   {

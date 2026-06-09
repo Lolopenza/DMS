@@ -46,6 +46,13 @@ export default function StudentMiniLab({ defaultCollapsed = true }) {
   const timeVsErrorsData = React.useMemo(() => buildTimeVsErrorsData(attempts), [attempts]);
   const weeklyData = React.useMemo(() => buildWeeklyProgressData(attempts, 7), [attempts]);
 
+  const summary = React.useMemo(() => {
+    const total = attempts.length;
+    const correct = attempts.filter((a) => a?.correct).length;
+    const wrong = total - correct;
+    return { total, correct, wrong };
+  }, [attempts]);
+
   return (
     <div className="dmc-card mt-6">
       <div className="dmc-card-header flex items-center justify-between flex-wrap gap-3">
@@ -84,6 +91,37 @@ export default function StudentMiniLab({ defaultCollapsed = true }) {
         ) : null}
 
         {!error && attempts.length > 0 ? (
+          <div className="flex flex-wrap gap-3 text-sm">
+            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 dark:border-slate-700 dark:bg-slate-900">
+              <strong className="dmc-title">{summary.total}</strong> attempts
+            </span>
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100">
+              <strong>{summary.correct}</strong> correct
+            </span>
+            <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-100">
+              <strong>{summary.wrong}</strong> incorrect
+            </span>
+          </div>
+        ) : null}
+
+        {!error && attempts.length > 0 && topicAccuracyData.length > 0 && !expanded ? (
+          <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+            <div className="text-sm font-semibold dmc-title mb-2">Topic accuracy (top topics)</div>
+            <div style={{ width: '100%', height: 200 }}>
+              <ResponsiveContainer>
+                <BarChart data={topicAccuracyData}>
+                  <CartesianGrid stroke={rc.gridStroke} strokeDasharray="3 3" />
+                  <XAxis dataKey="topic" tick={{ fill: rc.tickFill, fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={50} />
+                  <YAxis domain={[0, 100]} tick={{ fill: rc.tickFill, fontSize: 12 }} />
+                  <Tooltip content={<AnalyticsChartTooltip />} />
+                  <Bar dataKey="accuracy" name="Accuracy %" fill="#2563eb" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ) : null}
+
+        {!error && attempts.length > 0 ? (
           <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
             <div className="text-sm font-semibold dmc-title mb-2">Last 7 days — attempts</div>
             <div style={{ width: '100%', height: 240 }}>
@@ -104,6 +142,11 @@ export default function StudentMiniLab({ defaultCollapsed = true }) {
 
         {expanded && !error && attempts.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
+            {timeVsErrorsData.length === 0 ? (
+              <p className="lg:col-span-3 text-xs dmc-subtitle">
+                Time-vs-error chart needs attempts with time spent recorded. New practice sessions include timing automatically.
+              </p>
+            ) : null}
             <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
               <div className="text-sm font-semibold dmc-title mb-2">Topic Accuracy</div>
               <div style={{ width: '100%', height: 220 }}>
