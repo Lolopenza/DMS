@@ -9,7 +9,6 @@ import {
   AUTH_SIGN_IN_PATH,
   AUTH_SIGN_UP_PATH,
   ADMIN_CONTENT_PATH,
-  CALCULATOR_PATH,
   HELP_PATH,
   HOME_PATH,
   LEGAL_COOKIES_PATH,
@@ -274,7 +273,6 @@ export default function Layout({ children, chatHistory, setChatHistory }) {
         tracksPath={TRACKS_PATH}
         roadmapPath={MATH_ROADMAP_PATH}
         practicePath={USER_PRACTICE_PATH}
-        calculatorPath={CALCULATOR_PATH}
         helpPath={HELP_PATH}
         signInPath={AUTH_SIGN_IN_PATH}
         signUpPath={AUTH_SIGN_UP_PATH}

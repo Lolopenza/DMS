@@ -6,7 +6,6 @@ export default function AppFooter({
   tracksPath = '/tracks',
   roadmapPath = '/math-roadmap',
   practicePath = '/practice-lab',
-  calculatorPath = '/calculator',
   helpPath = '/help',
   signInPath = '/auth/sign-in',
   signUpPath = '/auth/sign-up',
@@ -79,7 +78,7 @@ export default function AppFooter({
                   </Link>
                 </li>
                 <li>
-                  <Link to={calculatorPath} onClick={onNavigate} className="footer-link">
+                  <Link to={homePath} onClick={onNavigate} className="footer-link">
                     <i className="fas fa-calculator w-5 text-center text-slate-400 dark:text-slate-500" aria-hidden />
                     Topic calculators
                   </Link>
